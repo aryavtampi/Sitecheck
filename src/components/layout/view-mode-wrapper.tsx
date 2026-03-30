@@ -1,0 +1,111 @@
+'use client';
+
+import { ReactNode } from 'react';
+import { Sidebar } from '@/components/layout/sidebar';
+import { TopBar } from '@/components/layout/top-bar';
+import { ViewModeSwitcher } from '@/components/layout/view-mode-switcher';
+import { IPhoneFrame } from '@/components/layout/iphone-frame';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { useViewModeStore } from '@/stores/view-mode-store';
+import { AnimatePresence, motion } from 'framer-motion';
+
+interface ViewModeWrapperProps {
+  children: ReactNode;
+}
+
+export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
+  const { viewMode } = useViewModeStore();
+
+  return (
+    <TooltipProvider>
+      <ViewModeSwitcher />
+      <AnimatePresence mode="wait">
+        {viewMode === 'website' ? (
+          <motion.div
+            key="website"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex min-h-screen"
+          >
+            <Sidebar />
+            <div className="flex flex-1 flex-col sm:pl-16">
+              <TopBar />
+              <main className="flex-1 overflow-auto">{children}</main>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="app"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            <IPhoneFrame>
+              <div className="flex min-h-full flex-col bg-background">
+                <TopBar />
+                <main className="flex-1 overflow-auto">{children}</main>
+                {/* Mobile bottom nav */}
+                <MobileBottomNav />
+              </div>
+            </IPhoneFrame>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </TooltipProvider>
+  );
+}
+
+// Mobile bottom navigation bar for app mode
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import {
+  LayoutDashboard,
+  FileText,
+  Plane,
+  CheckCircle,
+  FileBarChart,
+  CloudRain,
+} from 'lucide-react';
+
+const mobileNavItems = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
+  { href: '/swppp', icon: FileText, label: 'SWPPP' },
+  { href: '/missions', icon: Plane, label: 'Drone' },
+  { href: '/checkpoints', icon: CheckCircle, label: 'BMPs' },
+  { href: '/reports', icon: FileBarChart, label: 'Reports' },
+  { href: '/weather', icon: CloudRain, label: 'Weather' },
+];
+
+function MobileBottomNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-border bg-[#0A0A0A]/95 px-1 py-2 backdrop-blur-md">
+      {mobileNavItems.map((item) => {
+        const isActive =
+          pathname === item.href || pathname?.startsWith(item.href + '/');
+        const Icon = item.icon;
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex flex-col items-center gap-0.5 rounded-md px-2 py-1 text-[10px] transition-colors',
+              isActive
+                ? 'text-amber-500'
+                : 'text-muted-foreground'
+            )}
+          >
+            <Icon className={cn('h-5 w-5', isActive ? 'text-amber-500' : '')} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
