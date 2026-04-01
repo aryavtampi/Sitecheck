@@ -38,52 +38,56 @@ export function useSupabaseRealtime({
   useEffect(() => {
     if (!enabled) return;
 
-    const supabase = createClient();
-    const channelName = `realtime-${table}-${Date.now()}`;
+    try {
+      const supabase = createClient();
+      const channelName = `realtime-${table}-${Date.now()}`;
 
-    // Build the channel config
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const channelConfig: Record<string, any> = {
-      event,
-      schema,
-      table,
-    };
+      // Build the channel config
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const channelConfig: Record<string, any> = {
+        event,
+        schema,
+        table,
+      };
 
-    if (filter) {
-      channelConfig.filter = filter;
-    }
+      if (filter) {
+        channelConfig.filter = filter;
+      }
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes' as 'system',
-        channelConfig,
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          // Call the general onChange handler
-          onChange?.(payload);
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes' as 'system',
+          channelConfig,
+          (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+            // Call the general onChange handler
+            onChange?.(payload);
 
-          // Call specific event handlers
-          switch (payload.eventType) {
-            case 'INSERT':
-              onInsert?.(payload);
-              break;
-            case 'UPDATE':
-              onUpdate?.(payload);
-              break;
-            case 'DELETE':
-              onDelete?.(payload);
-              break;
+            // Call specific event handlers
+            switch (payload.eventType) {
+              case 'INSERT':
+                onInsert?.(payload);
+                break;
+              case 'UPDATE':
+                onUpdate?.(payload);
+                break;
+              case 'DELETE':
+                onDelete?.(payload);
+                break;
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
 
-    channelRef.current = channel;
+      channelRef.current = channel;
 
-    return () => {
-      supabase.removeChannel(channel);
-      channelRef.current = null;
-    };
+      return () => {
+        supabase.removeChannel(channel);
+        channelRef.current = null;
+      };
+    } catch (err) {
+      console.warn(`Supabase realtime subscription failed for ${table}:`, err);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, schema, event, filter, enabled]);
 }

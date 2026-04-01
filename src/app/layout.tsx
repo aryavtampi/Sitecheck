@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
 import { ViewModeWrapper } from '@/components/layout/view-mode-wrapper';
 import { RealtimeProvider } from '@/components/providers/realtime-provider';
+import { ErrorBoundary } from '@/components/providers/error-boundary';
 import './globals.css';
 
 const inter = Inter({
@@ -43,9 +44,11 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${oswald.variable} dark`}
     >
       <body className="min-h-screen bg-background text-foreground antialiased texture-concrete">
-        <RealtimeProvider>
-          <ViewModeWrapper>{children}</ViewModeWrapper>
-        </RealtimeProvider>
+        <ErrorBoundary>
+          <RealtimeProvider>
+            <ViewModeWrapper>{children}</ViewModeWrapper>
+          </RealtimeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
