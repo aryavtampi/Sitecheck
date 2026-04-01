@@ -147,18 +147,18 @@ export function InspectionTimeline() {
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-muted-foreground">Findings</span>
-                          <span className="text-foreground">{inspection.findings.length} items</span>
+                          <span className="text-foreground">{inspection.findings?.length ?? 0} items</span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-muted-foreground">Deficient</span>
                           <span className="text-red-400">
-                            {inspection.findings.filter((f: any) => f.status === 'deficient').length}
+                            {inspection.findings?.filter((f: any) => f.status === 'deficient').length ?? 0}
                           </span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-muted-foreground">Needs Review</span>
                           <span className="text-purple-400">
-                            {inspection.findings.filter((f: any) => f.status === 'needs-review').length}
+                            {inspection.findings?.filter((f: any) => f.status === 'needs-review').length ?? 0}
                           </span>
                         </div>
                       </div>
