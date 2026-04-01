@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Plane, AlertTriangle, FileText, CloudRain, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plane, AlertTriangle, FileText, CloudRain, CheckCircle, AlertCircle, ChevronRight, ExternalLink } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/format';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { useSupabaseRealtime } from '@/hooks/use-supabase-realtime';
@@ -25,39 +25,33 @@ function transformRealtimeActivity(row: Record<string, unknown>): ActivityEvent 
   };
 }
 
-function getEventHref(event: ActivityEvent): string | null {
-  // If the event has a linked entity, route to that specific entity
+// Only return links for entities that have real detail pages
+function getDetailHref(event: ActivityEvent): string | null {
   if (event.linkedEntityType && event.linkedEntityId) {
     switch (event.linkedEntityType) {
       case 'checkpoint':
         return `/checkpoints/${event.linkedEntityId}`;
       case 'mission':
         return `/missions/${event.linkedEntityId}`;
-      case 'inspection':
-        return `/reports`;
-      case 'project':
-        return `/swppp`;
     }
   }
-
-  // For events without a linked entity, route by type
-  switch (event.type) {
-    case 'weather':
-      return '/weather';
-    case 'deficiency':
-      return '/checkpoints';
-    case 'drone':
-      return '/missions';
-    case 'inspection':
-      return '/reports';
-    case 'alert':
-      return '/checkpoints';
-    case 'document':
-      return '/swppp';
-    default:
-      return null;
-  }
+  return null;
 }
+
+const severityLabels: Record<string, string> = {
+  info: 'Info',
+  warning: 'Warning',
+  critical: 'Critical',
+};
+
+const typeLabels: Record<ActivityType, string> = {
+  drone: 'Drone Mission',
+  inspection: 'Inspection',
+  alert: 'Alert',
+  weather: 'Weather',
+  document: 'Document',
+  deficiency: 'Deficiency',
+};
 
 const typeIcons: Record<ActivityType, React.ElementType> = {
   drone: Plane,
@@ -87,6 +81,7 @@ export function ActivityFeed() {
   const { isApp } = useAppMode();
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/activity')
@@ -129,38 +124,72 @@ export function ActivityFeed() {
           {events.map((event) => {
             const Icon = typeIcons[event.type];
             const colorClass = typeColors[event.type];
-            const href = getEventHref(event);
+            const isExpanded = expandedId === event.id;
+            const detailHref = getDetailHref(event);
 
-            const content = (
-              <div className={cn(
-                'flex gap-3 px-4 py-3 hover:bg-surface-elevated transition-colors',
-                href && 'cursor-pointer'
-              )}>
-                <div className={cn('mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md', colorClass)}>
-                  <Icon className="h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
-                    {event.severity && (
-                      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', severityDot[event.severity])} />
+            return (
+              <div key={event.id}>
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isExpanded ? null : event.id)}
+                  className="flex w-full gap-3 px-4 py-3 text-left hover:bg-surface-elevated transition-colors cursor-pointer"
+                >
+                  <div className={cn('mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md', colorClass)}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
+                      {event.severity && (
+                        <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', severityDot[event.severity])} />
+                      )}
+                    </div>
+                    {!isExpanded && (
+                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{event.description}</p>
+                    )}
+                    <p className="mt-1 text-[10px] text-muted-foreground/60">{formatRelativeTime(event.timestamp)}</p>
+                  </div>
+                  <ChevronRight className={cn(
+                    'mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform',
+                    isExpanded && 'rotate-90'
+                  )} />
+                </button>
+
+                {isExpanded && (
+                  <div className="px-4 pb-3 pl-14">
+                    <p className="text-xs text-muted-foreground">{event.description}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className={cn(
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        colorClass
+                      )}>
+                        {typeLabels[event.type]}
+                      </span>
+                      {event.severity && (
+                        <span className={cn(
+                          'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
+                          event.severity === 'critical' ? 'bg-red-400/10 text-red-400' :
+                          event.severity === 'warning' ? 'bg-amber-400/10 text-amber-400' :
+                          'bg-blue-400/10 text-blue-400'
+                        )}>
+                          <span className={cn('h-1 w-1 rounded-full', severityDot[event.severity])} />
+                          {severityLabels[event.severity]}
+                        </span>
+                      )}
+                    </div>
+                    {detailHref && (
+                      <Link
+                        href={detailHref}
+                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 hover:text-amber-400 transition-colors"
+                      >
+                        View Details
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </Link>
                     )}
                   </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{event.description}</p>
-                  <p className="mt-1 text-[10px] text-muted-foreground/60">{formatRelativeTime(event.timestamp)}</p>
-                </div>
+                )}
               </div>
             );
-
-            if (href) {
-              return (
-                <Link key={event.id} href={href} className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
-                  {content}
-                </Link>
-              );
-            }
-
-            return <div key={event.id}>{content}</div>;
           })}
         </div>
       </ScrollArea>
