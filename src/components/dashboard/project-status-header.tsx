@@ -3,7 +3,32 @@
 import { Shield, User, FileText, Cloud } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-export function ProjectStatusHeader() {
+export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="grid grid-cols-2 gap-1.5">
+        <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
+          <Shield className="h-3 w-3 text-amber-500" />
+          <span className="text-[10px] text-muted-foreground">Risk</span>
+          <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-500 text-[10px] font-mono px-1.5 py-0">RL-2</Badge>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
+          <User className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] text-muted-foreground">QSP</span>
+          <span className="text-[10px] text-foreground truncate">S. Chen</span>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
+          <FileText className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-mono text-foreground">CAS000001</span>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
+          <Cloud className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] text-foreground">72°F</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-6 rounded-lg border border-border bg-surface-elevated px-5 py-3">
       <div className="flex items-center gap-2">

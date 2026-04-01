@@ -9,9 +9,12 @@ import { CheckpointListPanel } from '@/components/swppp/checkpoint-list-panel';
 import { UploadZone } from '@/components/swppp/upload-zone';
 import { GenerateMissionButton } from '@/components/swppp/generate-mission-button';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSwpppStore } from '@/stores/swppp-store';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { PageTransition } from '@/components/shared/page-transition';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 const PdfViewerPanel = dynamic(
   () => import('@/components/swppp/pdf-viewer-panel').then((m) => ({ default: m.PdfViewerPanel })),
@@ -30,6 +33,8 @@ const CheckpointMapPanel = dynamic(
 );
 
 export default function SwpppPage() {
+  const { isApp } = useAppMode();
+
   const {
     processingStep,
     extractedCheckpoints,
@@ -63,7 +68,7 @@ export default function SwpppPage() {
 
   return (
     <PageTransition>
-      <div className="flex h-full flex-col gap-4 p-4">
+      <div className={cn('flex h-full flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
         <SectionHeader
           title="SWPPP Intelligence"
           description="Upload your SWPPP document for AI-powered BMP extraction and drone flight path generation"
@@ -95,45 +100,92 @@ export default function SwpppPage() {
             {/* Mission generation button */}
             <GenerateMissionButton />
 
-            {/* Three-panel layout */}
-            <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-white/5 bg-white/5 md:grid-cols-2 lg:grid-cols-[1fr_300px_280px]">
-              {/* Left: PDF Viewer */}
-              <div className="min-h-[300px] overflow-hidden md:col-span-2 lg:col-span-1">
-                <PdfViewerPanel
-                  activePage={activePage}
-                  onPageChange={setActivePage}
-                  selectedCheckpointId={selectedCheckpointId}
-                />
-              </div>
+            {/* Three-panel layout (web) / Tabbed layout (app) */}
+            {isApp ? (
+              <Tabs defaultValue="checkpoints" className="flex-1">
+                <TabsList className="w-full grid grid-cols-3">
+                  <TabsTrigger value="pdf" className="text-xs">PDF</TabsTrigger>
+                  <TabsTrigger value="checkpoints" className="text-xs">Checkpoints</TabsTrigger>
+                  <TabsTrigger value="map" className="text-xs">Map</TabsTrigger>
+                </TabsList>
+                <TabsContent value="pdf" className="mt-2">
+                  <div className="h-[350px] overflow-hidden rounded-lg border border-border">
+                    <PdfViewerPanel
+                      activePage={activePage}
+                      onPageChange={setActivePage}
+                      selectedCheckpointId={selectedCheckpointId}
+                    />
+                  </div>
+                </TabsContent>
+                <TabsContent value="checkpoints" className="mt-2">
+                  <div className="h-[350px] overflow-auto rounded-lg border border-border">
+                    <CheckpointListPanel
+                      selectedCheckpointId={selectedCheckpointId}
+                      onSelect={handleSelectCheckpoint}
+                      extractedCheckpoints={extractedCheckpoints}
+                    />
+                  </div>
+                </TabsContent>
+                <TabsContent value="map" className="mt-2">
+                  <div className="h-[350px] overflow-hidden rounded-lg border border-border">
+                    <CheckpointMapPanel
+                      selectedCheckpointId={selectedCheckpointId}
+                      onSelect={handleSelectCheckpoint}
+                      extractedCheckpoints={
+                        extractedCheckpoints.length > 0
+                          ? extractedCheckpoints.map((cp) => ({
+                              id: cp.id,
+                              lat: cp.lat,
+                              lng: cp.lng,
+                              name: cp.name,
+                              bmpType: cp.bmpType,
+                            }))
+                          : undefined
+                      }
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-white/5 bg-white/5 md:grid-cols-2 lg:grid-cols-[1fr_300px_280px]">
+                {/* Left: PDF Viewer */}
+                <div className="min-h-[300px] overflow-hidden md:col-span-2 lg:col-span-1">
+                  <PdfViewerPanel
+                    activePage={activePage}
+                    onPageChange={setActivePage}
+                    selectedCheckpointId={selectedCheckpointId}
+                  />
+                </div>
 
-              {/* Middle: Checkpoint List */}
-              <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
-                <CheckpointListPanel
-                  selectedCheckpointId={selectedCheckpointId}
-                  onSelect={handleSelectCheckpoint}
-                  extractedCheckpoints={extractedCheckpoints}
-                />
-              </div>
+                {/* Middle: Checkpoint List */}
+                <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
+                  <CheckpointListPanel
+                    selectedCheckpointId={selectedCheckpointId}
+                    onSelect={handleSelectCheckpoint}
+                    extractedCheckpoints={extractedCheckpoints}
+                  />
+                </div>
 
-              {/* Right: Map */}
-              <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
-                <CheckpointMapPanel
-                  selectedCheckpointId={selectedCheckpointId}
-                  onSelect={handleSelectCheckpoint}
-                  extractedCheckpoints={
-                    extractedCheckpoints.length > 0
-                      ? extractedCheckpoints.map((cp) => ({
-                          id: cp.id,
-                          lat: cp.lat,
-                          lng: cp.lng,
-                          name: cp.name,
-                          bmpType: cp.bmpType,
-                        }))
-                      : undefined
-                  }
-                />
+                {/* Right: Map */}
+                <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
+                  <CheckpointMapPanel
+                    selectedCheckpointId={selectedCheckpointId}
+                    onSelect={handleSelectCheckpoint}
+                    extractedCheckpoints={
+                      extractedCheckpoints.length > 0
+                        ? extractedCheckpoints.map((cp) => ({
+                            id: cp.id,
+                            lat: cp.lat,
+                            lng: cp.lng,
+                            name: cp.name,
+                            bmpType: cp.bmpType,
+                          }))
+                        : undefined
+                    }
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
 

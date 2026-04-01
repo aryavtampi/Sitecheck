@@ -17,6 +17,8 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useWeatherStore } from '@/stores/weather-store';
 import { WEATHER_ICONS } from '@/lib/constants';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 interface ChartEntry {
   day: string;
@@ -80,6 +82,7 @@ function CustomTooltip({
 }
 
 export function ForecastChart() {
+  const { isApp } = useAppMode();
   const forecast = useWeatherStore((s) => s.forecast);
   const fetchWeather = useWeatherStore((s) => s.fetchWeather);
 
@@ -103,7 +106,7 @@ export function ForecastChart() {
     return (
       <Card className="border-border bg-surface">
         <CardContent className="pt-4">
-          <div className="h-[300px] animate-pulse rounded bg-muted" />
+          <div className={cn('h-[300px] animate-pulse rounded bg-muted', isApp && 'h-[180px]')} />
         </CardContent>
       </Card>
     );
@@ -118,7 +121,7 @@ export function ForecastChart() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className={cn('h-[300px] w-full', isApp && 'h-[180px]')}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
@@ -187,31 +190,35 @@ export function ForecastChart() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[#2A2A2A] pt-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-0.5 w-4 bg-amber-500" />
-            High Temp
+        {!isApp && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[#2A2A2A] pt-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-0.5 w-4 bg-amber-500" />
+              High Temp
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-0.5 w-4 border-t-2 border-dashed border-gray-500" />
+              Low Temp
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-3 w-3 rounded-sm bg-blue-500" />
+              Precipitation (in)
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-3 w-3 rounded-sm bg-blue-500/10" />
+              Precip Chance
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-3 w-3 rounded-sm border-2 border-red-500 bg-blue-500" />
+              QPE Day
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-0.5 w-4 border-t-2 border-dashed border-gray-500" />
-            Low Temp
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm bg-blue-500" />
-            Precipitation (in)
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm bg-blue-500/10" />
-            Precip Chance
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-3 w-3 rounded-sm border-2 border-red-500 bg-blue-500" />
-            QPE Day
-          </div>
-        </div>
-        <p className="mt-2 text-[11px] text-muted-foreground/70">
-          QPE = Qualifying Precipitation Event (&#8805; 0.5&quot; in 24 hours). Triggers mandatory post-storm inspection within 24 hours per CGP requirements.
-        </p>
+        )}
+        {!isApp && (
+          <p className="mt-2 text-[11px] text-muted-foreground/70">
+            QPE = Qualifying Precipitation Event (&#8805; 0.5&quot; in 24 hours). Triggers mandatory post-storm inspection within 24 hours per CGP requirements.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

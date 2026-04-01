@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { Sidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { ViewModeSwitcher } from '@/components/layout/view-mode-switcher';
-import { IPhoneFrame } from '@/components/layout/iphone-frame';
+import { AppPanel } from '@/components/layout/app-panel';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useViewModeStore } from '@/stores/view-mode-store';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -43,14 +43,11 @@ export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
           >
-            <IPhoneFrame>
-              <div className="flex min-h-full flex-col bg-background">
-                <TopBar />
-                <main className="flex-1 overflow-auto">{children}</main>
-                {/* Mobile bottom nav */}
-                <MobileBottomNav />
-              </div>
-            </IPhoneFrame>
+            <AppPanel>
+              <TopBar />
+              <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
+              <MobileBottomNav />
+            </AppPanel>
           </motion.div>
         )}
       </AnimatePresence>

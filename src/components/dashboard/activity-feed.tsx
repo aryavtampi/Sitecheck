@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Plane, AlertTriangle, FileText, CloudRain, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/format';
+import { useAppMode } from '@/hooks/use-app-mode';
 import { useSupabaseRealtime } from '@/hooks/use-supabase-realtime';
 import type { ActivityEvent } from '@/types/activity';
 import { ActivityType } from '@/types/activity';
@@ -83,6 +84,7 @@ const severityDot: Record<string, string> = {
 };
 
 export function ActivityFeed() {
+  const { isApp } = useAppMode();
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -122,7 +124,7 @@ export function ActivityFeed() {
           ))}
         </div>
       ) : (
-      <ScrollArea className="h-[400px]">
+      <ScrollArea className={cn(isApp ? 'h-[250px]' : 'h-[400px]')}>
         <div className="space-y-0 divide-y divide-border">
           {events.map((event) => {
             const Icon = typeIcons[event.type];

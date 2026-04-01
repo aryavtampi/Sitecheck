@@ -5,10 +5,13 @@ import { FileDown, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useReportStore } from '@/stores/report-store';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 export function ExportControls() {
   const { signed } = useReportStore();
   const [isGenerating, setIsGenerating] = useState(false);
+  const { isApp } = useAppMode();
 
   function handleGeneratePDF() {
     setIsGenerating(true);
@@ -21,11 +24,17 @@ export function ExportControls() {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className={cn(
+      'flex flex-wrap items-center gap-3',
+      isApp && 'flex-col items-stretch gap-2'
+    )}>
       <Button
         onClick={handleGeneratePDF}
         disabled={!signed || isGenerating}
-        className="bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 gap-2"
+        className={cn(
+          'bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 gap-2',
+          isApp && 'w-full'
+        )}
       >
         {isGenerating ? (
           <Loader2 className="size-4 animate-spin" />
@@ -35,17 +44,19 @@ export function ExportControls() {
         {isGenerating ? 'Generating...' : 'Generate PDF'}
       </Button>
 
-      <Button
-        variant="outline"
-        disabled
-        className="gap-2 opacity-50 cursor-not-allowed"
-      >
-        <FileSpreadsheet className="size-4" />
-        Export for SMARTS
-        <Badge className="bg-muted text-muted-foreground text-[9px] px-1.5 py-0 border-0">
-          Coming Soon
-        </Badge>
-      </Button>
+      {!isApp && (
+        <Button
+          variant="outline"
+          disabled
+          className="gap-2 opacity-50 cursor-not-allowed"
+        >
+          <FileSpreadsheet className="size-4" />
+          Export for SMARTS
+          <Badge className="bg-muted text-muted-foreground text-[9px] px-1.5 py-0 border-0">
+            Coming Soon
+          </Badge>
+        </Button>
+      )}
 
       {!signed && (
         <p className="text-xs text-muted-foreground">

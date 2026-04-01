@@ -6,11 +6,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
 
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 import { STATUS_COLORS, STATUS_LABELS, BMP_CATEGORY_LABELS } from '@/lib/constants';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 
 export function SiteOverviewMap() {
+  const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
 
@@ -46,7 +49,7 @@ export function SiteOverviewMap() {
         <h3 className="font-heading text-sm font-semibold tracking-wide">Site Overview</h3>
       </div>
 
-      <div className="relative h-[400px]">
+      <div className={cn('relative', isApp ? 'h-[200px]' : 'h-[400px]')}>
         <Map
           initialViewState={SITE_VIEW}
           mapboxAccessToken={MAPBOX_TOKEN}

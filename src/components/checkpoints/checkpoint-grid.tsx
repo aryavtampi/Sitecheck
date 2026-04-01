@@ -4,8 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { PackageOpen } from 'lucide-react';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { CheckpointCard } from '@/components/checkpoints/checkpoint-card';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 export function CheckpointGrid() {
+  const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const filteredCheckpoints = useCheckpointStore((s) => s.filteredCheckpoints)();
 
@@ -16,7 +19,7 @@ export function CheckpointGrid() {
   return (
     <div className="flex flex-col gap-4">
       {/* Summary bar */}
-      <div className="flex items-center gap-3 text-sm">
+      <div className={cn('flex items-center gap-3 text-sm', isApp && 'text-xs gap-2')}>
         <span className="text-muted-foreground">
           Showing{' '}
           <span className="font-medium text-foreground">{filteredCheckpoints.length}</span>{' '}
@@ -43,7 +46,7 @@ export function CheckpointGrid() {
 
       {/* Grid */}
       {filteredCheckpoints.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4', isApp && 'grid-cols-1 gap-2 sm:grid-cols-1 lg:grid-cols-1 xl:grid-cols-1')}>
           <AnimatePresence mode="popLayout">
             {filteredCheckpoints.map((checkpoint, index) => (
               <motion.div

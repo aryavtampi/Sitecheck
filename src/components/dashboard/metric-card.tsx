@@ -15,6 +15,7 @@ interface MetricCardProps {
   trend?: { value: number; positive: boolean };
   accentColor?: string;
   decimals?: number;
+  compact?: boolean;
 }
 
 export function MetricCard({
@@ -27,26 +28,27 @@ export function MetricCard({
   trend,
   accentColor = 'text-amber-500',
   decimals = 0,
+  compact,
 }: MetricCardProps) {
   return (
     <Card className="border-border bg-surface hover:bg-surface-elevated transition-colors">
-      <CardContent className="p-5">
+      <CardContent className={cn('p-5', compact && 'p-3')}>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className={cn('text-xs font-medium uppercase tracking-wider text-muted-foreground', compact && 'text-[10px]')}>
               {title}
             </p>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className={cn('font-heading text-3xl font-bold', accentColor)}>
+              <span className={cn('font-heading text-3xl font-bold', accentColor, compact && 'text-xl')}>
                 {prefix}
                 <CountUp end={value} duration={2} decimals={decimals} />
                 {suffix}
               </span>
             </div>
-            {subtitle && (
+            {subtitle && !compact && (
               <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
             )}
-            {trend && (
+            {trend && !compact && (
               <div className="mt-2 flex items-center gap-1">
                 <span
                   className={cn(
@@ -60,8 +62,8 @@ export function MetricCard({
               </div>
             )}
           </div>
-          <div className={cn('rounded-md p-2', accentColor === 'text-amber-500' ? 'bg-amber-500/10' : 'bg-muted')}>
-            <Icon className={cn('h-5 w-5', accentColor)} />
+          <div className={cn('rounded-md p-2', compact && 'p-1', accentColor === 'text-amber-500' ? 'bg-amber-500/10' : 'bg-muted')}>
+            <Icon className={cn('h-5 w-5', accentColor, compact && 'h-4 w-4')} />
           </div>
         </div>
       </CardContent>

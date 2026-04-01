@@ -9,6 +9,7 @@ import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { formatRelativeTime } from '@/lib/format';
 import { Checkpoint } from '@/types/checkpoint';
 import { cn } from '@/lib/utils';
+import { useAppMode } from '@/hooks/use-app-mode';
 
 interface CheckpointCardProps {
   checkpoint: Checkpoint;
@@ -22,6 +23,7 @@ const priorityColors: Record<string, string> = {
 };
 
 export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
+  const { isApp } = useAppMode();
   const bmpColor = BMP_CATEGORY_COLORS[checkpoint.bmpType];
 
   return (
@@ -36,19 +38,19 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
           {/* BMP colored top bar */}
           <div className="h-0.5" style={{ backgroundColor: bmpColor }} />
 
-          <CardHeader className="pb-0">
+          <CardHeader className={cn('pb-0', isApp && 'px-3 pt-3')}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="font-mono text-xs text-muted-foreground shrink-0">
                   {checkpoint.id}
                 </span>
-                <CardTitle className="truncate text-sm">{checkpoint.name}</CardTitle>
+                <CardTitle className={cn('truncate text-sm', isApp && 'text-xs')}>{checkpoint.name}</CardTitle>
               </div>
               <StatusBadge status={checkpoint.status} />
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-3">
+          <CardContent className={cn('space-y-3', isApp && 'px-3 pb-3 space-y-2')}>
             {/* Meta row: BMP type, zone, priority */}
             <div className="flex items-center gap-2 flex-wrap">
               <span
@@ -77,17 +79,19 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
             </div>
 
             {/* Drone image placeholder */}
-            <div className="relative aspect-video rounded-md bg-background/50 border border-border flex items-center justify-center overflow-hidden">
-              <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
-                <Camera className="h-6 w-6 opacity-40" />
-                <span className="text-[10px] uppercase tracking-wider opacity-60">
-                  Drone Image
-                </span>
+            {!isApp && (
+              <div className="relative aspect-video rounded-md bg-background/50 border border-border flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                  <Camera className="h-6 w-6 opacity-40" />
+                  <span className="text-[10px] uppercase tracking-wider opacity-60">
+                    Drone Image
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Last inspection */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className={cn('flex items-center justify-between text-xs text-muted-foreground', isApp && 'text-[10px]')}>
               <span>Last inspection</span>
               <span className="font-medium text-foreground/70">
                 {formatRelativeTime(checkpoint.lastInspectionDate)}

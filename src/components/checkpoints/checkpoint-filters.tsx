@@ -7,6 +7,7 @@ import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS, STATUS_COLORS } from '@/lib/constants';
 import { BMPCategory, CheckpointStatus, Zone } from '@/types/checkpoint';
 import { cn } from '@/lib/utils';
+import { useAppMode } from '@/hooks/use-app-mode';
 
 const statuses: { value: CheckpointStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -33,6 +34,7 @@ const zones: { value: Zone | 'all'; label: string }[] = [
 ];
 
 export function CheckpointFilters() {
+  const { isApp } = useAppMode();
   const { filters, setFilter, resetFilters } = useCheckpointStore();
 
   const hasActiveFilters =
@@ -44,9 +46,9 @@ export function CheckpointFilters() {
   return (
     <div className="flex flex-col gap-3">
       {/* Row 1: Search + Status + Zone + Reset */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className={cn('flex flex-wrap items-center gap-3', isApp && 'overflow-x-auto flex-nowrap gap-2')}>
         {/* Search */}
-        <div className="relative w-64">
+        <div className={cn('relative w-64', isApp && 'w-full')}>
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search checkpoints..."
@@ -67,6 +69,7 @@ export function CheckpointFilters() {
                 onClick={() => setFilter('status', s.value)}
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium transition-all border',
+                  isApp && 'text-[10px] px-2 py-0.5',
                   isActive && color
                     ? 'text-white border-transparent'
                     : isActive
@@ -96,6 +99,7 @@ export function CheckpointFilters() {
                 onClick={() => setFilter('zone', z.value)}
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium transition-all border',
+                  isApp && 'text-[10px] px-2 py-0.5',
                   isActive
                     ? 'bg-amber-500/15 text-amber-500 border-amber-500/30'
                     : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
@@ -132,6 +136,7 @@ export function CheckpointFilters() {
               onClick={() => setFilter('bmpType', b.value)}
               className={cn(
                 'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all border whitespace-nowrap',
+                isApp && 'text-[10px] px-2 py-0.5',
                 isActive && color
                   ? 'border-transparent'
                   : isActive

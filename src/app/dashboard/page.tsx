@@ -9,6 +9,8 @@ import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { CheckCircle, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
 import { PageTransition } from '@/components/shared/page-transition';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 const SiteOverviewMap = dynamic(
   () => import('@/components/dashboard/site-overview-map').then((m) => ({ default: m.SiteOverviewMap })),
@@ -36,6 +38,7 @@ function formatInspectionType(type: string): string {
 }
 
 export default function DashboardPage() {
+  const { isApp } = useAppMode();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,27 +55,29 @@ export default function DashboardPage() {
 
   return (
     <PageTransition>
-    <div className="space-y-6 p-6">
+    <div className={cn('space-y-6 p-6', isApp && 'space-y-3 p-3')}>
       {/* Page Header */}
       <div>
-        <h1 className="font-heading text-2xl font-bold tracking-wide">Command Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Real-time overview of site compliance and inspection status
-        </p>
+        <h1 className={cn('font-heading text-2xl font-bold tracking-wide', isApp && 'text-lg')}>Command Dashboard</h1>
+        {!isApp && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Real-time overview of site compliance and inspection status
+          </p>
+        )}
       </div>
 
       {/* Project Status Bar */}
-      <ProjectStatusHeader />
+      <ProjectStatusHeader compact={isApp} />
 
       {/* Metric Cards */}
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4', isApp && 'grid-cols-2 gap-2')}>
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-28 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4', isApp && 'grid-cols-2 gap-2')}>
           <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
             <MetricCard
               title="BMP Checkpoints"
@@ -80,6 +85,7 @@ export default function DashboardPage() {
               icon={CheckCircle}
               subtitle="Extracted from SWPPP v3.1"
               accentColor="text-amber-500"
+              compact={isApp}
             />
           </Link>
           <Link href="/reports" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
@@ -90,6 +96,7 @@ export default function DashboardPage() {
               icon={TrendingUp}
               trend={{ value: 3, positive: true }}
               accentColor="text-green-500"
+              compact={isApp}
             />
           </Link>
           <Link href="/missions" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
@@ -99,6 +106,7 @@ export default function DashboardPage() {
               icon={Calendar}
               subtitle={inspectionSubtitle}
               accentColor="text-blue-400"
+              compact={isApp}
             />
           </Link>
           <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
@@ -108,13 +116,14 @@ export default function DashboardPage() {
               icon={AlertTriangle}
               subtitle="72-hour correction window active"
               accentColor="text-red-500"
+              compact={isApp}
             />
           </Link>
         </div>
       )}
 
       {/* Map + Activity Feed */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', isApp && 'gap-3')}>
         <div className="lg:col-span-2">
           <SiteOverviewMap />
         </div>

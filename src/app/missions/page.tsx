@@ -7,13 +7,16 @@ import { SectionHeader } from '@/components/shared/section-header';
 import { MissionCard } from '@/components/missions/mission-card';
 import { useDroneStore } from '@/stores/drone-store';
 import { PageTransition } from '@/components/shared/page-transition';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 export default function MissionsPage() {
+  const { isApp } = useAppMode();
   const { missions } = useDroneStore();
 
   return (
     <PageTransition>
-    <div className="flex flex-col gap-4 p-4">
+    <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
       <SectionHeader
         title="Drone Mission Center"
         description="AI-powered drone survey missions with flight replay and analysis"

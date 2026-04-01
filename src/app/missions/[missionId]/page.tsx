@@ -9,6 +9,8 @@ import { SectionHeader } from '@/components/shared/section-header';
 import { MissionCard } from '@/components/missions/mission-card';
 import { WaypointTable } from '@/components/missions/waypoint-table';
 import { useDroneStore } from '@/stores/drone-store';
+import { useAppMode } from '@/hooks/use-app-mode';
+import { cn } from '@/lib/utils';
 
 const FlightReplay = dynamic(
   () => import('@/components/missions/flight-replay').then((m) => ({ default: m.FlightReplay })),
@@ -24,6 +26,7 @@ export default function MissionDetailPage({
   params: Promise<{ missionId: string }>;
 }) {
   const { missionId } = use(params);
+  const { isApp } = useAppMode();
   const { missions, currentWaypointIndex, setCurrentWaypointIndex, setPlaybackProgress, setPlaybackState } =
     useDroneStore();
 
@@ -64,7 +67,7 @@ export default function MissionDetailPage({
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
       <div className="flex items-center gap-3">
         <Link href="/missions">
           <Button variant="ghost" size="icon-xs">
