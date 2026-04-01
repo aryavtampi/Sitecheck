@@ -93,47 +93,49 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     })),
 
   subscribeRealtime: () => {
-    const supabase = createClient();
-    let channel: RealtimeChannel;
+    try {
+      const supabase = createClient();
 
-    channel = supabase
-      .channel('notifications-realtime')
-      .on(
-        'postgres_changes' as 'system',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        (payload: { new: Record<string, unknown> }) => {
-          const notification = transformNotification(payload.new);
-          // Only add if not already in the list
-          const existing = get().notifications.find((n) => n.id === notification.id);
-          if (!existing) {
-            set((state) => ({
-              notifications: [notification, ...state.notifications],
-              unreadCount: state.unreadCount + (notification.read ? 0 : 1),
-            }));
+      const channel = supabase
+        .channel('notifications-realtime')
+        .on(
+          'postgres_changes' as 'system',
+          { event: 'INSERT', schema: 'public', table: 'notifications' },
+          (payload: { new: Record<string, unknown> }) => {
+            const notification = transformNotification(payload.new);
+            const existing = get().notifications.find((n) => n.id === notification.id);
+            if (!existing) {
+              set((state) => ({
+                notifications: [notification, ...state.notifications],
+                unreadCount: state.unreadCount + (notification.read ? 0 : 1),
+              }));
+            }
           }
-        }
-      )
-      .on(
-        'postgres_changes' as 'system',
-        { event: 'UPDATE', schema: 'public', table: 'notifications' },
-        (payload: { new: Record<string, unknown> }) => {
-          const updated = transformNotification(payload.new);
-          set((state) => {
-            const notifications = state.notifications.map((n) =>
-              n.id === updated.id ? updated : n
-            );
-            return {
-              notifications,
-              unreadCount: notifications.filter((n) => !n.read).length,
-            };
-          });
-        }
-      )
-      .subscribe();
+        )
+        .on(
+          'postgres_changes' as 'system',
+          { event: 'UPDATE', schema: 'public', table: 'notifications' },
+          (payload: { new: Record<string, unknown> }) => {
+            const updated = transformNotification(payload.new);
+            set((state) => {
+              const notifications = state.notifications.map((n) =>
+                n.id === updated.id ? updated : n
+              );
+              return {
+                notifications,
+                unreadCount: notifications.filter((n) => !n.read).length,
+              };
+            });
+          }
+        )
+        .subscribe();
 
-    // Return unsubscribe function
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Notification realtime subscription failed:', err);
+      return () => {};
+    }
   },
 }));

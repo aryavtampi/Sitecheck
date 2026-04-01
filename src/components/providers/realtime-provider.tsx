@@ -11,13 +11,19 @@ import { useCheckpointStore } from '@/stores/checkpoint-store';
  */
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Subscribe to real-time updates for notifications and checkpoints
-    const unsubNotifications = useNotificationStore.getState().subscribeRealtime();
-    const unsubCheckpoints = useCheckpointStore.getState().subscribeRealtime();
+    let unsubNotifications: (() => void) | undefined;
+    let unsubCheckpoints: (() => void) | undefined;
+
+    try {
+      unsubNotifications = useNotificationStore.getState().subscribeRealtime();
+      unsubCheckpoints = useCheckpointStore.getState().subscribeRealtime();
+    } catch (err) {
+      console.warn('Realtime subscriptions failed:', err);
+    }
 
     return () => {
-      unsubNotifications();
-      unsubCheckpoints();
+      unsubNotifications?.();
+      unsubCheckpoints?.();
     };
   }, []);
 

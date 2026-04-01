@@ -115,51 +115,54 @@ export const useCheckpointStore = create<CheckpointStore>((set, get) => ({
   },
 
   subscribeRealtime: () => {
-    const supabase = createClient();
-    let channel: RealtimeChannel;
+    try {
+      const supabase = createClient();
 
-    channel = supabase
-      .channel('checkpoints-realtime')
-      .on(
-        'postgres_changes' as 'system',
-        { event: 'INSERT', schema: 'public', table: 'checkpoints' },
-        (payload: { new: Record<string, unknown> }) => {
-          const checkpoint = transformRealtimeCheckpoint(payload.new);
-          const existing = get().checkpoints.find((cp) => cp.id === checkpoint.id);
-          if (!existing) {
+      const channel = supabase
+        .channel('checkpoints-realtime')
+        .on(
+          'postgres_changes' as 'system',
+          { event: 'INSERT', schema: 'public', table: 'checkpoints' },
+          (payload: { new: Record<string, unknown> }) => {
+            const checkpoint = transformRealtimeCheckpoint(payload.new);
+            const existing = get().checkpoints.find((cp) => cp.id === checkpoint.id);
+            if (!existing) {
+              set((state) => ({
+                checkpoints: [...state.checkpoints, checkpoint],
+              }));
+            }
+          }
+        )
+        .on(
+          'postgres_changes' as 'system',
+          { event: 'UPDATE', schema: 'public', table: 'checkpoints' },
+          (payload: { new: Record<string, unknown> }) => {
+            const updated = transformRealtimeCheckpoint(payload.new);
             set((state) => ({
-              checkpoints: [...state.checkpoints, checkpoint],
+              checkpoints: state.checkpoints.map((cp) =>
+                cp.id === updated.id ? updated : cp
+              ),
             }));
           }
-        }
-      )
-      .on(
-        'postgres_changes' as 'system',
-        { event: 'UPDATE', schema: 'public', table: 'checkpoints' },
-        (payload: { new: Record<string, unknown> }) => {
-          const updated = transformRealtimeCheckpoint(payload.new);
-          set((state) => ({
-            checkpoints: state.checkpoints.map((cp) =>
-              cp.id === updated.id ? updated : cp
-            ),
-          }));
-        }
-      )
-      .on(
-        'postgres_changes' as 'system',
-        { event: 'DELETE', schema: 'public', table: 'checkpoints' },
-        (payload: { old: Record<string, unknown> }) => {
-          const deletedId = payload.old.id as string;
-          set((state) => ({
-            checkpoints: state.checkpoints.filter((cp) => cp.id !== deletedId),
-          }));
-        }
-      )
-      .subscribe();
+        )
+        .on(
+          'postgres_changes' as 'system',
+          { event: 'DELETE', schema: 'public', table: 'checkpoints' },
+          (payload: { old: Record<string, unknown> }) => {
+            const deletedId = payload.old.id as string;
+            set((state) => ({
+              checkpoints: state.checkpoints.filter((cp) => cp.id !== deletedId),
+            }));
+          }
+        )
+        .subscribe();
 
-    // Return unsubscribe function
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Checkpoint realtime subscription failed:', err);
+      return () => {};
+    }
   },
 }));
