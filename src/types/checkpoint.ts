@@ -20,6 +20,8 @@ export interface Checkpoint {
   description: string;
   cgpSection: string;
   location: { lat: number; lng: number };
+  lat?: number;
+  lng?: number;
   lastInspectionDate: string;
   lastInspectionPhoto: string;
   previousPhoto?: string;

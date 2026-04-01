@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { DroneMission } from '@/types/drone';
-import { checkpoints } from '@/data/checkpoints';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { STATUS_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 
@@ -22,6 +22,13 @@ export function MissionMap({
   onSelectWaypoint,
 }: MissionMapProps) {
   const [cursor, setCursor] = useState<string>('grab');
+
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
 
   const onMouseEnter = useCallback(() => setCursor('pointer'), []);
   const onMouseLeave = useCallback(() => setCursor('grab'), []);

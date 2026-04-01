@@ -6,8 +6,8 @@ import { Search, Filter, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { checkpoints } from '@/data/checkpoints';
-import { aiAnalyses } from '@/data/ai-analyses';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useEffect } from 'react';
 import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { ExtractedCheckpoint } from '@/types/swppp';
@@ -20,11 +20,19 @@ interface CheckpointListPanelProps {
 
 export function CheckpointListPanel({ selectedCheckpointId, onSelect, extractedCheckpoints }: CheckpointListPanelProps) {
   const [search, setSearch] = useState('');
+  const storeCheckpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (storeCheckpoints.length === 0) fetchCheckpoints();
+  }, [storeCheckpoints.length, fetchCheckpoints]);
+
+  const aiAnalyses: any[] = [];
 
   // Use extracted checkpoints if provided, otherwise fall back to static data
   const useExtracted = extractedCheckpoints && extractedCheckpoints.length > 0;
 
-  const filteredStatic = checkpoints.filter((cp) => {
+  const filteredStatic = storeCheckpoints.filter((cp) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return cp.id.toLowerCase().includes(q) || cp.name.toLowerCase().includes(q);
@@ -38,7 +46,7 @@ export function CheckpointListPanel({ selectedCheckpointId, onSelect, extractedC
       })
     : [];
 
-  const totalCount = useExtracted ? extractedCheckpoints.length : checkpoints.length;
+  const totalCount = useExtracted ? extractedCheckpoints.length : storeCheckpoints.length;
   const filteredCount = useExtracted ? filteredExtracted.length : filteredStatic.length;
 
   return (

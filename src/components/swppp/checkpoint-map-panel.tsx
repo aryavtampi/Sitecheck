@@ -4,7 +4,8 @@ import { useState, useCallback, useMemo } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin } from 'lucide-react';
-import { checkpoints } from '@/data/checkpoints';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useEffect } from 'react';
 import { STATUS_COLORS, BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
 
@@ -23,6 +24,13 @@ interface CheckpointMapPanelProps {
 }
 
 export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCheckpoints }: CheckpointMapPanelProps) {
+  const storeCheckpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (storeCheckpoints.length === 0) fetchCheckpoints();
+  }, [storeCheckpoints.length, fetchCheckpoints]);
+
   const [cursor, setCursor] = useState<string>('grab');
 
   const onMouseEnter = useCallback(() => setCursor('pointer'), []);
@@ -138,7 +146,7 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
                   </Marker>
                 );
               })
-            : checkpoints.map((cp) => {
+            : storeCheckpoints.map((cp) => {
                 const isSelected = selectedCheckpointId === cp.id;
                 const color = STATUS_COLORS[cp.status];
 

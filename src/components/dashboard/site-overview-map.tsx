@@ -1,16 +1,23 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
 
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
 import { STATUS_COLORS, STATUS_LABELS, BMP_CATEGORY_LABELS } from '@/lib/constants';
-import { checkpoints } from '@/data/checkpoints';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 
 export function SiteOverviewMap() {
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
+
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
 
   const statusCounts = useMemo(() => {
@@ -23,7 +30,7 @@ export function SiteOverviewMap() {
       counts[cp.status]++;
     }
     return counts;
-  }, []);
+  }, [checkpoints]);
 
   const handleMarkerClick = useCallback((cp: Checkpoint) => {
     setSelectedCheckpoint(cp);

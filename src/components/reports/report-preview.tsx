@@ -2,21 +2,29 @@
 
 import { useEffect } from 'react';
 import { useReportStore } from '@/stores/report-store';
-import { reportSections } from '@/data/report-template';
 import { EditableSection } from '@/components/reports/editable-section';
 import { SignatureBlock } from '@/components/reports/signature-block';
 
 export function ReportPreview() {
-  const { sections, setSections, updateSection, signed, signedBy, signedDate, sign, unsign } =
+  const { sections, setSections, updateSection, signed, signedBy, signedDate, sign, unsign, loading, generateReport } =
     useReportStore();
 
   useEffect(() => {
     if (sections.length === 0) {
-      setSections(reportSections);
+      generateReport();
     }
-  }, [sections.length, setSections]);
+  }, [sections.length, generateReport]);
 
-  const displaySections = sections.length > 0 ? sections : reportSections;
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-[800px]">
+        <div className="rounded-sm border border-black/10 shadow-2xl p-10 text-center" style={{ backgroundColor: '#F5F5F0' }}>
+          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+          <p className="mt-4 text-sm text-neutral-500">Generating report...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-[800px]">
@@ -46,7 +54,7 @@ export function ReportPreview() {
 
         {/* Sections */}
         <div className="px-4 py-6 sm:px-10 sm:py-8">
-          {displaySections.map((section) => (
+          {sections.map((section) => (
             <EditableSection
               key={section.id}
               section={section}

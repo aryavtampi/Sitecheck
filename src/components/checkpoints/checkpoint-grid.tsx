@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { PackageOpen } from 'lucide-react';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { CheckpointCard } from '@/components/checkpoints/checkpoint-card';
-import { checkpoints as allCheckpoints } from '@/data/checkpoints';
 
 export function CheckpointGrid() {
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const filteredCheckpoints = useCheckpointStore((s) => s.filteredCheckpoints)();
 
   const compliantCount = filteredCheckpoints.filter((cp) => cp.status === 'compliant').length;
@@ -21,7 +21,7 @@ export function CheckpointGrid() {
           Showing{' '}
           <span className="font-medium text-foreground">{filteredCheckpoints.length}</span>{' '}
           of{' '}
-          <span className="font-medium text-foreground">{allCheckpoints.length}</span>{' '}
+          <span className="font-medium text-foreground">{checkpoints.length}</span>{' '}
           checkpoints
         </span>
         <div className="h-3.5 w-px bg-border" />

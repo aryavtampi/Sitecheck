@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { RotateCcw } from 'lucide-react';
 import { SectionHeader } from '@/components/shared/section-header';
@@ -9,8 +9,8 @@ import { CheckpointListPanel } from '@/components/swppp/checkpoint-list-panel';
 import { UploadZone } from '@/components/swppp/upload-zone';
 import { GenerateMissionButton } from '@/components/swppp/generate-mission-button';
 import { Button } from '@/components/ui/button';
-import { checkpoints } from '@/data/checkpoints';
 import { useSwpppStore } from '@/stores/swppp-store';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { PageTransition } from '@/components/shared/page-transition';
 
 const PdfViewerPanel = dynamic(
@@ -37,6 +37,13 @@ export default function SwpppPage() {
     reset,
   } = useSwpppStore();
 
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
+
   const [selectedCheckpointId, setSelectedCheckpointId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState(1);
 
@@ -52,7 +59,7 @@ export default function SwpppPage() {
     if (cp) {
       setActivePage(cp.swpppPage);
     }
-  }, []);
+  }, [checkpoints]);
 
   return (
     <PageTransition>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Checkpoint, BMPCategory, CheckpointStatus, Zone } from '@/types';
-import { checkpoints } from '@/data/checkpoints';
+import { createClient } from '@/lib/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface CheckpointFilters {
   status: CheckpointStatus | 'all';
@@ -9,14 +10,42 @@ interface CheckpointFilters {
   search: string;
 }
 
+// Transform snake_case DB row to camelCase Checkpoint
+function transformRealtimeCheckpoint(row: Record<string, unknown>): Checkpoint {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    bmpType: row.bmp_type as BMPCategory,
+    status: row.status as CheckpointStatus,
+    priority: row.priority as Checkpoint['priority'],
+    zone: row.zone as Zone,
+    description: row.description as string,
+    cgpSection: row.cgp_section as string,
+    lat: row.lat as number,
+    lng: row.lng as number,
+    location: { lat: row.lat as number, lng: row.lng as number },
+    lastInspectionDate: row.last_inspection_date as string,
+    lastInspectionPhoto: row.last_inspection_photo as string,
+    previousPhoto: row.previous_photo as string | undefined,
+    installDate: row.install_date as string,
+    swpppPage: row.swppp_page as number,
+  };
+}
+
 interface CheckpointStore {
   checkpoints: Checkpoint[];
   selectedCheckpointId: string | null;
   filters: CheckpointFilters;
+  loading: boolean;
+  error: string | null;
   setSelectedCheckpoint: (id: string | null) => void;
   setFilter: <K extends keyof CheckpointFilters>(key: K, value: CheckpointFilters[K]) => void;
   resetFilters: () => void;
   filteredCheckpoints: () => Checkpoint[];
+  setCheckpoints: (checkpoints: Checkpoint[]) => void;
+  fetchCheckpoints: () => Promise<void>;
+  updateCheckpoint: (id: string, data: Partial<Checkpoint>) => Promise<void>;
+  subscribeRealtime: () => () => void;
 }
 
 const defaultFilters: CheckpointFilters = {
@@ -27,13 +56,16 @@ const defaultFilters: CheckpointFilters = {
 };
 
 export const useCheckpointStore = create<CheckpointStore>((set, get) => ({
-  checkpoints,
+  checkpoints: [],
   selectedCheckpointId: null,
   filters: defaultFilters,
+  loading: false,
+  error: null,
   setSelectedCheckpoint: (id) => set({ selectedCheckpointId: id }),
   setFilter: (key, value) =>
     set((state) => ({ filters: { ...state.filters, [key]: value } })),
   resetFilters: () => set({ filters: defaultFilters }),
+  setCheckpoints: (checkpoints) => set({ checkpoints }),
   filteredCheckpoints: () => {
     const { checkpoints, filters } = get();
     return checkpoints.filter((cp) => {
@@ -50,5 +82,84 @@ export const useCheckpointStore = create<CheckpointStore>((set, get) => ({
       }
       return true;
     });
+  },
+  fetchCheckpoints: async () => {
+    if (get().loading) return;
+    set({ loading: true, error: null });
+    try {
+      const res = await fetch('/api/checkpoints');
+      if (!res.ok) throw new Error('Failed to fetch checkpoints');
+      const data = await res.json();
+      set({ checkpoints: data, loading: false });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
+    }
+  },
+  updateCheckpoint: async (id, data) => {
+    try {
+      const res = await fetch(`/api/checkpoints/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update checkpoint');
+      const updated = await res.json();
+      set((state) => ({
+        checkpoints: state.checkpoints.map((cp) =>
+          cp.id === id ? { ...cp, ...updated } : cp
+        ),
+      }));
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Unknown error' });
+    }
+  },
+
+  subscribeRealtime: () => {
+    const supabase = createClient();
+    let channel: RealtimeChannel;
+
+    channel = supabase
+      .channel('checkpoints-realtime')
+      .on(
+        'postgres_changes' as 'system',
+        { event: 'INSERT', schema: 'public', table: 'checkpoints' },
+        (payload: { new: Record<string, unknown> }) => {
+          const checkpoint = transformRealtimeCheckpoint(payload.new);
+          const existing = get().checkpoints.find((cp) => cp.id === checkpoint.id);
+          if (!existing) {
+            set((state) => ({
+              checkpoints: [...state.checkpoints, checkpoint],
+            }));
+          }
+        }
+      )
+      .on(
+        'postgres_changes' as 'system',
+        { event: 'UPDATE', schema: 'public', table: 'checkpoints' },
+        (payload: { new: Record<string, unknown> }) => {
+          const updated = transformRealtimeCheckpoint(payload.new);
+          set((state) => ({
+            checkpoints: state.checkpoints.map((cp) =>
+              cp.id === updated.id ? updated : cp
+            ),
+          }));
+        }
+      )
+      .on(
+        'postgres_changes' as 'system',
+        { event: 'DELETE', schema: 'public', table: 'checkpoints' },
+        (payload: { old: Record<string, unknown> }) => {
+          const deletedId = payload.old.id as string;
+          set((state) => ({
+            checkpoints: state.checkpoints.filter((cp) => cp.id !== deletedId),
+          }));
+        }
+      )
+      .subscribe();
+
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(channel);
+    };
   },
 }));

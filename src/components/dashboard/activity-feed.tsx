@@ -1,12 +1,28 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Plane, AlertTriangle, FileText, CloudRain, CheckCircle, AlertCircle } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/format';
-import { ActivityEvent, ActivityType } from '@/types/activity';
-import { activityEvents } from '@/data/activity-events';
+import { useSupabaseRealtime } from '@/hooks/use-supabase-realtime';
+import type { ActivityEvent } from '@/types/activity';
+import { ActivityType } from '@/types/activity';
+
+// Transform snake_case DB row from realtime to camelCase ActivityEvent
+function transformRealtimeActivity(row: Record<string, unknown>): ActivityEvent {
+  return {
+    id: row.id as string,
+    type: row.type as ActivityType,
+    title: row.title as string,
+    description: row.description as string,
+    timestamp: row.timestamp as string,
+    severity: row.severity as ActivityEvent['severity'],
+    linkedEntityId: row.linked_entity_id as string | undefined,
+    linkedEntityType: row.linked_entity_type as string | undefined,
+  };
+}
 
 function getEventHref(event: ActivityEvent): string | null {
   // If the event has a linked entity, route to that specific entity
@@ -67,14 +83,48 @@ const severityDot: Record<string, string> = {
 };
 
 export function ActivityFeed() {
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/activity')
+      .then((res) => res.json())
+      .then((data) => { setEvents(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  // Real-time: listen for new activity events
+  const handleInsert = useCallback((payload: { new?: Record<string, unknown> }) => {
+    if (!payload.new) return;
+    const newEvent = transformRealtimeActivity(payload.new);
+    setEvents((prev) => {
+      // Avoid duplicates
+      if (prev.some((e) => e.id === newEvent.id)) return prev;
+      return [newEvent, ...prev];
+    });
+  }, []);
+
+  useSupabaseRealtime({
+    table: 'activity_events',
+    event: 'INSERT',
+    onInsert: handleInsert,
+  });
+
   return (
     <div className="rounded-lg border border-border bg-surface">
       <div className="border-b border-border px-4 py-3">
         <h3 className="font-heading text-sm font-semibold tracking-wide">Activity Feed</h3>
       </div>
+      {loading ? (
+        <div className="p-4 space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-14 animate-pulse rounded bg-muted" />
+          ))}
+        </div>
+      ) : (
       <ScrollArea className="h-[400px]">
         <div className="space-y-0 divide-y divide-border">
-          {activityEvents.map((event) => {
+          {events.map((event) => {
             const Icon = typeIcons[event.type];
             const colorClass = typeColors[event.type];
             const href = getEventHref(event);
@@ -112,6 +162,7 @@ export function ActivityFeed() {
           })}
         </div>
       </ScrollArea>
+      )}
     </div>
   );
 }

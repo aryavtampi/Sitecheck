@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { format } from 'date-fns';
 import {
   ComposedChart,
@@ -14,20 +15,20 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { forecast } from '@/data/weather';
+import { useWeatherStore } from '@/stores/weather-store';
 import { WEATHER_ICONS } from '@/lib/constants';
 
-const chartData = forecast.map((day) => ({
-  day: format(new Date(day.date), 'EEE'),
-  date: format(new Date(day.date), 'MMM d'),
-  high: day.high,
-  low: day.low,
-  precipitation: day.precipitationInches,
-  precipChance: day.precipitationChance,
-  isQPE: day.isQPE,
-  condition: day.condition,
-  icon: WEATHER_ICONS[day.condition] || '',
-}));
+interface ChartEntry {
+  day: string;
+  date: string;
+  high: number;
+  low: number;
+  precipitation: number;
+  precipChance: number;
+  isQPE: boolean;
+  condition: string;
+  icon: string;
+}
 
 function CustomTooltip({
   active,
@@ -35,7 +36,7 @@ function CustomTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: Array<{ value: number; dataKey: string; payload: (typeof chartData)[0] }>;
+  payload?: Array<{ value: number; dataKey: string; payload: ChartEntry }>;
   label?: string;
 }) {
   if (!active || !payload || payload.length === 0) return null;
@@ -79,6 +80,35 @@ function CustomTooltip({
 }
 
 export function ForecastChart() {
+  const forecast = useWeatherStore((s) => s.forecast);
+  const fetchWeather = useWeatherStore((s) => s.fetchWeather);
+
+  useEffect(() => {
+    if (forecast.length === 0) fetchWeather();
+  }, [forecast.length, fetchWeather]);
+
+  const chartData = forecast.map((day) => ({
+    day: format(new Date(day.date), 'EEE'),
+    date: format(new Date(day.date), 'MMM d'),
+    high: day.high,
+    low: day.low,
+    precipitation: day.precipitationInches,
+    precipChance: day.precipitationChance,
+    isQPE: day.isQPE,
+    condition: day.condition,
+    icon: WEATHER_ICONS[day.condition] || '',
+  }));
+
+  if (forecast.length === 0) {
+    return (
+      <Card className="border-border bg-surface">
+        <CardContent className="pt-4">
+          <div className="h-[300px] animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-border bg-surface">
       <CardHeader>

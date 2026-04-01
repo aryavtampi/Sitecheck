@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { inspections } from '@/data/inspections';
 import { INSPECTION_TYPE_LABELS } from '@/lib/constants';
 import type { InspectionType } from '@/types/drone';
 
@@ -37,7 +36,33 @@ const typeColors: Record<InspectionType, { bg: string; border: string; text: str
 
 export function InspectionTimeline() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [inspections, setInspections] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/inspections')
+      .then((res) => res.json())
+      .then((data) => { setInspections(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
   const latestId = inspections[inspections.length - 1]?.id;
+
+  if (loading) {
+    return (
+      <Card className="border-border bg-surface">
+        <CardHeader>
+          <CardTitle className="text-foreground">Inspection Timeline</CardTitle>
+          <CardDescription>
+            History of site inspections with compliance tracking
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-32 animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-border bg-surface">
@@ -54,7 +79,7 @@ export function InspectionTimeline() {
             <div className="absolute top-[26px] left-[40px] right-[40px] h-0.5 bg-[#2A2A2A]" />
 
             {inspections.map((inspection, index) => {
-              const colors = typeColors[inspection.type];
+              const colors = typeColors[inspection.type as InspectionType];
               const isLatest = inspection.id === latestId;
               const isHovered = hoveredId === inspection.id;
 
@@ -88,7 +113,7 @@ export function InspectionTimeline() {
                     <span
                       className={`mt-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${colors.bg} ${colors.text}`}
                     >
-                      {INSPECTION_TYPE_LABELS[inspection.type]}
+                      {INSPECTION_TYPE_LABELS[inspection.type as InspectionType]}
                     </span>
                     <span
                       className={`mt-1.5 font-heading text-sm font-bold ${
@@ -127,13 +152,13 @@ export function InspectionTimeline() {
                         <div className="flex justify-between text-[11px]">
                           <span className="text-muted-foreground">Deficient</span>
                           <span className="text-red-400">
-                            {inspection.findings.filter((f) => f.status === 'deficient').length}
+                            {inspection.findings.filter((f: any) => f.status === 'deficient').length}
                           </span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-muted-foreground">Needs Review</span>
                           <span className="text-purple-400">
-                            {inspection.findings.filter((f) => f.status === 'needs-review').length}
+                            {inspection.findings.filter((f: any) => f.status === 'needs-review').length}
                           </span>
                         </div>
                       </div>

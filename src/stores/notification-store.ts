@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { createClient } from '@/lib/supabase/client';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Notification {
   id: string;
@@ -10,54 +12,128 @@ interface Notification {
   link?: string;
 }
 
+// Transform snake_case DB row to camelCase Notification
+function transformNotification(row: Record<string, unknown>): Notification {
+  return {
+    id: row.id as string,
+    type: row.type as Notification['type'],
+    title: row.title as string,
+    message: row.message as string,
+    timestamp: row.timestamp as string,
+    read: row.read as boolean,
+    link: row.link as string | undefined,
+  };
+}
+
 interface NotificationStore {
   notifications: Notification[];
   unreadCount: number;
+  loading: boolean;
+  fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  addNotification: (notification: Notification) => void;
+  subscribeRealtime: () => () => void;
 }
 
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
-  notifications: [
-    {
-      id: 'NOTIF-001',
-      type: 'alert',
-      title: 'Storm System Approaching',
-      message: 'Heavy rain forecasted for April 2. Pre-storm inspection required within 48 hours.',
-      timestamp: '2026-03-29T08:00:00Z',
-      read: false,
-      link: '/weather',
-    },
-    {
-      id: 'NOTIF-002',
-      type: 'warning',
-      title: 'Deficiency DEF-001: 72-Hour Deadline',
-      message: 'Sediment basin SC-3 corrective action deadline approaching. 60 hours remaining.',
-      timestamp: '2026-03-29T06:23:00Z',
-      read: false,
-      link: '/checkpoints/SC-3',
-    },
-    {
-      id: 'NOTIF-003',
-      type: 'warning',
-      title: 'Deficiency DEF-002: Urgent',
-      message: 'Concrete washout MM-4 overflow requires immediate attention. 36 hours remaining.',
-      timestamp: '2026-03-29T02:45:00Z',
-      read: false,
-      link: '/checkpoints/MM-4',
-    },
-  ],
-  unreadCount: 3,
-  markAsRead: (id) =>
+  notifications: [],
+  unreadCount: 0,
+  loading: false,
+  fetchNotifications: async () => {
+    if (get().loading) return;
+    set({ loading: true });
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok) throw new Error('Failed to fetch notifications');
+      const json = await res.json();
+      // API returns { notifications: [...], unreadCount: N }
+      const notifications: Notification[] = json.notifications || [];
+      const unreadCount: number = json.unreadCount ?? notifications.filter((n) => !n.read).length;
+      set({ notifications, unreadCount, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+  markAsRead: async (id) => {
+    // Optimistic update
     set((state) => {
       const notifications = state.notifications.map((n) =>
         n.id === id ? { ...n, read: true } : n
       );
       return { notifications, unreadCount: notifications.filter((n) => !n.read).length };
-    }),
-  markAllAsRead: () =>
+    });
+    // Persist to database
+    try {
+      await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+    } catch {
+      // Revert on failure
+      get().fetchNotifications();
+    }
+  },
+  markAllAsRead: async () => {
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true })),
       unreadCount: 0,
+    }));
+    // Mark all as read on server
+    try {
+      const promises = get().notifications
+        .filter((n) => !n.read)
+        .map((n) => fetch(`/api/notifications/${n.id}/read`, { method: 'POST' }));
+      await Promise.all(promises);
+    } catch {
+      get().fetchNotifications();
+    }
+  },
+  addNotification: (notification) =>
+    set((state) => ({
+      notifications: [notification, ...state.notifications],
+      unreadCount: state.unreadCount + (notification.read ? 0 : 1),
     })),
+
+  subscribeRealtime: () => {
+    const supabase = createClient();
+    let channel: RealtimeChannel;
+
+    channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes' as 'system',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        (payload: { new: Record<string, unknown> }) => {
+          const notification = transformNotification(payload.new);
+          // Only add if not already in the list
+          const existing = get().notifications.find((n) => n.id === notification.id);
+          if (!existing) {
+            set((state) => ({
+              notifications: [notification, ...state.notifications],
+              unreadCount: state.unreadCount + (notification.read ? 0 : 1),
+            }));
+          }
+        }
+      )
+      .on(
+        'postgres_changes' as 'system',
+        { event: 'UPDATE', schema: 'public', table: 'notifications' },
+        (payload: { new: Record<string, unknown> }) => {
+          const updated = transformNotification(payload.new);
+          set((state) => {
+            const notifications = state.notifications.map((n) =>
+              n.id === updated.id ? updated : n
+            );
+            return {
+              notifications,
+              unreadCount: notifications.filter((n) => !n.read).length,
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  },
 }));

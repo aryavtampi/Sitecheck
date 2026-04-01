@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { useDroneStore } from '@/stores/drone-store';
-import { checkpoints } from '@/data/checkpoints';
-import { aiAnalyses } from '@/data/ai-analyses';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { MissionMap } from '@/components/missions/mission-map';
 import { DroneMission } from '@/types/drone';
 
@@ -28,6 +27,14 @@ export function FlightReplay({ mission }: FlightReplayProps) {
     setPlaybackProgress,
     resetPlayback,
   } = useDroneStore();
+
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const aiAnalyses: any[] = [];
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
 
   const animRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);

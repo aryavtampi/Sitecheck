@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -13,9 +14,6 @@ import {
   Brain,
   History,
 } from 'lucide-react';
-import { checkpoints } from '@/data/checkpoints';
-import { aiAnalyses } from '@/data/ai-analyses';
-import { deficiencies } from '@/data/deficiencies';
 import type { Checkpoint } from '@/types/checkpoint';
 import type { AIAnalysis } from '@/types/drone';
 import type { Deficiency } from '@/types/deficiency';
@@ -40,33 +38,52 @@ const priorityColors: Record<string, string> = {
 };
 
 export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
-  const checkpoint = checkpoints.find((c) => c.id === checkpointId);
+  const [checkpoint, setCheckpoint] = useState<Checkpoint | null>(null);
+  const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
+  const [matchingDeficiencies, setMatchingDeficiencies] = useState<Deficiency[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!checkpoint) {
+  useEffect(() => {
+    fetch(`/api/checkpoints/${checkpointId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((data) => {
+        // The API returns flat lat/lng, construct location object
+        const cp = {
+          ...data,
+          location: data.location || { lat: data.lat, lng: data.lng },
+        };
+        setCheckpoint(cp);
+        setAnalysis(data.analysis || null);
+        setMatchingDeficiencies(data.deficiencies || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [checkpointId]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" /></div>;
+  }
+
+  if (error || !checkpoint) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <AlertTriangle className="h-10 w-10 text-muted-foreground mb-4" />
-        <h2 className="text-lg font-medium text-foreground mb-2">
-          Checkpoint not found
-        </h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          No checkpoint exists with ID &quot;{checkpointId}&quot;.
-        </p>
-        <Link
-          href="/checkpoints"
-          className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-foreground/80 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Checkpoints
+        <h2 className="text-lg font-medium text-foreground mb-2">Checkpoint not found</h2>
+        <p className="text-sm text-muted-foreground mb-6">No checkpoint exists with ID &quot;{checkpointId}&quot;.</p>
+        <Link href="/checkpoints" className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-foreground/80 transition-colors">
+          <ArrowLeft className="h-4 w-4" />Back to Checkpoints
         </Link>
       </div>
     );
   }
 
-  const analysis = aiAnalyses.find((a) => a.checkpointId === checkpointId);
-  const matchingDeficiencies = deficiencies.filter(
-    (d) => d.checkpointId === checkpointId
-  );
   const bmpColor = BMP_CATEGORY_COLORS[checkpoint.bmpType];
 
   return (

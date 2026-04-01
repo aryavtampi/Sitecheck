@@ -1,10 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Waypoint } from '@/types/drone';
-import { checkpoints } from '@/data/checkpoints';
-import { aiAnalyses } from '@/data/ai-analyses';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { formatTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,14 @@ interface WaypointTableProps {
 }
 
 export function WaypointTable({ waypoints, currentIndex, onSelectWaypoint }: WaypointTableProps) {
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const [aiAnalyses, setAiAnalyses] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
+
   return (
     <ScrollArea className="h-[400px]">
       <div className="overflow-x-auto">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { checkpoints } from '@/data/checkpoints';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { BMP_CATEGORY_LABELS } from '@/lib/constants';
 import type { Checkpoint } from '@/types/checkpoint';
 
@@ -391,9 +391,16 @@ export function PdfViewerPanel({
   onPageChange,
   selectedCheckpointId,
 }: PdfViewerPanelProps) {
+  const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+
+  useEffect(() => {
+    if (checkpoints.length === 0) fetchCheckpoints();
+  }, [checkpoints.length, fetchCheckpoints]);
+
   const content = useMemo(
     () => getPageContent(activePage, checkpoints),
-    [activePage]
+    [activePage, checkpoints]
   );
 
   const selectedCheckpoint = selectedCheckpointId

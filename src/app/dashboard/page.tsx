@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { format } from 'date-fns';
 import { ProjectStatusHeader } from '@/components/dashboard/project-status-header';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
@@ -16,7 +18,38 @@ const SiteOverviewMap = dynamic(
   }
 );
 
+interface DashboardMetrics {
+  totalCheckpoints: number;
+  complianceRate: number;
+  daysSinceInspection: number;
+  lastInspectionType: string;
+  lastInspectionDate: string;
+  activeDeficiencies: number;
+  checkpointsByStatus: { compliant: number; deficient: number; needsReview: number };
+}
+
+function formatInspectionType(type: string): string {
+  return type
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('-');
+}
+
 export default function DashboardPage() {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/dashboard/metrics')
+      .then((res) => res.json())
+      .then((data) => { setMetrics(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const inspectionSubtitle = metrics
+    ? `${formatInspectionType(metrics.lastInspectionType)} — ${format(new Date(metrics.lastInspectionDate), 'MMM d, yyyy')}`
+    : '';
+
   return (
     <PageTransition>
     <div className="space-y-6 p-6">
@@ -32,45 +65,53 @@ export default function DashboardPage() {
       <ProjectStatusHeader />
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
-          <MetricCard
-            title="BMP Checkpoints"
-            value={34}
-            icon={CheckCircle}
-            subtitle="Extracted from SWPPP v3.1"
-            accentColor="text-amber-500"
-          />
-        </Link>
-        <Link href="/reports" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
-          <MetricCard
-            title="Compliance Rate"
-            value={91}
-            suffix="%"
-            icon={TrendingUp}
-            trend={{ value: 3, positive: true }}
-            accentColor="text-green-500"
-          />
-        </Link>
-        <Link href="/missions" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
-          <MetricCard
-            title="Days Since Inspection"
-            value={3}
-            icon={Calendar}
-            subtitle="Post-Storm — Mar 26, 2026"
-            accentColor="text-blue-400"
-          />
-        </Link>
-        <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
-          <MetricCard
-            title="Active Deficiencies"
-            value={3}
-            icon={AlertTriangle}
-            subtitle="72-hour correction window active"
-            accentColor="text-red-500"
-          />
-        </Link>
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+            <MetricCard
+              title="BMP Checkpoints"
+              value={metrics?.totalCheckpoints ?? 0}
+              icon={CheckCircle}
+              subtitle="Extracted from SWPPP v3.1"
+              accentColor="text-amber-500"
+            />
+          </Link>
+          <Link href="/reports" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+            <MetricCard
+              title="Compliance Rate"
+              value={metrics?.complianceRate ?? 0}
+              suffix="%"
+              icon={TrendingUp}
+              trend={{ value: 3, positive: true }}
+              accentColor="text-green-500"
+            />
+          </Link>
+          <Link href="/missions" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+            <MetricCard
+              title="Days Since Inspection"
+              value={metrics?.daysSinceInspection ?? 0}
+              icon={Calendar}
+              subtitle={inspectionSubtitle}
+              accentColor="text-blue-400"
+            />
+          </Link>
+          <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+            <MetricCard
+              title="Active Deficiencies"
+              value={metrics?.activeDeficiencies ?? 0}
+              icon={AlertTriangle}
+              subtitle="72-hour correction window active"
+              accentColor="text-red-500"
+            />
+          </Link>
+        </div>
+      )}
 
       {/* Map + Activity Feed */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -1,9 +1,12 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Clock, CloudRain, Wind, Thermometer, ExternalLink } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { forecast, currentWeather } from '@/data/weather';
-import { deficiencies } from '@/data/deficiencies';
+import { useWeatherStore } from '@/stores/weather-store';
+import type { WeatherDay } from '@/types/weather';
 
 interface Alert {
   id: string;
@@ -16,7 +19,15 @@ interface Alert {
   actionLabel: string;
 }
 
-function getAlerts(): Alert[] {
+interface Deficiency {
+  id: string;
+  checkpointId: string;
+  status: string;
+  deadline: string;
+  cgpViolation: string;
+}
+
+function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] {
   const alerts: Alert[] = [];
 
   // Upcoming QPE alert
@@ -93,7 +104,19 @@ const severityConfig = {
 };
 
 export function AlertPanel() {
-  const alerts = getAlerts();
+  const forecast = useWeatherStore((s) => s.forecast);
+  const fetchWeather = useWeatherStore((s) => s.fetchWeather);
+  const [deficiencies, setDeficiencies] = useState<Deficiency[]>([]);
+
+  useEffect(() => {
+    if (forecast.length === 0) fetchWeather();
+    fetch('/api/deficiencies')
+      .then((res) => res.json())
+      .then(setDeficiencies)
+      .catch(() => {});
+  }, [forecast.length, fetchWeather]);
+
+  const alerts = getAlerts(forecast, deficiencies);
 
   return (
     <Card className="border-border bg-surface">

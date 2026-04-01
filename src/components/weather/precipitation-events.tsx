@@ -1,10 +1,21 @@
+'use client';
+
+import { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { qpEvents, forecast } from '@/data/weather';
+import { useWeatherStore } from '@/stores/weather-store';
 import { formatDate } from '@/lib/format';
 import { CheckCircle, Minus, CloudRain, ExternalLink, AlertTriangle } from 'lucide-react';
 
 export function PrecipitationEvents() {
+  const forecast = useWeatherStore((s) => s.forecast);
+  const qpEvents = useWeatherStore((s) => s.qpEvents);
+  const fetchWeather = useWeatherStore((s) => s.fetchWeather);
+
+  useEffect(() => {
+    if (forecast.length === 0) fetchWeather();
+  }, [forecast.length, fetchWeather]);
+
   const upcomingQPE = forecast.find((day) => day.isQPE);
 
   return (

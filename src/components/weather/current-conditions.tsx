@@ -1,11 +1,31 @@
+'use client';
+
+import { useEffect } from 'react';
 import { Thermometer, Droplets, Wind, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { currentWeather } from '@/data/weather';
+import { useWeatherStore } from '@/stores/weather-store';
 import { WEATHER_ICONS } from '@/lib/constants';
 
 export function CurrentConditions() {
-  const icon = WEATHER_ICONS[currentWeather.condition] || '🌤️';
-  const conditionLabel = currentWeather.condition
+  const current = useWeatherStore((s) => s.current);
+  const fetchWeather = useWeatherStore((s) => s.fetchWeather);
+
+  useEffect(() => {
+    if (!current) fetchWeather();
+  }, [current, fetchWeather]);
+
+  if (!current) {
+    return (
+      <Card className="border-border bg-surface">
+        <CardContent className="pt-4">
+          <div className="h-32 animate-pulse rounded bg-muted" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const icon = WEATHER_ICONS[current.condition] || '🌤️';
+  const conditionLabel = current.condition
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
@@ -18,7 +38,7 @@ export function CurrentConditions() {
           <div>
             <div className="flex items-baseline gap-2">
               <span className="font-heading text-4xl font-bold text-foreground">
-                {currentWeather.temperature}°
+                {current.temperature}°
               </span>
               <span className="text-sm text-muted-foreground">F</span>
             </div>
@@ -30,14 +50,14 @@ export function CurrentConditions() {
           <div className="rounded-lg bg-white/5 p-3 text-center">
             <Wind className="mx-auto h-4 w-4 text-blue-400" />
             <p className="mt-1 font-heading text-lg font-bold text-foreground">
-              {currentWeather.windSpeedMph}
+              {current.windSpeedMph}
             </p>
             <p className="text-[10px] text-muted-foreground">mph wind</p>
           </div>
           <div className="rounded-lg bg-white/5 p-3 text-center">
             <Droplets className="mx-auto h-4 w-4 text-cyan-400" />
             <p className="mt-1 font-heading text-lg font-bold text-foreground">
-              {currentWeather.humidity}%
+              {current.humidity}%
             </p>
             <p className="text-[10px] text-muted-foreground">humidity</p>
           </div>
