@@ -9,4 +9,5 @@ export interface ActivityEvent {
   severity?: 'info' | 'warning' | 'critical';
   linkedEntityId?: string;
   linkedEntityType?: string;
+  metadata?: Record<string, unknown>;
 }

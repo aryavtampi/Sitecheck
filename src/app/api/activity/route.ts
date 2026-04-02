@@ -16,6 +16,7 @@ function transformActivityToClient(row: Record<string, unknown>) {
     severity: row.severity,
     linkedEntityId: row.linked_entity_id,
     linkedEntityType: row.linked_entity_type,
+    metadata: row.metadata,
     createdAt: row.created_at,
   };
 }
@@ -33,6 +34,7 @@ function transformActivityToDb(data: Record<string, unknown>) {
   if (data.severity !== undefined) dbData.severity = data.severity;
   if (data.linkedEntityId !== undefined) dbData.linked_entity_id = data.linkedEntityId;
   if (data.linkedEntityType !== undefined) dbData.linked_entity_type = data.linkedEntityType;
+  if (data.metadata !== undefined) dbData.metadata = data.metadata;
 
   return dbData;
 }

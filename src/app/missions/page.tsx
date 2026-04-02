@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plane } from 'lucide-react';
+import { Plane, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SectionHeader } from '@/components/shared/section-header';
 import { MissionCard } from '@/components/missions/mission-card';
@@ -17,10 +17,18 @@ export default function MissionsPage() {
   return (
     <PageTransition>
     <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
-      <SectionHeader
-        title="Drone Mission Center"
-        description="AI-powered drone survey missions with flight replay and analysis"
-      />
+      <div className="flex items-start justify-between">
+        <SectionHeader
+          title="Drone Mission Center"
+          description="AI-powered drone survey missions with flight replay and analysis"
+        />
+        <Link href="/missions/new">
+          <Button size="sm" className="gap-1.5 shrink-0">
+            <Plus className="h-4 w-4" />
+            {!isApp && 'New Mission'}
+          </Button>
+        </Link>
+      </div>
 
       <div className="space-y-4">
         {missions.map((mission) => (

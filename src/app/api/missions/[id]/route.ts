@@ -21,6 +21,15 @@ function transformMissionToClient(row: Record<string, unknown>) {
     flightPath: row.flight_path,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    // Phase 16 fields
+    scope: row.scope,
+    endOfMissionAction: row.end_of_mission_action,
+    editedFlightPath: row.edited_flight_path,
+    lastCompletedWaypoint: row.last_completed_waypoint,
+    resumeValid: row.resume_valid,
+    sourceDocumentPages: row.source_document_pages,
+    manualOverrideActive: row.manual_override_active,
+    notes: row.notes,
   };
 }
 
@@ -37,6 +46,13 @@ function transformWaypointToClient(row: Record<string, unknown>) {
     arrivalTime: row.arrival_time,
     photo: row.photo,
     createdAt: row.created_at,
+    // Phase 16 fields
+    enabled: row.enabled,
+    altitudeOverride: row.altitude_override,
+    hoverTimeSeconds: row.hover_time_seconds,
+    captureMode: row.capture_mode,
+    operatorNotes: row.operator_notes,
+    sortOrder: row.sort_order,
   };
 }
 
@@ -57,6 +73,15 @@ function transformMissionUpdateToDb(data: Record<string, unknown>) {
   if (data.weatherWindSpeedMph !== undefined) dbData.weather_wind_speed_mph = data.weatherWindSpeedMph;
   if (data.weatherHumidity !== undefined) dbData.weather_humidity = data.weatherHumidity;
   if (data.flightPath !== undefined) dbData.flight_path = data.flightPath;
+  // Phase 16 fields
+  if (data.scope !== undefined) dbData.scope = data.scope;
+  if (data.endOfMissionAction !== undefined) dbData.end_of_mission_action = data.endOfMissionAction;
+  if (data.editedFlightPath !== undefined) dbData.edited_flight_path = data.editedFlightPath;
+  if (data.lastCompletedWaypoint !== undefined) dbData.last_completed_waypoint = data.lastCompletedWaypoint;
+  if (data.resumeValid !== undefined) dbData.resume_valid = data.resumeValid;
+  if (data.sourceDocumentPages !== undefined) dbData.source_document_pages = data.sourceDocumentPages;
+  if (data.manualOverrideActive !== undefined) dbData.manual_override_active = data.manualOverrideActive;
+  if (data.notes !== undefined) dbData.notes = data.notes;
 
   // Always update updated_at timestamp
   dbData.updated_at = new Date().toISOString();
@@ -170,6 +195,13 @@ export async function PUT(
 
     // Create activity event for status changes
     if (body.status) {
+      const statusAction = body.status === 'completed' ? 'mission-completed'
+        : body.status === 'aborted' ? 'mission-aborted'
+        : body.status === 'in-progress' ? 'mission-launched'
+        : body.status === 'paused' ? 'mission-paused'
+        : body.status === 'returning-home' ? 'return-home-initiated'
+        : 'mission-status-changed';
+
       const activityEvent = {
         id: `activity-${Date.now()}`,
         project_id: mission.project_id,
@@ -177,9 +209,20 @@ export async function PUT(
         title: 'Mission Status Updated',
         description: `Mission "${mission.name}" status changed to ${body.status}`,
         timestamp: new Date().toISOString(),
-        severity: body.status === 'completed' ? 'info' : 'warning',
+        severity: (body.status === 'completed' || body.status === 'planned') ? 'info'
+          : (body.status === 'aborted' || body.status === 'returning-home') ? 'warning'
+          : 'info',
         linked_entity_id: id,
         linked_entity_type: 'mission',
+        metadata: {
+          action: statusAction,
+          missionId: id,
+          previousStatus: body._previousStatus || null,
+          newStatus: body.status,
+          lastCompletedWaypoint: body.lastCompletedWaypoint ?? null,
+          manualOverrideActive: body.manualOverrideActive ?? false,
+          timestamp: new Date().toISOString(),
+        },
       };
 
       const { error: activityError } = await supabase
@@ -188,6 +231,35 @@ export async function PUT(
 
       if (activityError) {
         console.error('Error creating activity event:', activityError);
+      }
+    }
+
+    // Create activity event for route edits
+    if (body.editedFlightPath !== undefined) {
+      const routeEditEvent = {
+        id: `activity-${Date.now() + 1}`,
+        project_id: mission.project_id,
+        type: 'drone',
+        title: 'Route Edited',
+        description: `Flight route for "${mission.name}" was manually edited`,
+        timestamp: new Date().toISOString(),
+        severity: 'info',
+        linked_entity_id: id,
+        linked_entity_type: 'mission',
+        metadata: {
+          action: 'route-edited',
+          missionId: id,
+          hasEditedPath: body.editedFlightPath !== null,
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      const { error: routeEditError } = await supabase
+        .from('activity_events')
+        .insert(routeEditEvent);
+
+      if (routeEditError) {
+        console.error('Error creating route-edit activity event:', routeEditError);
       }
     }
 

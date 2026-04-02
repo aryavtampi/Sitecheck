@@ -23,6 +23,15 @@ function transformMissionToClient(row: Record<string, unknown>) {
     flightPath: row.flight_path,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    // Phase 16 fields
+    scope: row.scope,
+    endOfMissionAction: row.end_of_mission_action,
+    editedFlightPath: row.edited_flight_path,
+    lastCompletedWaypoint: row.last_completed_waypoint,
+    resumeValid: row.resume_valid,
+    sourceDocumentPages: row.source_document_pages,
+    manualOverrideActive: row.manual_override_active,
+    notes: row.notes,
   };
 }
 
@@ -45,6 +54,15 @@ function transformMissionToDb(data: Record<string, unknown>) {
   if (data.weatherWindSpeedMph !== undefined) dbData.weather_wind_speed_mph = data.weatherWindSpeedMph;
   if (data.weatherHumidity !== undefined) dbData.weather_humidity = data.weatherHumidity;
   if (data.flightPath !== undefined) dbData.flight_path = data.flightPath;
+  // Phase 16 fields
+  if (data.scope !== undefined) dbData.scope = data.scope;
+  if (data.endOfMissionAction !== undefined) dbData.end_of_mission_action = data.endOfMissionAction;
+  if (data.editedFlightPath !== undefined) dbData.edited_flight_path = data.editedFlightPath;
+  if (data.lastCompletedWaypoint !== undefined) dbData.last_completed_waypoint = data.lastCompletedWaypoint;
+  if (data.resumeValid !== undefined) dbData.resume_valid = data.resumeValid;
+  if (data.sourceDocumentPages !== undefined) dbData.source_document_pages = data.sourceDocumentPages;
+  if (data.manualOverrideActive !== undefined) dbData.manual_override_active = data.manualOverrideActive;
+  if (data.notes !== undefined) dbData.notes = data.notes;
 
   return dbData;
 }
@@ -60,6 +78,13 @@ function transformWaypointToDb(waypoint: Record<string, unknown>, missionId: str
     capture_status: waypoint.captureStatus || 'pending',
     arrival_time: waypoint.arrivalTime || new Date().toISOString(),
     photo: waypoint.photo || null,
+    // Phase 16 fields
+    enabled: waypoint.enabled !== undefined ? waypoint.enabled : true,
+    altitude_override: waypoint.altitudeOverride || null,
+    hover_time_seconds: waypoint.hoverTimeSeconds || 10,
+    capture_mode: waypoint.captureMode || 'auto',
+    operator_notes: waypoint.operatorNotes || null,
+    sort_order: waypoint.sortOrder || null,
   };
 }
 
@@ -155,11 +180,19 @@ export async function POST(request: NextRequest) {
       project_id: missionData.project_id,
       type: 'drone',
       title: 'Mission Created',
-      description: `New ${body.inspectionType || 'routine'} inspection mission "${body.name}" scheduled for ${body.date}`,
+      description: `New ${body.inspectionType || 'routine'} inspection mission "${body.name}" with ${body.waypoints?.length || 0} waypoints`,
       timestamp: new Date().toISOString(),
       severity: 'info',
       linked_entity_id: missionId,
       linked_entity_type: 'mission',
+      metadata: {
+        action: 'mission-created',
+        missionId,
+        scope: body.scope || 'full',
+        waypointCount: body.waypoints?.length || 0,
+        altitude: body.altitude || 120,
+        inspectionType: body.inspectionType || 'routine',
+      },
     };
 
     const { error: activityError } = await supabase

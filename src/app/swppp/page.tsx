@@ -8,6 +8,7 @@ import { ConfidenceIndicator } from '@/components/swppp/confidence-indicator';
 import { CheckpointListPanel } from '@/components/swppp/checkpoint-list-panel';
 import { UploadZone } from '@/components/swppp/upload-zone';
 import { GenerateMissionButton } from '@/components/swppp/generate-mission-button';
+import { DocumentPageSelector } from '@/components/swppp/document-page-selector';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSwpppStore } from '@/stores/swppp-store';
@@ -40,6 +41,8 @@ export default function SwpppPage() {
     extractedCheckpoints,
     error,
     reset,
+    selectedPages,
+    setSelectedPages,
   } = useSwpppStore();
 
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
@@ -97,7 +100,11 @@ export default function SwpppPage() {
         {/* Phase 3: Results panels */}
         {isComplete && (
           <>
-            {/* Mission generation button */}
+            {/* Selective page filter + Mission generation */}
+            <DocumentPageSelector
+              selectedPages={selectedPages}
+              onSelectionChange={setSelectedPages}
+            />
             <GenerateMissionButton />
 
             {/* Three-panel layout (web) / Tabbed layout (app) */}

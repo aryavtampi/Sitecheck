@@ -9,7 +9,7 @@ import { useSwpppStore } from '@/stores/swppp-store';
 import { useDroneStore } from '@/stores/drone-store';
 
 export function GenerateMissionButton() {
-  const { extractedCheckpoints, siteInfo, generatedMission, setGeneratedMission } = useSwpppStore();
+  const { extractedCheckpoints, siteInfo, generatedMission, setGeneratedMission, selectedPages } = useSwpppStore();
   const { addMission } = useDroneStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +26,7 @@ export function GenerateMissionButton() {
         body: JSON.stringify({
           checkpoints: extractedCheckpoints,
           siteInfo: siteInfo ? { centerLat: siteInfo.centerLat, centerLng: siteInfo.centerLng } : undefined,
+          sourceDocumentPages: selectedPages,
         }),
       });
 

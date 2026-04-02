@@ -48,6 +48,80 @@ export const WEATHER_ICONS: Record<string, string> = {
   fog: '🌫️',
 };
 
+// --- Phase 16: Drone mission constants ---
+
+import type { MissionScope, MissionStatus, EndOfMissionAction, CaptureMode, WaypointOutcome } from '@/types/drone';
+
+export const MISSION_SCOPE_LABELS: Record<MissionScope, string> = {
+  full: 'Full Site',
+  'selected-bmps': 'Selected BMPs',
+  priority: 'Priority Only',
+  deficient: 'Deficient Only',
+  reinspection: 'Reinspection',
+  'ad-hoc': 'Ad Hoc',
+};
+
+export const MISSION_STATUS_LABELS: Record<MissionStatus, string> = {
+  planned: 'Planned',
+  'in-progress': 'In Progress',
+  paused: 'Paused',
+  completed: 'Completed',
+  aborted: 'Aborted',
+  'returning-home': 'Returning Home',
+};
+
+export const MISSION_STATUS_COLORS: Record<MissionStatus, { bg: string; text: string; border: string }> = {
+  planned: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
+  'in-progress': { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
+  paused: { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/20' },
+  completed: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
+  aborted: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' },
+  'returning-home': { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/20' },
+};
+
+export const END_OF_MISSION_LABELS: Record<EndOfMissionAction, string> = {
+  'return-home': 'Return to Home',
+  'hover-final': 'Hover at Final Waypoint',
+  'land-safe-point': 'Land at Safe Point',
+  'wait-for-input': 'Wait for Operator Input',
+};
+
+export const CAPTURE_MODE_LABELS: Record<CaptureMode, string> = {
+  auto: 'Auto Capture',
+  'photo-only': 'Photo Only',
+  'video-pass': 'Video Pass',
+  'manual-review': 'Manual Review',
+  'hover-inspect': 'Hover & Inspect',
+};
+
+export const WAYPOINT_OUTCOME_LABELS: Record<WaypointOutcome, string> = {
+  pending: 'Pending',
+  captured: 'Captured',
+  missed: 'Missed',
+  skipped: 'Skipped',
+  compliant: 'Compliant',
+  deficient: 'Deficient',
+  'needs-maintenance': 'Needs Maintenance',
+  'not-visible': 'Not Visible',
+  blocked: 'Blocked',
+  unsafe: 'Unsafe',
+  'ground-follow-up': 'Ground Follow-up',
+};
+
+export const WAYPOINT_OUTCOME_COLORS: Record<WaypointOutcome, string> = {
+  pending: 'text-gray-400 bg-gray-400/10',
+  captured: 'text-blue-400 bg-blue-400/10',
+  missed: 'text-amber-400 bg-amber-400/10',
+  skipped: 'text-gray-500 bg-gray-500/10',
+  compliant: 'text-green-400 bg-green-400/10',
+  deficient: 'text-red-400 bg-red-400/10',
+  'needs-maintenance': 'text-orange-400 bg-orange-400/10',
+  'not-visible': 'text-purple-400 bg-purple-400/10',
+  blocked: 'text-rose-400 bg-rose-400/10',
+  unsafe: 'text-red-500 bg-red-500/10',
+  'ground-follow-up': 'text-yellow-400 bg-yellow-400/10',
+};
+
 export const MAPBOX_STYLE = 'mapbox://styles/mapbox/satellite-streets-v12';
 
 export const SITE_CENTER = {

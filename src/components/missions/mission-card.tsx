@@ -2,23 +2,24 @@ import { Clock, Battery, Plane, Camera, Thermometer, Wind } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DroneMission } from '@/types/drone';
-import { WEATHER_ICONS } from '@/lib/constants';
+import { WEATHER_ICONS, MISSION_STATUS_LABELS, MISSION_STATUS_COLORS, MISSION_SCOPE_LABELS } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 
 interface MissionCardProps {
   mission: DroneMission;
 }
 
-const statusConfig = {
-  planned: { label: 'Planned', className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  'in-progress': { label: 'In Progress', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  completed: { label: 'Completed', className: 'bg-green-500/10 text-green-500 border-green-500/20' },
-};
+// Waypoints that count as "completed" for progress display
+const COMPLETED_STATUSES = new Set([
+  'captured', 'compliant', 'deficient', 'needs-maintenance',
+  'not-visible', 'blocked', 'unsafe', 'ground-follow-up',
+]);
 
 export function MissionCard({ mission }: MissionCardProps) {
-  const config = statusConfig[mission.status];
+  const statusColor = MISSION_STATUS_COLORS[mission.status];
+  const statusLabel = MISSION_STATUS_LABELS[mission.status];
   const weatherIcon = WEATHER_ICONS[mission.weatherAtFlight.condition] || '';
-  const capturedCount = mission.waypoints.filter((w) => w.captureStatus === 'captured').length;
+  const capturedCount = mission.waypoints.filter((w) => COMPLETED_STATUSES.has(w.captureStatus)).length;
 
   return (
     <Card className="border-border bg-surface">
@@ -32,9 +33,16 @@ export function MissionCard({ mission }: MissionCardProps) {
               {formatDate(mission.date)} &middot; {mission.inspectionType.replace('-', ' ')}
             </p>
           </div>
-          <Badge variant="outline" className={config.className}>
-            {config.label}
-          </Badge>
+          <div className="flex flex-col items-end gap-1">
+            <Badge variant="outline" className={`${statusColor.bg} ${statusColor.text} ${statusColor.border}`}>
+              {statusLabel}
+            </Badge>
+            {mission.scope && mission.scope !== 'full' && (
+              <span className="text-[10px] text-muted-foreground">
+                {MISSION_SCOPE_LABELS[mission.scope]}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

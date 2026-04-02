@@ -17,6 +17,7 @@ interface DroneStore {
   setPlaybackProgress: (progress: number) => void;
   resetPlayback: () => void;
   addMission: (mission: DroneMission) => void;
+  updateMission: (id: string, updates: Partial<DroneMission>) => void;
   fetchMissions: () => Promise<void>;
 }
 
@@ -38,8 +39,14 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
     set({ playbackState: 'idle', currentWaypointIndex: 0, playbackProgress: 0 }),
   addMission: (mission) =>
     set((state) => ({
-      missions: [mission, ...state.missions],
+      missions: [mission, ...state.missions.filter((m) => m.id !== mission.id)],
       selectedMissionId: mission.id,
+    })),
+  updateMission: (id, updates) =>
+    set((state) => ({
+      missions: state.missions.map((m) =>
+        m.id === id ? { ...m, ...updates } : m
+      ),
     })),
   fetchMissions: async () => {
     if (get().loading) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ArrowLeft } from 'lucide-react';
@@ -11,9 +11,20 @@ import { WaypointTable } from '@/components/missions/waypoint-table';
 import { useDroneStore } from '@/stores/drone-store';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
+import { FlightControlPanel } from '@/components/missions/flight-control-panel';
+import { CaptureControls } from '@/components/missions/capture-controls';
+import type { Waypoint, WaypointOutcome } from '@/types/drone';
 
 const FlightReplay = dynamic(
   () => import('@/components/missions/flight-replay').then((m) => ({ default: m.FlightReplay })),
+  {
+    ssr: false,
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+  }
+);
+
+const RouteEditor = dynamic(
+  () => import('@/components/missions/route-editor').then((m) => ({ default: m.RouteEditor })),
   {
     ssr: false,
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
@@ -27,10 +38,53 @@ export default function MissionDetailPage({
 }) {
   const { missionId } = use(params);
   const { isApp } = useAppMode();
-  const { missions, currentWaypointIndex, setCurrentWaypointIndex, setPlaybackProgress, setPlaybackState } =
+  const { missions, updateMission, currentWaypointIndex, setCurrentWaypointIndex, setPlaybackProgress, setPlaybackState } =
     useDroneStore();
 
   const mission = missions.find((m) => m.id === missionId);
+
+  // Save route edits to the API and update the store
+  const handleSaveRoute = useCallback(
+    async (waypoints: Waypoint[], editedFlightPath: [number, number][]) => {
+      if (!mission) return;
+
+      // PUT updated mission to API
+      const res = await fetch(`/api/missions/${mission.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          editedFlightPath,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to save route');
+
+      // Update waypoints via individual PUT calls (for per-waypoint settings)
+      for (const wp of waypoints) {
+        await fetch(`/api/missions/${mission.id}/waypoints/${wp.number}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lat: wp.lat,
+            lng: wp.lng,
+            enabled: wp.enabled,
+            altitudeOverride: wp.altitudeOverride,
+            hoverTimeSeconds: wp.hoverTimeSeconds,
+            captureMode: wp.captureMode,
+            operatorNotes: wp.operatorNotes,
+            sortOrder: wp.sortOrder,
+          }),
+        }).catch((err) => console.warn('Waypoint update failed:', err));
+      }
+
+      // Update the mission in the store with the new route data
+      updateMission(mission.id, {
+        editedFlightPath,
+        waypoints,
+      });
+    },
+    [mission, updateMission]
+  );
 
   if (!mission) {
     return (
@@ -45,12 +99,13 @@ export default function MissionDetailPage({
     );
   }
 
-  // Compute waypoint progress positions for jumping
-  const totalPathLength = mission.flightPath.length;
+  // Compute waypoint progress positions for jumping (used by FlightReplay + WaypointTable)
+  const activeFlightPath = mission.editedFlightPath || mission.flightPath;
+  const totalPathLength = activeFlightPath.length;
   const waypointProgresses = mission.waypoints.map((wp) => {
     let closestIdx = 0;
     let closestDist = Infinity;
-    mission.flightPath.forEach(([lng, lat], idx) => {
+    activeFlightPath.forEach(([lng, lat], idx) => {
       const dist = Math.abs(lng - wp.lng) + Math.abs(lat - wp.lat);
       if (dist < closestDist) {
         closestDist = dist;
@@ -66,6 +121,16 @@ export default function MissionDetailPage({
     setPlaybackState('paused');
   }
 
+  const isPlanned = mission.status === 'planned';
+  const isActive = ['in-progress', 'paused', 'returning-home'].includes(mission.status);
+  const isCompleted = ['completed', 'aborted'].includes(mission.status);
+
+  const description = isPlanned
+    ? 'Edit route, waypoints, and per-waypoint settings before flight'
+    : isActive
+      ? 'Live flight controls and mission monitoring'
+      : 'Flight replay with AI analysis at each waypoint';
+
   return (
     <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
       <div className="flex items-center gap-3">
@@ -76,19 +141,34 @@ export default function MissionDetailPage({
         </Link>
         <SectionHeader
           title={mission.name}
-          description="Flight replay with AI analysis at each waypoint"
+          description={description}
         />
       </div>
 
       <MissionCard mission={mission} />
 
-      <FlightReplay mission={mission} />
+      {/* Flight control panel for active/planned missions */}
+      {(isPlanned || isActive) && (
+        <FlightControlPanel mission={mission} />
+      )}
 
-      <WaypointTable
-        waypoints={mission.waypoints}
-        currentIndex={currentWaypointIndex}
-        onSelectWaypoint={handleSelectWaypoint}
-      />
+      {isPlanned ? (
+        <RouteEditor mission={mission} onSave={handleSaveRoute} />
+      ) : (
+        <>
+          <FlightReplay mission={mission} />
+
+          {/* Capture controls for in-flight missions */}
+          {isActive && <CaptureControls mission={mission} />}
+
+          <WaypointTable
+            waypoints={mission.waypoints}
+            currentIndex={currentWaypointIndex}
+            onSelectWaypoint={handleSelectWaypoint}
+            missionId={mission.id}
+          />
+        </>
+      )}
     </div>
   );
 }
