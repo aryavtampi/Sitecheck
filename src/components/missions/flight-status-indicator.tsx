@@ -3,6 +3,7 @@
 import { Battery, Clock, MapPin, Radio } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { MISSION_STATUS_LABELS, MISSION_STATUS_COLORS } from '@/lib/constants';
+import { useDroneStore } from '@/stores/drone-store';
 import type { DroneMission } from '@/types/drone';
 
 interface FlightStatusIndicatorProps {
@@ -18,13 +19,15 @@ export function FlightStatusIndicator({
 }: FlightStatusIndicatorProps) {
   const statusColors = MISSION_STATUS_COLORS[mission.status];
   const statusLabel = MISSION_STATUS_LABELS[mission.status];
+  const telemetry = useDroneStore((s) => s.telemetry);
 
-  // Estimate battery based on progress
+  // Use live telemetry battery when available, fall back to estimated
   const totalWaypoints = mission.waypoints.length;
   const progress = totalWaypoints > 0 ? currentWaypointIndex / totalWaypoints : 0;
-  const estimatedBattery = Math.round(
+  const fallbackBattery = Math.round(
     mission.batteryStart - (mission.batteryStart - mission.batteryEnd) * progress
   );
+  const estimatedBattery = telemetry?.batteryPercent ?? fallbackBattery;
 
   // Format elapsed time
   const mins = Math.floor(elapsedSeconds / 60);

@@ -57,6 +57,45 @@ export type FlightControlAction =
   | 'manual-takeover'
   | 'resume-mission';
 
+// --- Mission Control types ---
+
+// Live telemetry streamed from drone hardware
+export interface DroneTelemetry {
+  lat: number;
+  lng: number;
+  altitudeFeet: number;
+  speedMph: number;
+  headingDeg: number;           // 0-360, 0 = north
+  batteryPercent: number;
+  signalStrengthPercent: number;
+  gpsSatellites: number;
+  timestamp: string;            // ISO 8601
+}
+
+// Manual override actions available during manual control mode
+export type ManualOverrideAction =
+  | 'reposition'
+  | 'hover-longer'
+  | 'retake-photo'
+  | 'adjust-camera-angle'
+  | 'resume-mission';
+
+// QSP review decision for a checkpoint's AI finding
+export type QSPReviewDecision = 'accept' | 'override' | 'pending';
+
+export interface QSPReviewEntry {
+  checkpointId: string;
+  waypointNumber: number;
+  aiAnalysis: AIAnalysis;
+  decision: QSPReviewDecision;
+  overrideStatus?: CheckpointStatus;   // only when decision === 'override'
+  overrideNotes?: string;
+  reviewedAt?: string;                 // ISO 8601
+}
+
+// Report readiness derived from checkpoint review state
+export type ReportReadiness = 'not-ready' | 'partially-reviewed' | 'ready';
+
 // --- Existing types (unchanged) ---
 
 export interface AIAnalysis {
@@ -86,6 +125,9 @@ export interface Waypoint {
   captureMode?: CaptureMode;
   operatorNotes?: string;
   sortOrder?: number;
+  // Mission Control additions
+  photos?: string[];              // multiple captures per waypoint
+  qspReview?: QSPReviewEntry;     // QSP review data
 }
 
 // Extended DroneMission — all new fields are optional for backwards compatibility
@@ -111,6 +153,8 @@ export interface DroneMission {
   sourceDocumentPages?: number[] | null;
   manualOverrideActive?: boolean;
   notes?: string;
+  // Mission Control additions
+  reportReadiness?: ReportReadiness;
 }
 
 // --- Drone hardware abstraction ---
@@ -137,4 +181,16 @@ export interface DroneProvider {
   captureImage(missionId: string, waypointNumber: number): Promise<string | null>;
   isConnected(): boolean;
   getCapabilities(): DroneCapabilities;
+  // Mission Control: telemetry subscription
+  subscribeTelemetry(
+    missionId: string,
+    flightPath: [number, number][],
+    mission: { altitude: number; batteryStart: number; batteryEnd: number },
+    onUpdate: (telemetry: DroneTelemetry) => void
+  ): () => void; // returns unsubscribe function
+  // Mission Control: manual override actions
+  reposition(missionId: string, offsetLat: number, offsetLng: number): Promise<void>;
+  hoverLonger(missionId: string, additionalSeconds: number): Promise<void>;
+  retakePhoto(missionId: string, waypointNumber: number): Promise<string | null>;
+  adjustCameraAngle(missionId: string, pitchDeg: number): Promise<void>;
 }

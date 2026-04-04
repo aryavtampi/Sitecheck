@@ -50,7 +50,16 @@ export const WEATHER_ICONS: Record<string, string> = {
 
 // --- Phase 16: Drone mission constants ---
 
-import type { MissionScope, MissionStatus, EndOfMissionAction, CaptureMode, WaypointOutcome } from '@/types/drone';
+import type {
+  MissionScope,
+  MissionStatus,
+  EndOfMissionAction,
+  CaptureMode,
+  WaypointOutcome,
+  ManualOverrideAction,
+  QSPReviewDecision,
+  ReportReadiness,
+} from '@/types/drone';
 
 export const MISSION_SCOPE_LABELS: Record<MissionScope, string> = {
   full: 'Full Site',
@@ -120,6 +129,34 @@ export const WAYPOINT_OUTCOME_COLORS: Record<WaypointOutcome, string> = {
   blocked: 'text-rose-400 bg-rose-400/10',
   unsafe: 'text-red-500 bg-red-500/10',
   'ground-follow-up': 'text-yellow-400 bg-yellow-400/10',
+};
+
+// --- Mission Control constants ---
+
+export const MANUAL_OVERRIDE_ACTION_LABELS: Record<ManualOverrideAction, string> = {
+  'reposition': 'Reposition',
+  'hover-longer': 'Hover Longer',
+  'retake-photo': 'Retake Photo',
+  'adjust-camera-angle': 'Adjust Camera',
+  'resume-mission': 'Resume Mission',
+};
+
+export const REPORT_READINESS_LABELS: Record<ReportReadiness, string> = {
+  'not-ready': 'Not Ready',
+  'partially-reviewed': 'Partially Reviewed',
+  'ready': 'Ready for Report',
+};
+
+export const REPORT_READINESS_COLORS: Record<ReportReadiness, { bg: string; text: string; border: string }> = {
+  'not-ready': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/20' },
+  'partially-reviewed': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+  'ready': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
+};
+
+export const QSP_DECISION_LABELS: Record<QSPReviewDecision, string> = {
+  'accept': 'Accept',
+  'override': 'Override',
+  'pending': 'Pending',
 };
 
 export const MAPBOX_STYLE = 'mapbox://styles/mapbox/satellite-streets-v12';

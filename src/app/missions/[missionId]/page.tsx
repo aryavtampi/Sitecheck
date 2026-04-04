@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useCallback } from 'react';
+import { use, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ArrowLeft } from 'lucide-react';
@@ -13,7 +13,10 @@ import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
 import { FlightControlPanel } from '@/components/missions/flight-control-panel';
 import { CaptureControls } from '@/components/missions/capture-controls';
-import type { Waypoint, WaypointOutcome } from '@/types/drone';
+import { TelemetryPanel } from '@/components/missions/telemetry-panel';
+import { CaptureTimeline } from '@/components/missions/capture-timeline';
+import { getDroneProvider } from '@/lib/drone-provider';
+import type { Waypoint } from '@/types/drone';
 
 const FlightReplay = dynamic(
   () => import('@/components/missions/flight-replay').then((m) => ({ default: m.FlightReplay })),
@@ -31,6 +34,14 @@ const RouteEditor = dynamic(
   }
 );
 
+const ReviewPanel = dynamic(
+  () => import('@/components/missions/review-panel').then((m) => ({ default: m.ReviewPanel })),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
+  }
+);
+
 export default function MissionDetailPage({
   params,
 }: {
@@ -38,10 +49,53 @@ export default function MissionDetailPage({
 }) {
   const { missionId } = use(params);
   const { isApp } = useAppMode();
-  const { missions, updateMission, currentWaypointIndex, setCurrentWaypointIndex, setPlaybackProgress, setPlaybackState } =
-    useDroneStore();
+  const {
+    missions,
+    updateMission,
+    currentWaypointIndex,
+    setCurrentWaypointIndex,
+    setPlaybackProgress,
+    setPlaybackState,
+    setTelemetry,
+    clearTelemetry,
+  } = useDroneStore();
 
   const mission = missions.find((m) => m.id === missionId);
+  const telemetryUnsubRef = useRef<(() => void) | null>(null);
+
+  // Subscribe to telemetry when mission is active
+  useEffect(() => {
+    if (!mission) return;
+    const isActive = ['in-progress', 'paused', 'returning-home'].includes(mission.status);
+
+    if (isActive && !telemetryUnsubRef.current) {
+      const provider = getDroneProvider();
+      const flightPath = mission.editedFlightPath || mission.flightPath;
+      telemetryUnsubRef.current = provider.subscribeTelemetry(
+        mission.id,
+        flightPath,
+        {
+          altitude: mission.altitude,
+          batteryStart: mission.batteryStart,
+          batteryEnd: mission.batteryEnd,
+        },
+        setTelemetry
+      );
+    } else if (!isActive && telemetryUnsubRef.current) {
+      telemetryUnsubRef.current();
+      telemetryUnsubRef.current = null;
+      clearTelemetry();
+    }
+
+    return () => {
+      if (telemetryUnsubRef.current) {
+        telemetryUnsubRef.current();
+        telemetryUnsubRef.current = null;
+      }
+    };
+    // Only re-run when mission status changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mission?.status, mission?.id]);
 
   // Save route edits to the API and update the store
   const handleSaveRoute = useCallback(
@@ -128,8 +182,8 @@ export default function MissionDetailPage({
   const description = isPlanned
     ? 'Edit route, waypoints, and per-waypoint settings before flight'
     : isActive
-      ? 'Live flight controls and mission monitoring'
-      : 'Flight replay with AI analysis at each waypoint';
+      ? 'Mission Control — live flight monitoring and supervision'
+      : 'Review checkpoint findings and generate compliance report';
 
   return (
     <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
@@ -152,21 +206,73 @@ export default function MissionDetailPage({
         <FlightControlPanel mission={mission} />
       )}
 
-      {isPlanned ? (
+      {/* ── PLANNED: Route Editor ─────────────────────────── */}
+      {isPlanned && (
         <RouteEditor mission={mission} onSave={handleSaveRoute} />
-      ) : (
+      )}
+
+      {/* ── ACTIVE: Mission Control Layout ────────────────── */}
+      {isActive && (
+        <>
+          {/* Telemetry panel */}
+          <TelemetryPanel />
+
+          {/* Two-column Mission Control layout */}
+          <div className={cn(
+            'grid gap-4',
+            isApp ? 'grid-cols-1' : 'sm:grid-cols-5'
+          )}>
+            {/* Left column: map + capture + waypoint table */}
+            <div className="sm:col-span-3 space-y-4">
+              <FlightReplay mission={mission} />
+              <CaptureControls mission={mission} />
+              <WaypointTable
+                waypoints={mission.waypoints}
+                currentIndex={currentWaypointIndex}
+                onSelectWaypoint={handleSelectWaypoint}
+                missionId={mission.id}
+              />
+            </div>
+
+            {/* Right column: capture timeline + review panel */}
+            <div className="sm:col-span-2 space-y-4">
+              <CaptureTimeline
+                waypoints={mission.waypoints}
+                currentWaypointIndex={currentWaypointIndex}
+                onSelectWaypoint={handleSelectWaypoint}
+              />
+              <ReviewPanel mission={mission} />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── COMPLETED: Flight replay + Review ─────────────── */}
+      {isCompleted && (
         <>
           <FlightReplay mission={mission} />
 
-          {/* Capture controls for in-flight missions */}
-          {isActive && <CaptureControls mission={mission} />}
-
-          <WaypointTable
-            waypoints={mission.waypoints}
-            currentIndex={currentWaypointIndex}
-            onSelectWaypoint={handleSelectWaypoint}
-            missionId={mission.id}
-          />
+          <div className={cn(
+            'grid gap-4',
+            isApp ? 'grid-cols-1' : 'sm:grid-cols-5'
+          )}>
+            <div className="sm:col-span-3 space-y-4">
+              <WaypointTable
+                waypoints={mission.waypoints}
+                currentIndex={currentWaypointIndex}
+                onSelectWaypoint={handleSelectWaypoint}
+                missionId={mission.id}
+              />
+            </div>
+            <div className="sm:col-span-2 space-y-4">
+              <CaptureTimeline
+                waypoints={mission.waypoints}
+                currentWaypointIndex={currentWaypointIndex}
+                onSelectWaypoint={handleSelectWaypoint}
+              />
+              <ReviewPanel mission={mission} />
+            </div>
+          </div>
         </>
       )}
     </div>

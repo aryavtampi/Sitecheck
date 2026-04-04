@@ -159,6 +159,8 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
         {/* Manual override banner */}
         {isManual && (
           <ManualOverrideBar
+            missionId={mission.id}
+            currentWaypointNumber={mission.waypoints[currentWaypointIndex]?.number ?? 1}
             onResumeMission={() => executeAction('resume-mission')}
             disabled={loading !== null}
           />

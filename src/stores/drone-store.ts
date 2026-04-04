@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import { DroneMission } from '@/types';
+import type { DroneMission, DroneTelemetry, QSPReviewDecision, QSPReviewEntry, ReportReadiness } from '@/types';
+import type { CheckpointStatus } from '@/types/checkpoint';
+
+const TELEMETRY_HISTORY_LIMIT = 60; // ~1 minute at 1 Hz
 
 interface DroneStore {
   missions: DroneMission[];
@@ -10,6 +13,12 @@ interface DroneStore {
   playbackProgress: number;
   loading: boolean;
   error: string | null;
+  // Mission Control: live telemetry
+  telemetry: DroneTelemetry | null;
+  telemetryHistory: DroneTelemetry[];
+  // Mission Control: QSP checkpoint reviews
+  checkpointReviews: Record<string, QSPReviewEntry>;
+  // Existing actions
   setSelectedMission: (id: string | null) => void;
   setPlaybackState: (state: 'idle' | 'playing' | 'paused') => void;
   setPlaybackSpeed: (speed: 1 | 2 | 4) => void;
@@ -19,6 +28,19 @@ interface DroneStore {
   addMission: (mission: DroneMission) => void;
   updateMission: (id: string, updates: Partial<DroneMission>) => void;
   fetchMissions: () => Promise<void>;
+  // Mission Control actions
+  setTelemetry: (t: DroneTelemetry) => void;
+  clearTelemetry: () => void;
+  setReviewDecision: (
+    checkpointId: string,
+    waypointNumber: number,
+    aiAnalysis: QSPReviewEntry['aiAnalysis'],
+    decision: QSPReviewDecision,
+    overrideStatus?: CheckpointStatus,
+    overrideNotes?: string
+  ) => void;
+  clearReviews: () => void;
+  getReportReadiness: (missionId: string) => ReportReadiness;
 }
 
 export const useDroneStore = create<DroneStore>((set, get) => ({
@@ -30,6 +52,9 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
   playbackProgress: 0,
   loading: false,
   error: null,
+  telemetry: null,
+  telemetryHistory: [],
+  checkpointReviews: {},
   setSelectedMission: (id) => set({ selectedMissionId: id }),
   setPlaybackState: (playbackState) => set({ playbackState }),
   setPlaybackSpeed: (playbackSpeed) => set({ playbackSpeed }),
@@ -63,5 +88,55 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
     } catch (err) {
       set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
     }
+  },
+
+  // --- Mission Control: telemetry ---
+
+  setTelemetry: (t) =>
+    set((state) => ({
+      telemetry: t,
+      telemetryHistory: [
+        ...state.telemetryHistory.slice(-(TELEMETRY_HISTORY_LIMIT - 1)),
+        t,
+      ],
+    })),
+  clearTelemetry: () => set({ telemetry: null, telemetryHistory: [] }),
+
+  // --- Mission Control: QSP reviews ---
+
+  setReviewDecision: (checkpointId, waypointNumber, aiAnalysis, decision, overrideStatus, overrideNotes) =>
+    set((state) => ({
+      checkpointReviews: {
+        ...state.checkpointReviews,
+        [checkpointId]: {
+          checkpointId,
+          waypointNumber,
+          aiAnalysis,
+          decision,
+          overrideStatus: decision === 'override' ? overrideStatus : undefined,
+          overrideNotes: decision === 'override' ? overrideNotes : undefined,
+          reviewedAt: decision !== 'pending' ? new Date().toISOString() : undefined,
+        },
+      },
+    })),
+  clearReviews: () => set({ checkpointReviews: {} }),
+  getReportReadiness: (missionId) => {
+    const state = get();
+    const mission = state.missions.find((m) => m.id === missionId);
+    if (!mission) return 'not-ready';
+
+    const enabledWaypoints = mission.waypoints.filter((wp) => wp.enabled !== false);
+    if (enabledWaypoints.length === 0) return 'not-ready';
+
+    const reviewed = enabledWaypoints.filter(
+      (wp) => {
+        const review = state.checkpointReviews[wp.checkpointId];
+        return review && review.decision !== 'pending';
+      }
+    );
+
+    if (reviewed.length === 0) return 'not-ready';
+    if (reviewed.length < enabledWaypoints.length) return 'partially-reviewed';
+    return 'ready';
   },
 }));

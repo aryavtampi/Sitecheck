@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { ReportSection } from '@/types';
+import type { QSPReviewEntry } from '@/types/drone';
 
 interface ReportStore {
   reportId: string | null;
@@ -14,6 +15,7 @@ interface ReportStore {
   sign: (name: string) => void;
   unsign: () => void;
   generateReport: () => Promise<void>;
+  generateReportFromMission: (missionId: string, reviews: Record<string, QSPReviewEntry>) => Promise<void>;
   saveReport: () => Promise<void>;
   signReport: (name: string) => Promise<void>;
 }
@@ -40,6 +42,37 @@ export const useReportStore = create<ReportStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await fetch('/api/reports/generate', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to generate report');
+      const data = await res.json();
+      set({
+        reportId: data.id,
+        sections: data.sections,
+        signed: data.signed,
+        signedBy: data.signedBy,
+        signedDate: data.signedDate,
+        loading: false,
+      });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
+    }
+  },
+  generateReportFromMission: async (missionId, reviews) => {
+    set({ loading: true, error: null });
+    try {
+      // Collect override data from QSP reviews
+      const overrides = Object.values(reviews)
+        .filter((r) => r.decision === 'override')
+        .map((r) => ({
+          checkpointId: r.checkpointId,
+          overrideStatus: r.overrideStatus,
+          overrideNotes: r.overrideNotes,
+        }));
+
+      const res = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ missionId, overrides }),
+      });
       if (!res.ok) throw new Error('Failed to generate report');
       const data = await res.json();
       set({
