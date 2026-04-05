@@ -7,6 +7,7 @@ interface CheckpointFilters {
   status: CheckpointStatus | 'all';
   bmpType: BMPCategory | 'all';
   zone: Zone | 'all';
+  segment: string | 'all';
   search: string;
 }
 
@@ -52,6 +53,7 @@ const defaultFilters: CheckpointFilters = {
   status: 'all',
   bmpType: 'all',
   zone: 'all',
+  segment: 'all',
   search: '',
 };
 
@@ -72,6 +74,7 @@ export const useCheckpointStore = create<CheckpointStore>((set, get) => ({
       if (filters.status !== 'all' && cp.status !== filters.status) return false;
       if (filters.bmpType !== 'all' && cp.bmpType !== filters.bmpType) return false;
       if (filters.zone !== 'all' && cp.zone !== filters.zone) return false;
+      if (filters.segment !== 'all' && cp.linearRef?.segmentId !== filters.segment) return false;
       if (filters.search) {
         const search = filters.search.toLowerCase();
         return (
@@ -87,7 +90,9 @@ export const useCheckpointStore = create<CheckpointStore>((set, get) => ({
     if (get().loading) return;
     set({ loading: true, error: null });
     try {
-      const res = await fetch('/api/checkpoints');
+      const { useProjectStore } = await import('./project-store');
+      const projectId = useProjectStore.getState().currentProjectId;
+      const res = await fetch(`/api/checkpoints?projectId=${projectId}`);
       if (!res.ok) throw new Error('Failed to fetch checkpoints');
       const data = await res.json();
       set({ checkpoints: data, loading: false });

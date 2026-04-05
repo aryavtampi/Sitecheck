@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useProjectStore } from '@/stores/project-store';
 import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS, STATUS_COLORS } from '@/lib/constants';
 import { BMPCategory, CheckpointStatus, Zone } from '@/types/checkpoint';
 import { cn } from '@/lib/utils';
@@ -36,11 +37,15 @@ const zones: { value: Zone | 'all'; label: string }[] = [
 export function CheckpointFilters() {
   const { isApp } = useAppMode();
   const { filters, setFilter, resetFilters } = useCheckpointStore();
+  const project = useProjectStore((s) => s.currentProject)();
+  const isLinear = project?.projectType === 'linear';
+  const segments = project?.segments ?? [];
 
   const hasActiveFilters =
     filters.status !== 'all' ||
     filters.bmpType !== 'all' ||
     filters.zone !== 'all' ||
+    filters.segment !== 'all' ||
     filters.search !== '';
 
   return (
@@ -88,28 +93,51 @@ export function CheckpointFilters() {
           })}
         </div>
 
-        {/* Zone pills */}
+        {/* Zone or Segment pills */}
         <div className="h-4 w-px bg-border" />
-        <div className="flex items-center gap-1.5">
-          {zones.map((z) => {
-            const isActive = filters.zone === z.value;
-            return (
-              <button
-                key={z.value}
-                onClick={() => setFilter('zone', z.value)}
-                className={cn(
-                  'rounded-full px-3 py-1 text-xs font-medium transition-all border',
-                  isApp && 'text-[10px] px-2 py-0.5',
-                  isActive
-                    ? 'bg-amber-500/15 text-amber-500 border-amber-500/30'
-                    : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
-                )}
-              >
-                {z.label}
-              </button>
-            );
-          })}
-        </div>
+        {isLinear ? (
+          <div className="flex items-center gap-1.5">
+            {[{ value: 'all' as const, label: 'All Segments' }, ...segments.map((s) => ({ value: s.id, label: s.name }))].map((seg) => {
+              const isActive = filters.segment === seg.value;
+              return (
+                <button
+                  key={seg.value}
+                  onClick={() => setFilter('segment', seg.value)}
+                  className={cn(
+                    'rounded-full px-3 py-1 text-xs font-medium transition-all border whitespace-nowrap',
+                    isApp && 'text-[10px] px-2 py-0.5',
+                    isActive
+                      ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                  )}
+                >
+                  {seg.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            {zones.map((z) => {
+              const isActive = filters.zone === z.value;
+              return (
+                <button
+                  key={z.value}
+                  onClick={() => setFilter('zone', z.value)}
+                  className={cn(
+                    'rounded-full px-3 py-1 text-xs font-medium transition-all border',
+                    isApp && 'text-[10px] px-2 py-0.5',
+                    isActive
+                      ? 'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                  )}
+                >
+                  {z.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Reset */}
         {hasActiveFilters && (

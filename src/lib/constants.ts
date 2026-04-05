@@ -68,6 +68,7 @@ export const MISSION_SCOPE_LABELS: Record<MissionScope, string> = {
   deficient: 'Deficient Only',
   reinspection: 'Reinspection',
   'ad-hoc': 'Ad Hoc',
+  segment: 'Corridor Segment',
 };
 
 export const MISSION_STATUS_LABELS: Record<MissionStatus, string> = {

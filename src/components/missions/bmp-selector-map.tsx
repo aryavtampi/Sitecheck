@@ -4,8 +4,11 @@ import { useState, useCallback } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Checkpoint } from '@/types/checkpoint';
-import { BMP_CATEGORY_COLORS, SITE_CENTER } from '@/lib/constants';
+import { BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
+import { fitBoundsFromPoints } from '@/lib/map-utils';
+import { useProjectStore } from '@/stores/project-store';
+import { CorridorLayer } from '@/components/map/corridor-layer';
 
 interface BmpSelectorMapProps {
   checkpoints: Checkpoint[];
@@ -18,6 +21,7 @@ export function BmpSelectorMap({
   selectedIds,
   onToggle,
 }: BmpSelectorMapProps) {
+  const project = useProjectStore((s) => s.currentProject)();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cursor, setCursor] = useState<string>('grab');
 
@@ -34,18 +38,31 @@ export function BmpSelectorMap({
   return (
     <div className="h-[300px] rounded-lg border border-border overflow-hidden">
       <Map
-        initialViewState={{
-          longitude: SITE_CENTER.longitude,
-          latitude: SITE_CENTER.latitude,
-          zoom: SITE_CENTER.zoom,
-          pitch: 0,
-          bearing: 0,
-        }}
+        initialViewState={
+          checkpoints.length > 0
+            ? fitBoundsFromPoints(
+                checkpoints.map((cp) => ({ lat: cp.lat ?? cp.location.lat, lng: cp.lng ?? cp.location.lng })),
+                { minZoom: 8 }
+              )
+            : {
+                longitude: project?.coordinates.lng ?? -119.4161,
+                latitude: project?.coordinates.lat ?? 36.7801,
+                zoom: project?.projectType === 'linear' ? 11 : 16,
+                pitch: 0,
+                bearing: 0,
+              }
+        }
         mapStyle={DEFAULT_MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
         cursor={cursor}
         style={{ width: '100%', height: '100%' }}
       >
+        {project?.corridor?.centerline && (
+          <CorridorLayer
+            centerline={project.corridor.centerline}
+            widthFeet={project.corridor.corridorWidthFeet}
+          />
+        )}
         {checkpoints.map((cp) => {
           const lng = cp.lng ?? cp.location.lng;
           const lat = cp.lat ?? cp.location.lat;

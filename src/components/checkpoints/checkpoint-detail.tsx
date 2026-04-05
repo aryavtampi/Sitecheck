@@ -121,7 +121,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
           {BMP_CATEGORY_LABELS[checkpoint.bmpType]}
         </span>
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
-          {checkpoint.zone}
+          {checkpoint.stationLabel ?? checkpoint.zone ?? '—'}
         </span>
         <div className="flex items-center gap-1">
           <div
@@ -261,10 +261,10 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
               {/* Zone */}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Zone
+                  {checkpoint.stationLabel ? 'Station' : 'Zone'}
                 </p>
                 <Badge variant="outline" className="capitalize">
-                  {checkpoint.zone}
+                  {checkpoint.stationLabel ?? checkpoint.zone ?? '—'}
                 </Badge>
               </div>
 

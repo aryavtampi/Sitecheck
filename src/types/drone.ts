@@ -11,7 +11,8 @@ export type MissionScope =
   | 'priority'
   | 'deficient'
   | 'reinspection'
-  | 'ad-hoc';
+  | 'ad-hoc'
+  | 'segment';
 
 export type MissionStatus =
   | 'planned'

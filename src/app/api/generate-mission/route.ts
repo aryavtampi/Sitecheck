@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { orderCheckpoints, generateFlightPath } from '@/lib/flight-path';
+import { generateSmartFlightPath } from '@/lib/flight-path';
+import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import type { ProjectType } from '@/types/project';
 
 interface CheckpointInput {
   id: string;
@@ -8,6 +10,7 @@ interface CheckpointInput {
   bmpType: string;
   lat: number;
   lng: number;
+  linearRef?: { station: number; offset: number; segmentId?: string };
 }
 
 interface SiteInfoInput {
@@ -28,6 +31,8 @@ export async function POST(request: NextRequest) {
       name: requestedName,
       notes,
       sourceDocumentPages,
+      projectType,
+      centerline,
     } = body as {
       checkpoints: CheckpointInput[];
       siteInfo: SiteInfoInput;
@@ -38,6 +43,8 @@ export async function POST(request: NextRequest) {
       name?: string;
       notes?: string;
       sourceDocumentPages?: number[];
+      projectType?: ProjectType;
+      centerline?: [number, number][];
     };
 
     if (!checkpoints || !Array.isArray(checkpoints) || checkpoints.length === 0) {
@@ -51,11 +58,16 @@ export async function POST(request: NextRequest) {
       lng: siteInfo?.centerLng || -119.4161,
     };
 
-    // Order checkpoints using nearest-neighbor (shared utility)
-    const ordered = orderCheckpoints(checkpoints);
+    // Generate flight path using smart dispatch (linear vs bounded-site)
+    const flightPath = generateSmartFlightPath(checkpoints, siteCenter, {
+      projectType,
+      centerline,
+    });
 
-    // Generate flight path (shared utility)
-    const flightPath = generateFlightPath(ordered, siteCenter);
+    // For waypoint ordering: linear projects sort by station, bounded sites use existing order
+    const ordered = projectType === 'linear'
+      ? [...checkpoints].sort((a, b) => (a.linearRef?.station ?? 0) - (b.linearRef?.station ?? 0))
+      : checkpoints;
 
     // Estimate flight time (~1.5 minutes per checkpoint + 3 min transit)
     const flightTimeMinutes = Math.round(checkpoints.length * 1.5 + 3);
@@ -104,7 +116,7 @@ export async function POST(request: NextRequest) {
       const supabase = createServerClient();
       await supabase.from('activity_events').insert({
         id: `activity-${Date.now()}`,
-        project_id: 'riverside-phase2',
+        project_id: resolveProjectId(request),
         type: 'drone',
         title: 'Route Auto-Generated',
         description: `Flight route generated for "${mission.name}" with ${mission.waypoints.length} waypoints`,

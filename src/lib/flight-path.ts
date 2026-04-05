@@ -3,12 +3,16 @@
  * Used by both the server-side generate-mission API and the client-side route editor.
  */
 
+import { generateLinearFlightPath } from './linear-path';
+import type { ProjectType } from '@/types/project';
+
 export interface PathCheckpoint {
   id: string;
   name: string;
   bmpType: string;
   lat: number;
   lng: number;
+  linearRef?: { station: number; offset: number; segmentId?: string };
 }
 
 function distance(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
@@ -101,4 +105,25 @@ export function generateFlightPath(
   path.push([siteCenter.lng, siteCenter.lat]);
 
   return path;
+}
+
+/**
+ * Smart dispatch: chooses bounded-site or linear flight path generation
+ * based on the project type and available corridor geometry.
+ */
+export function generateSmartFlightPath(
+  checkpoints: PathCheckpoint[],
+  siteCenter: { lat: number; lng: number },
+  options?: {
+    projectType?: ProjectType;
+    centerline?: [number, number][];
+  }
+): [number, number][] {
+  if (options?.projectType === 'linear' && options.centerline && options.centerline.length >= 2) {
+    return generateLinearFlightPath(checkpoints, options.centerline, siteCenter);
+  }
+
+  // Default: bounded-site TSP ordering + flight path with return-to-launch
+  const ordered = orderCheckpoints(checkpoints);
+  return generateFlightPath(ordered, siteCenter);
 }

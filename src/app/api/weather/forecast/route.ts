@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { fetchForecast } from '@/lib/weather-api';
 import { WeatherDay } from '@/types/weather';
+import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
-const DEFAULT_PROJECT_ID = 'riverside-phase2';
 const CACHE_DURATION_MINUTES = 60; // 1 hour
 
 // Transform snake_case database row to camelCase

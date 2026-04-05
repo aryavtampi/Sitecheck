@@ -7,11 +7,13 @@ import {
   XCircle,
   RotateCcw,
   MapPin,
+  Ruler,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MissionScope } from '@/types/drone';
 import { MISSION_SCOPE_LABELS } from '@/lib/constants';
+import { useProjectStore } from '@/stores/project-store';
 
 interface MissionScopeSelectorProps {
   selected: MissionScope;
@@ -24,7 +26,7 @@ interface ScopeOption {
   description: string;
 }
 
-const SCOPE_OPTIONS: ScopeOption[] = [
+const BASE_SCOPE_OPTIONS: ScopeOption[] = [
   {
     scope: 'full',
     icon: Globe,
@@ -57,10 +59,23 @@ const SCOPE_OPTIONS: ScopeOption[] = [
   },
 ];
 
+const SEGMENT_SCOPE_OPTION: ScopeOption = {
+  scope: 'segment',
+  icon: Ruler,
+  description: 'Select corridor segments to inspect',
+};
+
 export function MissionScopeSelector({ selected, onSelect }: MissionScopeSelectorProps) {
+  const project = useProjectStore((s) => s.currentProject)();
+  const isLinear = project?.projectType === 'linear';
+
+  const scopeOptions = isLinear
+    ? [SEGMENT_SCOPE_OPTION, ...BASE_SCOPE_OPTIONS]
+    : BASE_SCOPE_OPTIONS;
+
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {SCOPE_OPTIONS.map(({ scope, icon: Icon, description }) => {
+      {scopeOptions.map(({ scope, icon: Icon, description }) => {
         const isSelected = selected === scope;
 
         return (

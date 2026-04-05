@@ -5,23 +5,46 @@ import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import Link from 'next/link';
 
-import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
+import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
 import { STATUS_COLORS, STATUS_LABELS, BMP_CATEGORY_LABELS } from '@/lib/constants';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useProjectStore } from '@/stores/project-store';
+import { fitBoundsFromPoints } from '@/lib/map-utils';
+import { CorridorLayer } from '@/components/map/corridor-layer';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 
 export function SiteOverviewMap() {
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const project = useProjectStore((s) => s.currentProject)();
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
   }, [checkpoints.length, fetchCheckpoints]);
 
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
+
+  const initialViewState = useMemo(() => {
+    if (checkpoints.length > 0) {
+      return fitBoundsFromPoints(
+        checkpoints.map((cp) => ({ lat: cp.lat ?? cp.location.lat, lng: cp.lng ?? cp.location.lng })),
+        { minZoom: 8 }
+      );
+    }
+    if (project) {
+      return {
+        longitude: project.coordinates.lng,
+        latitude: project.coordinates.lat,
+        zoom: project.projectType === 'linear' ? 11 : 16,
+        pitch: 0,
+        bearing: 0,
+      };
+    }
+    return { longitude: -119.4161, latitude: 36.7801, zoom: 16, pitch: 0, bearing: 0 };
+  }, [checkpoints, project]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<CheckpointStatus, number> = {
@@ -51,13 +74,19 @@ export function SiteOverviewMap() {
 
       <div className={cn('relative', isApp ? 'h-[200px]' : 'h-[400px]')}>
         <Map
-          initialViewState={SITE_VIEW}
+          initialViewState={initialViewState}
           mapboxAccessToken={MAPBOX_TOKEN}
           mapStyle={DEFAULT_MAP_STYLE}
           style={{ width: '100%', height: '100%' }}
           reuseMaps
         >
           <NavigationControl position="top-right" />
+          {project?.corridor?.centerline && (
+            <CorridorLayer
+              centerline={project.corridor.centerline}
+              widthFeet={project.corridor.corridorWidthFeet}
+            />
+          )}
 
           {checkpoints.map((cp) => {
             const color = STATUS_COLORS[cp.status];

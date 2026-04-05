@@ -7,7 +7,10 @@ import { MapPin } from 'lucide-react';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useEffect } from 'react';
 import { STATUS_COLORS, BMP_CATEGORY_COLORS } from '@/lib/constants';
-import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
+import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
+import { useProjectStore } from '@/stores/project-store';
+import { fitBoundsFromPoints } from '@/lib/map-utils';
+import { CorridorLayer } from '@/components/map/corridor-layer';
 
 interface ExtractedMapCheckpoint {
   id: string;
@@ -26,6 +29,7 @@ interface CheckpointMapPanelProps {
 export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCheckpoints }: CheckpointMapPanelProps) {
   const storeCheckpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const project = useProjectStore((s) => s.currentProject)();
 
   useEffect(() => {
     if (storeCheckpoints.length === 0) fetchCheckpoints();
@@ -38,32 +42,27 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
 
   const useExtracted = extractedCheckpoints && extractedCheckpoints.length > 0;
 
-  // Compute view state that fits extracted checkpoints
+  // Compute view state that fits extracted or store checkpoints
   const viewState = useMemo(() => {
-    if (!useExtracted) return SITE_VIEW;
+    const points = useExtracted
+      ? extractedCheckpoints.map((cp) => ({ lat: cp.lat, lng: cp.lng }))
+      : storeCheckpoints.length > 0
+        ? storeCheckpoints.map((cp) => ({ lat: cp.lat ?? cp.location.lat, lng: cp.lng ?? cp.location.lng }))
+        : null;
 
-    const lats = extractedCheckpoints.map((cp) => cp.lat);
-    const lngs = extractedCheckpoints.map((cp) => cp.lng);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
+    if (points && points.length > 0) {
+      return fitBoundsFromPoints(points, { minZoom: 8 });
+    }
 
-    const centerLat = (minLat + maxLat) / 2;
-    const centerLng = (minLng + maxLng) / 2;
-
-    // Estimate zoom from spread
-    const latSpread = maxLat - minLat;
-    const lngSpread = maxLng - minLng;
-    const spread = Math.max(latSpread, lngSpread);
-    let zoom = 16;
-    if (spread > 0.01) zoom = 14;
-    else if (spread > 0.005) zoom = 15;
-    else if (spread > 0.001) zoom = 16;
-    else zoom = 17;
-
-    return { latitude: centerLat, longitude: centerLng, zoom };
-  }, [useExtracted, extractedCheckpoints]);
+    // Fallback to project center
+    return {
+      longitude: project?.coordinates.lng ?? -119.4161,
+      latitude: project?.coordinates.lat ?? 36.7801,
+      zoom: project?.projectType === 'linear' ? 11 : 16,
+      pitch: 0,
+      bearing: 0,
+    };
+  }, [useExtracted, extractedCheckpoints, storeCheckpoints, project]);
 
   return (
     <div className="flex h-full flex-col">
@@ -88,6 +87,12 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
           cursor={cursor}
           style={{ width: '100%', height: '100%' }}
         >
+          {project?.corridor?.centerline && (
+            <CorridorLayer
+              centerline={project.corridor.centerline}
+              widthFeet={project.corridor.corridorWidthFeet}
+            />
+          )}
           {useExtracted
             ? extractedCheckpoints.map((cp) => {
                 const isSelected = selectedCheckpointId === cp.id;

@@ -1,12 +1,17 @@
 'use client';
 
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
+import type { MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Crosshair } from 'lucide-react';
 import { DroneMission } from '@/types/drone';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useProjectStore } from '@/stores/project-store';
 import { STATUS_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
+import { CorridorLayer } from '@/components/map/corridor-layer';
+import { cn } from '@/lib/utils';
 
 interface MissionMapProps {
   mission: DroneMission;
@@ -22,9 +27,12 @@ export function MissionMap({
   onSelectWaypoint,
 }: MissionMapProps) {
   const [cursor, setCursor] = useState<string>('grab');
+  const [followDrone, setFollowDrone] = useState(false);
+  const mapRef = useRef<MapRef>(null);
 
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const project = useProjectStore((s) => s.currentProject)();
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
@@ -50,7 +58,7 @@ export function MissionMap({
     const latSpan = maxLat - minLat;
     const maxSpan = Math.max(lngSpan, latSpan);
     // Rough heuristic: at zoom 16, ~0.005 degrees fits nicely
-    const zoom = maxSpan > 0 ? Math.min(18, Math.max(12, Math.log2(0.01 / maxSpan) + 16)) : 16;
+    const zoom = maxSpan > 0 ? Math.min(18, Math.max(8, Math.log2(0.01 / maxSpan) + 16)) : 16;
 
     return {
       longitude: centerLng,
@@ -125,15 +133,38 @@ export function MissionMap({
     };
   }, [mission.flightPath, playbackProgress]);
 
+  // Follow drone: smoothly pan map to drone position
+  useEffect(() => {
+    if (!followDrone || !dronePosition || !mapRef.current) return;
+    mapRef.current.easeTo({
+      center: [dronePosition.longitude, dronePosition.latitude],
+      zoom: 17,
+      duration: 600,
+    });
+  }, [followDrone, dronePosition]);
+
+  // Disable follow on user drag
+  const handleDragStart = useCallback(() => {
+    if (followDrone) setFollowDrone(false);
+  }, [followDrone]);
+
   return (
     <div className="relative h-full w-full overflow-hidden rounded-lg">
       <Map
+        ref={mapRef}
         initialViewState={initialViewState}
+        onDragStart={handleDragStart}
         mapStyle={DEFAULT_MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
         cursor={cursor}
         style={{ width: '100%', height: '100%' }}
       >
+        {project?.corridor?.centerline && (
+          <CorridorLayer
+            centerline={project.corridor.centerline}
+            widthFeet={project.corridor.corridorWidthFeet}
+          />
+        )}
         {/* Full planned flight path - dashed amber */}
         <Source id="planned-path" type="geojson" data={plannedPathGeoJSON}>
           <Layer
@@ -256,6 +287,21 @@ export function MissionMap({
       <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[9px] text-white/70 font-mono pointer-events-none z-10">
         {mission.waypoints.length} waypoints &middot; {mission.flightPath.length} path points
       </div>
+
+      {/* Follow-drone toggle */}
+      <button
+        onClick={() => setFollowDrone(!followDrone)}
+        className={cn(
+          'absolute bottom-10 right-2 z-10 flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-medium transition-colors border',
+          followDrone
+            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+            : 'bg-black/60 border-white/10 text-white/60 hover:text-white/80 hover:bg-black/80'
+        )}
+        title={followDrone ? 'Disable follow drone' : 'Follow drone position'}
+      >
+        <Crosshair className="h-3 w-3" />
+        {followDrone ? 'Following' : 'Follow'}
+      </button>
 
       {/* Compass */}
       <div className="absolute bottom-2 right-2 text-[9px] font-mono text-white/50 pointer-events-none z-10">

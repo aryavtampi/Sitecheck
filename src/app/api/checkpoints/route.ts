@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
-const DEFAULT_PROJECT_ID = 'riverside-phase2';
 
 // Transform snake_case DB row to camelCase
 function transformCheckpoint(row: Record<string, unknown>) {
@@ -23,6 +23,11 @@ function transformCheckpoint(row: Record<string, unknown>) {
     previousPhoto: row.previous_photo,
     installDate: row.install_date,
     swpppPage: row.swppp_page,
+    // Linear referencing fields
+    linearRef: row.station_number != null
+      ? { station: row.station_number, offset: row.station_offset_feet ?? 0, segmentId: row.segment_id }
+      : undefined,
+    stationLabel: row.station_label,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -39,6 +44,10 @@ function toSnakeCase(data: Record<string, unknown>) {
     previousPhoto: 'previous_photo',
     installDate: 'install_date',
     swpppPage: 'swppp_page',
+    stationNumber: 'station_number',
+    stationOffsetFeet: 'station_offset_feet',
+    segmentId: 'segment_id',
+    stationLabel: 'station_label',
     createdAt: 'created_at',
     updatedAt: 'updated_at',
   };
@@ -71,6 +80,9 @@ export async function GET(request: NextRequest) {
     const bmpType = searchParams.get('bmpType');
     const zone = searchParams.get('zone');
     const search = searchParams.get('search');
+    const segment = searchParams.get('segment');
+    const stationMin = searchParams.get('stationMin');
+    const stationMax = searchParams.get('stationMax');
 
     let query = supabase
       .from('checkpoints')
@@ -87,6 +99,18 @@ export async function GET(request: NextRequest) {
 
     if (zone) {
       query = query.eq('zone', zone);
+    }
+
+    if (segment) {
+      query = query.eq('segment_id', segment);
+    }
+
+    if (stationMin) {
+      query = query.gte('station_number', Number(stationMin));
+    }
+
+    if (stationMax) {
+      query = query.lte('station_number', Number(stationMax));
     }
 
     if (search) {

@@ -326,7 +326,7 @@ function getBmpPageContent(page: number, cps: Checkpoint[]): PageContent | null 
     icon: Shield,
     sections: matching.map((cp) => ({
       heading: `${cp.id}: ${cp.name}`,
-      body: `Category: ${BMP_CATEGORY_LABELS[cp.bmpType]}\nCGP Reference: ${cp.cgpSection}\nInstall Date: ${cp.installDate}\nZone: ${cp.zone.charAt(0).toUpperCase() + cp.zone.slice(1)}\nPriority: ${cp.priority.charAt(0).toUpperCase() + cp.priority.slice(1)}\n\n${cp.description}`,
+      body: `Category: ${BMP_CATEGORY_LABELS[cp.bmpType]}\nCGP Reference: ${cp.cgpSection}\nInstall Date: ${cp.installDate}${cp.zone ? `\nZone: ${cp.zone.charAt(0).toUpperCase() + cp.zone.slice(1)}` : ''}${cp.stationLabel ? `\nStation: ${cp.stationLabel}` : ''}\nPriority: ${cp.priority.charAt(0).toUpperCase() + cp.priority.slice(1)}\n\n${cp.description}`,
     })),
   };
 }

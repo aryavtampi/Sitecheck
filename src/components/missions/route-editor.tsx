@@ -7,10 +7,9 @@ import { RouteEditorMap } from './route-editor-map';
 import { WaypointEditor } from './waypoint-editor';
 import { generateFlightPath } from '@/lib/flight-path';
 import { useAppMode } from '@/hooks/use-app-mode';
+import { useProjectStore } from '@/stores/project-store';
 import { cn } from '@/lib/utils';
 import type { DroneMission, Waypoint } from '@/types/drone';
-
-const SITE_CENTER = { lat: 36.7801, lng: -119.4161 };
 
 interface RouteEditorProps {
   mission: DroneMission;
@@ -19,6 +18,12 @@ interface RouteEditorProps {
 
 export function RouteEditor({ mission, onSave }: RouteEditorProps) {
   const { isApp } = useAppMode();
+  const project = useProjectStore((s) => s.currentProject)();
+
+  const siteCenter = {
+    lat: project?.coordinates.lat ?? 36.7801,
+    lng: project?.coordinates.lng ?? -119.4161,
+  };
 
   const [waypoints, setWaypoints] = useState<Waypoint[]>(mission.waypoints);
   const [flightPath, setFlightPath] = useState<[number, number][]>(
@@ -32,13 +37,13 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
   const regeneratePath = useCallback((wps: Waypoint[]) => {
     const enabledWps = wps.filter((w) => w.enabled !== false);
     if (enabledWps.length === 0) {
-      setFlightPath([[SITE_CENTER.lng, SITE_CENTER.lat]]);
+      setFlightPath([[siteCenter.lng, siteCenter.lat]]);
       return;
     }
-    const newPath = generateFlightPath(enabledWps, SITE_CENTER);
+    const newPath = generateFlightPath(enabledWps, siteCenter);
     setFlightPath(newPath);
     setDirty(true);
-  }, []);
+  }, [siteCenter]);
 
   // Toggle a waypoint's enabled state
   const handleToggle = useCallback(

@@ -63,7 +63,7 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
                 {BMP_CATEGORY_LABELS[checkpoint.bmpType]}
               </span>
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
-                {checkpoint.zone}
+                {checkpoint.stationLabel ?? checkpoint.zone ?? '—'}
               </span>
               <div className="flex items-center gap-1 ml-auto">
                 <div

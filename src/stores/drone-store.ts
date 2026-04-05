@@ -77,7 +77,9 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
     if (get().loading) return;
     set({ loading: true, error: null });
     try {
-      const res = await fetch('/api/missions');
+      const { useProjectStore } = await import('./project-store');
+      const projectId = useProjectStore.getState().currentProjectId;
+      const res = await fetch(`/api/missions?projectId=${projectId}`);
       if (!res.ok) throw new Error('Failed to fetch missions');
       const data = await res.json();
       set({

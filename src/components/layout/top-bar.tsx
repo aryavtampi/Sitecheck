@@ -1,32 +1,128 @@
 'use client';
 
-import { Bell, Cloud, Droplets, Wind, ThermometerSun } from 'lucide-react';
+import { Bell, Cloud, Droplets, Wind, ThermometerSun, ChevronDown, MapPin, GitBranch } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAppMode } from '@/hooks/use-app-mode';
+import { useProjectStore } from '@/stores/project-store';
+import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useDroneStore } from '@/stores/drone-store';
 import { cn } from '@/lib/utils';
+import { useState, useRef, useEffect } from 'react';
 
 export function TopBar() {
   const { isApp } = useAppMode();
+  const { projects, currentProjectId, setCurrentProject, currentProject: getCurrentProject } = useProjectStore();
+  const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
+  const fetchMissions = useDroneStore((s) => s.fetchMissions);
+  const project = getCurrentProject();
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  const handleSwitch = (id: string) => {
+    if (id === currentProjectId) {
+      setOpen(false);
+      return;
+    }
+    setCurrentProject(id);
+    setOpen(false);
+    // Re-fetch project-scoped data
+    fetchCheckpoints();
+    fetchMissions();
+  };
 
   return (
     <header className={cn(
       'sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[#0A0A0A]/80 backdrop-blur-sm',
       isApp ? 'h-11 px-3' : 'h-14 px-3 sm:px-6'
     )}>
-      {/* Project Name */}
-      <div className="flex min-w-0 items-center gap-2">
-        <h1 className={cn(
-          'truncate font-heading font-semibold tracking-wide text-foreground',
-          isApp ? 'text-xs' : 'text-sm sm:text-lg'
-        )}>
-          Riverside Commercial — Phase 2
-        </h1>
+      {/* Project Switcher */}
+      <div className="flex min-w-0 items-center gap-2" ref={dropdownRef}>
+        <div className="relative">
+          <button
+            onClick={() => setOpen(!open)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md transition-colors hover:bg-surface-elevated',
+              isApp ? 'px-1' : 'px-2 py-1'
+            )}
+          >
+            {project?.projectType === 'linear' ? (
+              <GitBranch className={cn('shrink-0 text-amber-400', isApp ? 'h-3 w-3' : 'h-4 w-4')} />
+            ) : (
+              <MapPin className={cn('shrink-0 text-amber-400', isApp ? 'h-3 w-3' : 'h-4 w-4')} />
+            )}
+            <h1 className={cn(
+              'truncate font-heading font-semibold tracking-wide text-foreground',
+              isApp ? 'text-xs' : 'text-sm sm:text-lg'
+            )}>
+              {project?.name || 'Select Project'}
+            </h1>
+            <ChevronDown className={cn(
+              'shrink-0 text-muted-foreground transition-transform',
+              isApp ? 'h-3 w-3' : 'h-4 w-4',
+              open && 'rotate-180'
+            )} />
+          </button>
+
+          {open && (
+            <div className="absolute left-0 top-full mt-1 z-50 min-w-[280px] rounded-lg border border-border bg-[#0A0A0A] shadow-xl">
+              <div className="px-3 py-2 border-b border-border">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Projects</p>
+              </div>
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleSwitch(p.id)}
+                  className={cn(
+                    'flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-elevated',
+                    p.id === currentProjectId && 'bg-surface-elevated'
+                  )}
+                >
+                  {p.projectType === 'linear' ? (
+                    <GitBranch className="h-4 w-4 shrink-0 text-cyan-400" />
+                  ) : (
+                    <MapPin className="h-4 w-4 shrink-0 text-amber-400" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
+                    <p className="truncate text-[10px] text-muted-foreground">{p.address}</p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'shrink-0 text-[9px]',
+                      p.projectType === 'linear'
+                        ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400'
+                        : 'border-amber-500/30 bg-amber-500/10 text-amber-500'
+                    )}
+                  >
+                    {p.projectType === 'linear' ? 'LINEAR' : 'SITE'}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {!isApp && (
           <Badge
             variant="outline"
-            className="shrink-0 border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs"
+            className={cn(
+              'shrink-0 text-xs',
+              project?.status === 'active'
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-500'
+                : 'border-muted-foreground/30 bg-muted-foreground/10 text-muted-foreground'
+            )}
           >
-            ACTIVE
+            {project?.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
           </Badge>
         )}
       </div>

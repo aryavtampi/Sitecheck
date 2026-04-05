@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
+import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
-const DEFAULT_PROJECT_ID = 'riverside-phase2';
 
 // Transform snake_case DB row to camelCase
 function transformInspection(row: Record<string, unknown>) {

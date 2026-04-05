@@ -3,8 +3,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE, SITE_VIEW } from '@/lib/mapbox-config';
+import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useProjectStore } from '@/stores/project-store';
+import { fitBoundsFromPoints } from '@/lib/map-utils';
+import { CorridorLayer } from '@/components/map/corridor-layer';
 import { BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
@@ -29,6 +32,7 @@ export function RouteEditorMap({
 }: RouteEditorMapProps) {
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
+  const project = useProjectStore((s) => s.currentProject)();
   const [hoveredWp, setHoveredWp] = useState<number | null>(null);
 
   const checkpointMap = useMemo(() => {
@@ -69,18 +73,28 @@ export function RouteEditorMap({
       )}
     >
       <Map
-        initialViewState={{
-          longitude: SITE_VIEW.longitude,
-          latitude: SITE_VIEW.latitude,
-          zoom: SITE_VIEW.zoom,
-          pitch: 0,
-          bearing: 0,
-        }}
+        initialViewState={
+          waypoints.length > 0
+            ? fitBoundsFromPoints(waypoints.map((wp) => ({ lat: wp.lat, lng: wp.lng })), { minZoom: 8 })
+            : {
+                longitude: project?.coordinates.lng ?? -119.4161,
+                latitude: project?.coordinates.lat ?? 36.7801,
+                zoom: project?.projectType === 'linear' ? 11 : 16,
+                pitch: 0,
+                bearing: 0,
+              }
+        }
         mapStyle={DEFAULT_MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
         style={{ width: '100%', height: '100%' }}
         onClick={handleMapClick}
       >
+        {project?.corridor?.centerline && (
+          <CorridorLayer
+            centerline={project.corridor.centerline}
+            widthFeet={project.corridor.corridorWidthFeet}
+          />
+        )}
         {/* Flight path line */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <Source id="flight-path" type="geojson" data={pathGeoJson as any}>

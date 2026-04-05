@@ -6,6 +6,30 @@ export interface QSP {
   email: string;
 }
 
+export type ProjectType = 'bounded-site' | 'linear';
+
+export interface CorridorGeometry {
+  /** GeoJSON LineString coordinates [[lng, lat], ...] representing the project centerline */
+  centerline: [number, number][];
+  /** Width of the corridor in feet (used for buffer visualization) */
+  corridorWidthFeet: number;
+  /** Total length in the project's linear unit */
+  totalLength: number;
+  /** Unit for linear referencing */
+  linearUnit: 'feet' | 'miles';
+}
+
+export interface ProjectSegment {
+  id: string;
+  name: string;
+  /** Station range start (in project's linear unit) */
+  startStation: number;
+  /** Station range end (in project's linear unit) */
+  endStation: number;
+  /** Subset of centerline coordinates for this segment */
+  centerlineSlice?: [number, number][];
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -20,4 +44,12 @@ export interface Project {
   acreage: number;
   coordinates: { lat: number; lng: number };
   bounds: [[number, number], [number, number]];
+  /** Project type — defaults to 'bounded-site' for backwards compatibility */
+  projectType?: ProjectType;
+  /** Corridor geometry (only for linear projects) */
+  corridor?: CorridorGeometry;
+  /** Named segments (only for linear projects) */
+  segments?: ProjectSegment[];
+  /** Total linear mileage (only for linear projects) */
+  linearMileage?: number;
 }

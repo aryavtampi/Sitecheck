@@ -14,6 +14,7 @@ import { MissionConfigForm, type MissionConfig } from '@/components/missions/mis
 import { ReinspectionPresets } from '@/components/missions/reinspection-presets';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useDroneStore } from '@/stores/drone-store';
+import { useProjectStore } from '@/stores/project-store';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
 import { MISSION_SCOPE_LABELS } from '@/lib/constants';
@@ -22,7 +23,7 @@ import type { MissionScope } from '@/types/drone';
 const STEPS = ['Scope', 'Select BMPs', 'Configure'] as const;
 
 // Scopes that skip the BMP selection step (auto-select)
-const AUTO_SELECT_SCOPES: MissionScope[] = ['full', 'priority', 'deficient'];
+const AUTO_SELECT_SCOPES: MissionScope[] = ['full', 'priority', 'deficient', 'segment'];
 
 export default function NewMissionPage() {
   const { isApp } = useAppMode();
@@ -30,10 +31,12 @@ export default function NewMissionPage() {
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const addMission = useDroneStore((s) => s.addMission);
+  const project = useProjectStore((s) => s.currentProject)();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [scope, setScope] = useState<MissionScope>('full');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedSegments, setSelectedSegments] = useState<Set<string>>(new Set());
   const [config, setConfig] = useState<MissionConfig>({
     name: '',
     inspectionType: 'routine',
@@ -63,11 +66,21 @@ export default function NewMissionPage() {
           return new Set(
             checkpoints.filter((c) => c.status === 'deficient').map((c) => c.id)
           );
+        case 'segment': {
+          if (selectedSegments.size === 0) {
+            return new Set(checkpoints.map((c) => c.id));
+          }
+          return new Set(
+            checkpoints
+              .filter((c) => c.linearRef?.segmentId && selectedSegments.has(c.linearRef.segmentId))
+              .map((c) => c.id)
+          );
+        }
         default:
           return new Set();
       }
     },
-    [checkpoints]
+    [checkpoints, selectedSegments]
   );
 
   // Handle "Next" from step 1
@@ -127,6 +140,7 @@ export default function NewMissionPage() {
           bmpType: c.bmpType,
           lat: c.lat ?? c.location.lat,
           lng: c.lng ?? c.location.lng,
+          linearRef: c.linearRef,
         }));
 
       // Auto-generate name if empty
@@ -140,13 +154,18 @@ export default function NewMissionPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           checkpoints: selectedCheckpoints,
-          siteInfo: { centerLat: 36.7801, centerLng: -119.4161 },
+          siteInfo: {
+            centerLat: project?.coordinates.lat ?? 36.7801,
+            centerLng: project?.coordinates.lng ?? -119.4161,
+          },
           scope,
           endOfMissionAction: config.endOfMissionAction,
           inspectionType: config.inspectionType,
           altitude: config.altitude,
           name: missionName,
           notes: config.notes,
+          projectType: project?.projectType,
+          centerline: project?.corridor?.centerline,
         }),
       });
 
@@ -253,8 +272,61 @@ export default function NewMissionPage() {
                   </p>
                 </div>
                 <MissionScopeSelector selected={scope} onSelect={setScope} />
+
+                {/* Segment picker — shown when scope is 'segment' */}
+                {scope === 'segment' && project?.segments && project.segments.length > 0 && (
+                  <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4 space-y-3">
+                    <div>
+                      <h4 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+                        Select Corridor Segments
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Only checkpoints within the selected segments will be included.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {project.segments.map((seg) => {
+                        const isSelected = selectedSegments.has(seg.id);
+                        return (
+                          <button
+                            key={seg.id}
+                            onClick={() => {
+                              setSelectedSegments((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(seg.id)) next.delete(seg.id);
+                                else next.add(seg.id);
+                                return next;
+                              });
+                            }}
+                            className={cn(
+                              'rounded-lg border px-3 py-2 text-left transition-colors',
+                              isSelected
+                                ? 'border-cyan-500 bg-cyan-500/15 text-cyan-300'
+                                : 'border-border bg-surface text-muted-foreground hover:text-foreground'
+                            )}
+                          >
+                            <p className="text-xs font-medium">{seg.name}</p>
+                            <p className="text-[10px] opacity-70">
+                              STA {Math.floor(seg.startStation / 100)}+{String(seg.startStation % 100).padStart(2, '0')} — STA {Math.floor(seg.endStation / 100)}+{String(seg.endStation % 100).padStart(2, '0')}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {selectedSegments.size > 0 && (
+                      <p className="text-[10px] text-cyan-400/60">
+                        {checkpoints.filter((c) => c.linearRef?.segmentId && selectedSegments.has(c.linearRef.segmentId)).length} checkpoints in selected segments
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex justify-end">
-                  <Button onClick={handleScopeNext} className="gap-1.5">
+                  <Button
+                    onClick={handleScopeNext}
+                    className="gap-1.5"
+                    disabled={scope === 'segment' && selectedSegments.size === 0}
+                  >
                     Next <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
