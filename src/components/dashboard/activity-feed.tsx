@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Plane, AlertTriangle, FileText, CloudRain, CheckCircle, AlertCircle, ChevronRight, ExternalLink } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/format';
 import { useAppMode } from '@/hooks/use-app-mode';
+import { useProjectStore } from '@/stores/project-store';
 import { useSupabaseRealtime } from '@/hooks/use-supabase-realtime';
 import type { ActivityEvent } from '@/types/activity';
 import { ActivityType } from '@/types/activity';
@@ -79,16 +80,18 @@ const severityDot: Record<string, string> = {
 
 export function ActivityFeed() {
   const { isApp } = useAppMode();
+  const currentProjectId = useProjectStore((s) => s.currentProjectId);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/activity')
+    setLoading(true);
+    fetch(`/api/activity?projectId=${currentProjectId}`)
       .then((res) => res.json())
       .then((data) => { setEvents(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [currentProjectId]);
 
   // Real-time: listen for new activity events
   const handleInsert = useCallback((payload: { new?: Record<string, unknown> }) => {

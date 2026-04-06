@@ -10,6 +10,7 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { CheckCircle, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
 import { PageTransition } from '@/components/shared/page-transition';
 import { useAppMode } from '@/hooks/use-app-mode';
+import { useProjectStore } from '@/stores/project-store';
 import { cn } from '@/lib/utils';
 
 const SiteOverviewMap = dynamic(
@@ -39,15 +40,17 @@ function formatInspectionType(type: string): string {
 
 export default function DashboardPage() {
   const { isApp } = useAppMode();
+  const currentProjectId = useProjectStore((s) => s.currentProjectId);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/dashboard/metrics')
+    setLoading(true);
+    fetch(`/api/dashboard/metrics?projectId=${currentProjectId}`)
       .then((res) => res.json())
       .then((data) => { setMetrics(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [currentProjectId]);
 
   const inspectionSubtitle = metrics
     ? `${formatInspectionType(metrics.lastInspectionType)} — ${format(new Date(metrics.lastInspectionDate), 'MMM d, yyyy')}`
