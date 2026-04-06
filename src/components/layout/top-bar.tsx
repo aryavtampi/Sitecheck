@@ -51,12 +51,12 @@ export function TopBar() {
           <button
             onClick={() => setOpen(!open)}
             className={cn(
-              'flex items-center gap-1.5 rounded-md transition-colors hover:bg-surface-elevated',
-              isApp ? 'px-1' : 'px-2 py-1'
+              'flex items-center gap-1.5 rounded-lg border border-border bg-surface transition-colors hover:bg-surface-elevated hover:border-amber-500/40',
+              isApp ? 'px-2 py-1' : 'px-3 py-1.5'
             )}
           >
             {project?.projectType === 'linear' ? (
-              <GitBranch className={cn('shrink-0 text-amber-400', isApp ? 'h-3 w-3' : 'h-4 w-4')} />
+              <GitBranch className={cn('shrink-0 text-cyan-400', isApp ? 'h-3 w-3' : 'h-4 w-4')} />
             ) : (
               <MapPin className={cn('shrink-0 text-amber-400', isApp ? 'h-3 w-3' : 'h-4 w-4')} />
             )}
@@ -67,7 +67,7 @@ export function TopBar() {
               {project?.name || 'Select Project'}
             </h1>
             <ChevronDown className={cn(
-              'shrink-0 text-muted-foreground transition-transform',
+              'shrink-0 text-foreground/60 transition-transform',
               isApp ? 'h-3 w-3' : 'h-4 w-4',
               open && 'rotate-180'
             )} />
