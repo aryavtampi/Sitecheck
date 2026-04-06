@@ -58,7 +58,7 @@ export const useOnboardingStore = create<OnboardingStore>((set, get) => {
     prevStep: () => set((s) => ({ currentStep: Math.max(0, s.currentStep - 1) })),
 
     completeOnboarding: () => {
-      set({ hasCompleted: true, currentStep: 0 });
+      set({ hasCompleted: true, currentStep: 0, completedVersion: ONBOARDING_VERSION });
       persist({ hasCompleted: true, completedVersion: ONBOARDING_VERSION });
     },
 

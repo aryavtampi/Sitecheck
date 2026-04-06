@@ -109,17 +109,18 @@ export function OnboardingOverlay() {
       {/* Subtle radial glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.05)_0%,_transparent_70%)]" />
 
+      {/* Skip button — positioned in overlay, outside content container */}
+      {!isLastStep && (
+        <button
+          onClick={handleSkip}
+          className="absolute top-6 right-6 z-20 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Skip
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+
       <div className="relative z-10 flex w-full max-w-2xl flex-col gap-8 px-6">
-        {/* Skip button */}
-        {!isLastStep && (
-          <button
-            onClick={handleSkip}
-            className="absolute -top-12 right-0 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Skip
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
 
         {/* Step content */}
         <AnimatePresence mode="wait" custom={directionRef.current}>
