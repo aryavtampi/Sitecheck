@@ -21,7 +21,7 @@ export function BmpSelectorMap({
   selectedIds,
   onToggle,
 }: BmpSelectorMapProps) {
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cursor, setCursor] = useState<string>('grab');
 

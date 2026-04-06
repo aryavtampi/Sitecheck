@@ -32,7 +32,7 @@ export function RouteEditorMap({
 }: RouteEditorMapProps) {
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
   const [hoveredWp, setHoveredWp] = useState<number | null>(null);
 
   const checkpointMap = useMemo(() => {

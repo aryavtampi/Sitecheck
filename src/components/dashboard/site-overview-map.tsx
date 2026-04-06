@@ -19,7 +19,8 @@ export function SiteOverviewMap() {
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
-  const project = useProjectStore((s) => s.currentProject)();
+  const currentProjectId = useProjectStore((s) => s.currentProjectId);
+  const project = useProjectStore((s) => s.currentProject());
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
@@ -74,6 +75,7 @@ export function SiteOverviewMap() {
 
       <div className={cn('relative', isApp ? 'h-[200px]' : 'h-[400px]')}>
         <Map
+          key={currentProjectId}
           initialViewState={initialViewState}
           mapboxAccessToken={MAPBOX_TOKEN}
           mapStyle={DEFAULT_MAP_STYLE}

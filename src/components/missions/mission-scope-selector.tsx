@@ -66,7 +66,7 @@ const SEGMENT_SCOPE_OPTION: ScopeOption = {
 };
 
 export function MissionScopeSelector({ selected, onSelect }: MissionScopeSelectorProps) {
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
   const isLinear = project?.projectType === 'linear';
 
   const scopeOptions = isLinear

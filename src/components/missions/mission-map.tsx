@@ -32,7 +32,7 @@ export function MissionMap({
 
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();

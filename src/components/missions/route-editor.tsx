@@ -18,7 +18,7 @@ interface RouteEditorProps {
 
 export function RouteEditor({ mission, onSave }: RouteEditorProps) {
   const { isApp } = useAppMode();
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
 
   const siteCenter = {
     lat: project?.coordinates.lat ?? 36.7801,

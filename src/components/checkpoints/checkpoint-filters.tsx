@@ -37,7 +37,7 @@ const zones: { value: Zone | 'all'; label: string }[] = [
 export function CheckpointFilters() {
   const { isApp } = useAppMode();
   const { filters, setFilter, resetFilters } = useCheckpointStore();
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
   const isLinear = project?.projectType === 'linear';
   const segments = project?.segments ?? [];
 

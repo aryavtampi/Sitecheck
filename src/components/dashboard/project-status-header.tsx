@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useProjectStore } from '@/stores/project-store';
 
 export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
 
   const riskLabel = `RL-${project?.riskLevel ?? 2}`;
   const qspDisplay = compact

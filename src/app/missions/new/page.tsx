@@ -31,7 +31,7 @@ export default function NewMissionPage() {
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const addMission = useDroneStore((s) => s.addMission);
-  const project = useProjectStore((s) => s.currentProject)();
+  const project = useProjectStore((s) => s.currentProject());
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [scope, setScope] = useState<MissionScope>('full');

@@ -24,14 +24,15 @@ const SiteOverviewMap = dynamic(
 interface DashboardMetrics {
   totalCheckpoints: number;
   complianceRate: number;
-  daysSinceInspection: number;
-  lastInspectionType: string;
-  lastInspectionDate: string;
+  daysSinceInspection: number | null;
+  lastInspectionType: string | null;
+  lastInspectionDate: string | null;
   activeDeficiencies: number;
   checkpointsByStatus: { compliant: number; deficient: number; needsReview: number };
 }
 
-function formatInspectionType(type: string): string {
+function formatInspectionType(type: string | null): string {
+  if (!type) return 'N/A';
   return type
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -52,7 +53,7 @@ export default function DashboardPage() {
       .catch(() => setLoading(false));
   }, [currentProjectId]);
 
-  const inspectionSubtitle = metrics
+  const inspectionSubtitle = metrics?.lastInspectionType && metrics?.lastInspectionDate
     ? `${formatInspectionType(metrics.lastInspectionType)} — ${format(new Date(metrics.lastInspectionDate), 'MMM d, yyyy')}`
     : '';
 
