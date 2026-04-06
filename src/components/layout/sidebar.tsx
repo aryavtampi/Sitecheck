@@ -10,7 +10,9 @@ import {
   CheckCircle,
   FileBarChart,
   CloudRain,
+  RotateCcw,
 } from 'lucide-react';
+import { useOnboardingStore } from '@/stores/onboarding-store';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -73,11 +75,20 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Version info */}
+      {/* Version info + Restart Tour */}
       <div className="border-t border-border p-3">
-        <p className="text-center text-[10px] text-muted-foreground opacity-0 transition-opacity duration-300 group-hover/sidebar:opacity-100">
-          v0.1.0 — Demo
-        </p>
+        <div className="flex flex-col items-center gap-2 opacity-0 transition-opacity duration-300 group-hover/sidebar:opacity-100">
+          <button
+            onClick={() => useOnboardingStore.getState().resetOnboarding()}
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground transition-colors hover:text-amber-500"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Restart Tour
+          </button>
+          <p className="text-center text-[10px] text-muted-foreground">
+            v0.1.0 — Demo
+          </p>
+        </div>
       </div>
     </aside>
   );

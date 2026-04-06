@@ -3,10 +3,12 @@
 import { ReactNode } from 'react';
 import { Sidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
-import { ViewModeSwitcher } from '@/components/layout/view-mode-switcher';
 import { AppPanel } from '@/components/layout/app-panel';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useViewModeStore } from '@/stores/view-mode-store';
+import { useOnboardingStore } from '@/stores/onboarding-store';
+import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
+import { ONBOARDING_VERSION } from '@/components/onboarding/onboarding-steps';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface ViewModeWrapperProps {
@@ -15,10 +17,15 @@ interface ViewModeWrapperProps {
 
 export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
   const { viewMode } = useViewModeStore();
+  const { hasCompleted, completedVersion } = useOnboardingStore();
+
+  const onboardingActive = !hasCompleted || completedVersion < ONBOARDING_VERSION;
 
   return (
     <TooltipProvider>
-      <ViewModeSwitcher />
+      {/* Onboarding overlay — shown until user completes or skips */}
+      {onboardingActive && <OnboardingOverlay />}
+
       <AnimatePresence mode="wait">
         {viewMode === 'website' ? (
           <motion.div
