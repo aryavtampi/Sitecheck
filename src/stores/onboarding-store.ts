@@ -18,20 +18,7 @@ interface OnboardingStore extends OnboardingState {
 }
 
 function getPersistedState(): OnboardingState {
-  if (typeof window === 'undefined') {
-    return { hasCompleted: false, currentStep: 0, completedVersion: 0 };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return {
-        hasCompleted: parsed.hasCompleted ?? false,
-        currentStep: 0,
-        completedVersion: parsed.completedVersion ?? 0,
-      };
-    }
-  } catch { /* ignore */ }
+  // Always start fresh on page load — onboarding shows every time
   return { hasCompleted: false, currentStep: 0, completedVersion: 0 };
 }
 
