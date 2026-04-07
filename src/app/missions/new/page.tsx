@@ -12,6 +12,7 @@ import { BmpSelector } from '@/components/missions/bmp-selector';
 import { BmpSelectorMap } from '@/components/missions/bmp-selector-map';
 import { MissionConfigForm, type MissionConfig } from '@/components/missions/mission-config-form';
 import { ReinspectionPresets } from '@/components/missions/reinspection-presets';
+import { MissionAirspaceCheck } from '@/components/missions/mission-airspace-check';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useDroneStore } from '@/stores/drone-store';
 import { useProjectStore } from '@/stores/project-store';
@@ -48,6 +49,10 @@ export default function NewMissionPage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [violations, setViolations] = useState<PathViolation[]>([]);
+  const [airspaceValid, setAirspaceValid] = useState(true);
+
+  // Memoized list of selected checkpoint objects (for the airspace check)
+  const selectedCheckpoints = checkpoints.filter((c) => selectedIds.has(c.id));
 
   // Fetch checkpoints on mount
   useEffect(() => {
@@ -421,14 +426,23 @@ export default function NewMissionPage() {
 
                 <MissionConfigForm config={config} onChange={setConfig} />
 
+                {/* Block 3 — Live in-wizard airspace validation */}
+                <MissionAirspaceCheck
+                  projectId={project?.id}
+                  selectedCheckpoints={selectedCheckpoints}
+                  altitudeFeet={config.altitude}
+                  onValidityChange={setAirspaceValid}
+                />
+
                 {error && (
                   <p className="text-xs text-red-400">{error}</p>
                 )}
 
+                {/* Server-side violations from a failed Generate attempt */}
                 {violations.length > 0 && (
                   <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 space-y-2">
                     <p className="text-xs font-semibold text-red-300 uppercase tracking-wider">
-                      Airspace Violations ({violations.length})
+                      Server rejected mission ({violations.length})
                     </p>
                     <ul className="space-y-1.5">
                       {violations.map((v, i) => (
@@ -460,8 +474,13 @@ export default function NewMissionPage() {
                   </Button>
                   <Button
                     onClick={handleGenerate}
-                    disabled={generating || selectedIds.size === 0}
+                    disabled={generating || selectedIds.size === 0 || !airspaceValid}
                     className="gap-1.5"
+                    title={
+                      !airspaceValid
+                        ? 'Resolve airspace violations before generating'
+                        : undefined
+                    }
                   >
                     {generating ? (
                       <>

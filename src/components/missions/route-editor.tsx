@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { RotateCcw, Save, Loader2 } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+import { RotateCcw, Save, Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RouteEditorMap } from './route-editor-map';
 import { WaypointEditor } from './waypoint-editor';
 import { generateFlightPath } from '@/lib/flight-path';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { useProjectStore } from '@/stores/project-store';
+import { useAirspace } from '@/hooks/use-airspace';
+import { validateFlightPath, type ValidatableWaypoint } from '@/lib/geofence';
 import { cn } from '@/lib/utils';
 import type { DroneMission, Waypoint } from '@/types/drone';
 
@@ -19,6 +21,7 @@ interface RouteEditorProps {
 export function RouteEditor({ mission, onSave }: RouteEditorProps) {
   const { isApp } = useAppMode();
   const project = useProjectStore((s) => s.currentProject());
+  const { geofence, noFlyZones } = useAirspace(project?.id);
 
   const siteCenter = {
     lat: project?.coordinates.lat ?? 36.7801,
@@ -32,6 +35,38 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
   const [selectedWp, setSelectedWp] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+
+  // Block 3 — Live airspace validation while editing
+  const validation = useMemo(() => {
+    const enabled = waypoints.filter((w) => w.enabled !== false);
+    if (enabled.length === 0) {
+      return { valid: true, violations: [] };
+    }
+    const validatable: ValidatableWaypoint[] = enabled.map((w) => ({
+      number: w.number,
+      lat: w.lat,
+      lng: w.lng,
+      altitudeFeet:
+        typeof w.altitudeOverride === 'number'
+          ? w.altitudeOverride
+          : mission.altitude,
+    }));
+    return validateFlightPath(flightPath, validatable, geofence, noFlyZones, {
+      defaultAltitudeFeet: mission.altitude,
+    });
+  }, [waypoints, flightPath, geofence, noFlyZones, mission.altitude]);
+
+  const violatingWaypointNumbers = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          validation.violations
+            .map((v) => v.waypointNumber)
+            .filter((n): n is number => typeof n === 'number')
+        )
+      ),
+    [validation.violations]
+  );
 
   // Regenerate flight path from current enabled waypoints
   const regeneratePath = useCallback((wps: Waypoint[]) => {
@@ -141,6 +176,7 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
             onWaypointToggle={handleToggle}
             selectedWaypoint={selectedWp}
             onSelectWaypoint={setSelectedWp}
+            violatingWaypointNumbers={violatingWaypointNumbers}
           />
         </div>
 
@@ -156,6 +192,25 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
           />
         </div>
       </div>
+
+      {/* Block 3 — Live airspace warning */}
+      {!validation.valid && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 flex items-start gap-2">
+          <ShieldAlert className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-red-300">
+              {validation.violations.length} airspace violation
+              {validation.violations.length === 1 ? '' : 's'} on this route
+            </p>
+            <p className="text-[11px] text-red-200/80 mt-0.5">
+              Waypoint{violatingWaypointNumbers.length === 1 ? '' : 's'}{' '}
+              <span className="font-mono">{violatingWaypointNumbers.join(', ')}</span>{' '}
+              violate the operating boundary or an active no-fly zone. Drag them out
+              of the red areas before saving.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Action bar */}
       <div className="flex items-center justify-between">
@@ -173,8 +228,13 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
         <Button
           size="sm"
           className="gap-1.5"
-          disabled={!dirty || saving}
+          disabled={!dirty || saving || !validation.valid}
           onClick={handleSave}
+          title={
+            !validation.valid
+              ? 'Resolve airspace violations before saving'
+              : undefined
+          }
         >
           {saving ? (
             <>

@@ -24,6 +24,8 @@ interface RouteEditorMapProps {
   onWaypointToggle: (waypointNumber: number) => void;
   selectedWaypoint: number | null;
   onSelectWaypoint: (num: number | null) => void;
+  /** Waypoint numbers currently in violation (drawn with a red warning ring) */
+  violatingWaypointNumbers?: number[];
 }
 
 export function RouteEditorMap({
@@ -32,12 +34,17 @@ export function RouteEditorMap({
   onWaypointDrag,
   selectedWaypoint,
   onSelectWaypoint,
+  violatingWaypointNumbers,
 }: RouteEditorMapProps) {
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const project = useProjectStore((s) => s.currentProject());
   const { geofence, noFlyZones } = useAirspace(project?.id);
   const [hoveredWp, setHoveredWp] = useState<number | null>(null);
+  const violatingSet = useMemo(
+    () => new Set(violatingWaypointNumbers ?? []),
+    [violatingWaypointNumbers]
+  );
 
   const checkpointMap = useMemo(() => {
     const m: Record<string, (typeof checkpoints)[0]> = {};
@@ -127,6 +134,7 @@ export function RouteEditorMap({
           const isSelected = selectedWaypoint === wp.number;
           const isHovered = hoveredWp === wp.number;
           const isDisabled = wp.enabled === false;
+          const isViolating = violatingSet.has(wp.number);
 
           return (
             <Marker
@@ -171,13 +179,38 @@ export function RouteEditorMap({
                   />
                 )}
 
+                {/* Block 3 — Airspace violation ring */}
+                {isViolating && (
+                  <>
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping pointer-events-none"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: 'rgba(239, 68, 68, 0.35)',
+                      }}
+                    />
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                      style={{
+                        width: 30,
+                        height: 30,
+                        border: '2px solid #ef4444',
+                        boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)',
+                      }}
+                    />
+                  </>
+                )}
+
                 {/* Marker circle */}
                 <div
                   className={cn(
                     'flex items-center justify-center rounded-full border-2 text-[9px] font-bold text-white',
                     isDisabled
                       ? 'border-dashed border-gray-500'
-                      : 'border-black/40'
+                      : isViolating
+                        ? 'border-red-300'
+                        : 'border-black/40'
                   )}
                   style={{
                     width: 18,
@@ -185,7 +218,9 @@ export function RouteEditorMap({
                     backgroundColor: isDisabled ? '#6B7280' : color,
                     boxShadow: isSelected
                       ? `0 0 10px ${color}80`
-                      : '0 1px 3px rgba(0,0,0,0.4)',
+                      : isViolating
+                        ? '0 0 10px rgba(239, 68, 68, 0.8)'
+                        : '0 1px 3px rgba(0,0,0,0.4)',
                   }}
                 >
                   {wp.number}
