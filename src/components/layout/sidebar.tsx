@@ -12,6 +12,7 @@ import {
   CloudRain,
   RotateCcw,
   Waypoints,
+  ShieldAlert,
 } from 'lucide-react';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { useProjectStore } from '@/stores/project-store';
@@ -33,6 +34,7 @@ export function Sidebar() {
       ? [
           ...baseNavItems.slice(0, 4),
           { href: '/crossings', icon: Waypoints, label: 'Crossings' },
+          { href: '/nofly-zones', icon: ShieldAlert, label: 'No-Fly Zones' },
           ...baseNavItems.slice(4),
         ]
       : baseNavItems;

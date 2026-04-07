@@ -100,4 +100,61 @@ export const linearProject: Project = {
     easementDescription: 'Existing 100-ft utility easement granted by Madera County (Doc #2018-074521)',
     widthFeet: 100,
   },
+  // Block 3 — Operating geofence. Hand-tuned envelope around the corridor
+  // (~200 ft buffer beyond the 100-ft ROW) so the Phase 2 mock no-fly zones
+  // (school, substation, airport buffer, wildlife area) sit *inside* the
+  // fence and visibly demonstrate the rejection flow when a waypoint is
+  // dragged onto one. Hard ceiling matches FAA Part 107 (400 ft AGL).
+  geofence: {
+    id: 'gf-valley-gas-pipeline',
+    projectId: 'valley-gas-pipeline',
+    name: 'Central Valley Gas Pipeline — Operating Envelope',
+    source: 'manual',
+    ceilingFeet: 400,
+    floorFeet: 0,
+    notes: 'FAA Part 107 ceiling. Buffered ~200 ft beyond the existing 100-ft easement.',
+    polygon: [
+      // North-east edge (right side of corridor, north → south)
+      [-119.7470, 36.8860],
+      [-119.7500, 36.8810],
+      [-119.7530, 36.8760],
+      [-119.7570, 36.8710],
+      [-119.7600, 36.8660],
+      [-119.7650, 36.8600],
+      [-119.7680, 36.8550],
+      [-119.7710, 36.8500],
+      [-119.7720, 36.8450],
+      [-119.7720, 36.8400],
+      [-119.7720, 36.8350],
+      [-119.7720, 36.8300],
+      [-119.7720, 36.8250],
+      [-119.7740, 36.8200],
+      [-119.7770, 36.8150],
+      [-119.7800, 36.8100],
+      [-119.7850, 36.8030],
+      [-119.7900, 36.7990],
+      // South cap
+      [-119.8000, 36.7990],
+      [-119.8100, 36.8000],
+      // South-west edge (left side of corridor, south → north)
+      [-119.8200, 36.8050],
+      [-119.8200, 36.8100],
+      [-119.8150, 36.8150],
+      [-119.8100, 36.8200],
+      [-119.8050, 36.8260],
+      [-119.8000, 36.8320],
+      [-119.7960, 36.8390],
+      [-119.7920, 36.8450],
+      [-119.7890, 36.8510],
+      [-119.7860, 36.8560],
+      [-119.7820, 36.8610],
+      [-119.7780, 36.8660],
+      [-119.7740, 36.8710],
+      [-119.7700, 36.8760],
+      [-119.7660, 36.8810],
+      [-119.7600, 36.8860],
+      // North cap — close ring
+      [-119.7470, 36.8860],
+    ],
+  },
 };

@@ -11,9 +11,10 @@ import {
   Rocket,
   Waypoints,
   ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 
-export const ONBOARDING_VERSION = 2;
+export const ONBOARDING_VERSION = 3;
 
 export interface OnboardingStepDef {
   id: string;
@@ -78,6 +79,21 @@ export const onboardingSteps: OnboardingStepDef[] = [
       'Per-crossing permit checklists (404, 401, NPDES, encroachment)',
       'Expiring permit alerts with 30-day warning badge on the dashboard',
       'Crossings panel grouped by segment with status tracking',
+    ],
+  },
+  {
+    id: 'airspace-safety',
+    title: 'Airspace Safety',
+    description:
+      'Every drone mission is checked against your project geofence and any active no-fly zones (airports, schools, critical infrastructure, wildlife areas). SiteCheck refuses to save a mission that flies through restricted airspace.',
+    icon: ShieldAlert,
+    accentColor: 'text-red-400',
+    highlights: [
+      'Operating geofence enforced as a hard boundary on every flight path',
+      'Live no-fly zone overlays rendered on every mission map',
+      'Wizard panel disables Generate when the planned route violates a zone',
+      'Route editor highlights offending waypoints with a red ring as you drag',
+      'No-Fly Zones page (linear projects) for full CRUD on restricted areas',
     ],
   },
   {
