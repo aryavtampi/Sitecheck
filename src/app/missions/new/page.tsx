@@ -19,6 +19,7 @@ import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
 import { MISSION_SCOPE_LABELS } from '@/lib/constants';
 import type { MissionScope } from '@/types/drone';
+import type { PathViolation } from '@/lib/geofence';
 
 const STEPS = ['Scope', 'Select BMPs', 'Configure'] as const;
 
@@ -46,6 +47,7 @@ export default function NewMissionPage() {
   });
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [violations, setViolations] = useState<PathViolation[]>([]);
 
   // Fetch checkpoints on mount
   useEffect(() => {
@@ -129,6 +131,7 @@ export default function NewMissionPage() {
 
     setGenerating(true);
     setError(null);
+    setViolations([]);
 
     try {
       // Build checkpoint array for the API
@@ -166,9 +169,18 @@ export default function NewMissionPage() {
           notes: config.notes,
           projectType: project?.projectType,
           centerline: project?.corridor?.centerline,
+          projectId: project?.id,
         }),
       });
 
+      if (genRes.status === 422) {
+        const payload = (await genRes.json()) as {
+          error?: string;
+          violations?: PathViolation[];
+        };
+        setViolations(payload.violations ?? []);
+        throw new Error(payload.error || 'Mission violates restricted airspace');
+      }
       if (!genRes.ok) throw new Error('Mission generation failed');
       const generatedMission = await genRes.json();
 
@@ -176,9 +188,17 @@ export default function NewMissionPage() {
       const persistRes = await fetch('/api/missions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(generatedMission),
+        body: JSON.stringify({ ...generatedMission, projectId: project?.id }),
       });
 
+      if (persistRes.status === 422) {
+        const payload = (await persistRes.json()) as {
+          error?: string;
+          violations?: PathViolation[];
+        };
+        setViolations(payload.violations ?? []);
+        throw new Error(payload.error || 'Mission violates restricted airspace');
+      }
       if (!persistRes.ok) throw new Error('Failed to save mission');
       const savedMission = await persistRes.json();
 
@@ -193,7 +213,7 @@ export default function NewMissionPage() {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setGenerating(false);
     }
-  }, [selectedIds, checkpoints, config, scope, addMission, router]);
+  }, [selectedIds, checkpoints, config, scope, addMission, router, project?.coordinates.lat, project?.coordinates.lng, project?.projectType, project?.corridor?.centerline, project?.id]);
 
   return (
     <PageTransition>
@@ -403,6 +423,28 @@ export default function NewMissionPage() {
 
                 {error && (
                   <p className="text-xs text-red-400">{error}</p>
+                )}
+
+                {violations.length > 0 && (
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 space-y-2">
+                    <p className="text-xs font-semibold text-red-300 uppercase tracking-wider">
+                      Airspace Violations ({violations.length})
+                    </p>
+                    <ul className="space-y-1.5">
+                      {violations.map((v, i) => (
+                        <li key={i} className="text-[11px] text-red-200">
+                          {v.waypointNumber !== undefined && (
+                            <span className="font-mono mr-1">WP{v.waypointNumber}:</span>
+                          )}
+                          {v.zoneName ? <span className="font-medium">{v.zoneName} — </span> : null}
+                          {v.message}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-[10px] text-red-300/70">
+                      Adjust your checkpoint selection to avoid these areas, then regenerate.
+                    </p>
+                  </div>
                 )}
 
                 <div className="flex items-center justify-between">

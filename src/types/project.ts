@@ -65,4 +65,9 @@ export interface Project {
   linearMileage?: number;
   /** Right-of-way boundaries (linear projects only) */
   rowBoundaries?: RowBoundaries;
+  /** Allowed flight area for drone missions (any project type). When omitted,
+   *  the geofences API auto-derives one from the corridor or bounding box. */
+  geofence?: import('./geofence').Geofence;
+  /** Forbidden flight zones for drone missions (any project type). */
+  noFlyZones?: import('./nofly-zone').NoFlyZone[];
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { generateSmartFlightPath } from '@/lib/flight-path';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { fetchAirspaceContext } from '@/lib/airspace-context';
+import { validateFlightPath } from '@/lib/geofence';
 import type { ProjectType } from '@/types/project';
 
 interface CheckpointInput {
@@ -33,6 +35,7 @@ export async function POST(request: NextRequest) {
       sourceDocumentPages,
       projectType,
       centerline,
+      projectId: bodyProjectId,
     } = body as {
       checkpoints: CheckpointInput[];
       siteInfo: SiteInfoInput;
@@ -45,7 +48,10 @@ export async function POST(request: NextRequest) {
       sourceDocumentPages?: number[];
       projectType?: ProjectType;
       centerline?: [number, number][];
+      projectId?: string;
     };
+
+    const projectId = bodyProjectId || resolveProjectId(request) || DEFAULT_PROJECT_ID;
 
     if (!checkpoints || !Array.isArray(checkpoints) || checkpoints.length === 0) {
       return NextResponse.json({ error: 'No checkpoints provided' }, { status: 400 });
@@ -68,6 +74,33 @@ export async function POST(request: NextRequest) {
     const ordered = projectType === 'linear'
       ? [...checkpoints].sort((a, b) => (a.linearRef?.station ?? 0) - (b.linearRef?.station ?? 0))
       : checkpoints;
+
+    // Block 3: validate flight path against project geofence + active no-fly zones.
+    // This is the planning-time check; runtime breach detection belongs to Block 5.
+    try {
+      const { geofence, noFlyZones } = await fetchAirspaceContext(projectId);
+      const validatableWaypoints = ordered.map((cp, i) => ({
+        number: i + 1,
+        lat: cp.lat,
+        lng: cp.lng,
+        altitudeFeet: missionAltitude,
+      }));
+      const result = validateFlightPath(flightPath, validatableWaypoints, geofence, noFlyZones, {
+        defaultAltitudeFeet: missionAltitude,
+      });
+      if (!result.valid) {
+        return NextResponse.json(
+          {
+            error: 'Mission violates restricted airspace',
+            violations: result.violations,
+          },
+          { status: 422 }
+        );
+      }
+    } catch (validationErr) {
+      console.warn('Airspace validation skipped due to error:', validationErr);
+      // Fail-open on validation infrastructure errors so mock/demo paths still work.
+    }
 
     // Estimate flight time (~1.5 minutes per checkpoint + 3 min transit)
     const flightTimeMinutes = Math.round(checkpoints.length * 1.5 + 3);
@@ -116,7 +149,7 @@ export async function POST(request: NextRequest) {
       const supabase = createServerClient();
       await supabase.from('activity_events').insert({
         id: `activity-${Date.now()}`,
-        project_id: resolveProjectId(request),
+        project_id: projectId,
         type: 'drone',
         title: 'Route Auto-Generated',
         description: `Flight route generated for "${mission.name}" with ${mission.waypoints.length} waypoints`,

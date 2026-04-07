@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { fetchAirspaceContext } from '@/lib/airspace-context';
+import { validateFlightPath } from '@/lib/geofence';
 
 
 // Transform snake_case database row to camelCase
@@ -129,12 +131,58 @@ export async function POST(request: NextRequest) {
 
     // Generate ID if not provided
     const missionId = body.id || `mission-${Date.now()}`;
+    const resolvedProjectId = body.projectId || DEFAULT_PROJECT_ID;
+
+    // Block 3: validate flight path against project geofence + active no-fly zones
+    // before persisting. This catches the case where a user manually drags a waypoint
+    // into a NFZ in the route editor and then tries to save.
+    if (
+      Array.isArray(body.flightPath) &&
+      body.flightPath.length >= 2 &&
+      Array.isArray(body.waypoints) &&
+      body.waypoints.length > 0
+    ) {
+      try {
+        const { geofence, noFlyZones } = await fetchAirspaceContext(resolvedProjectId);
+        const altitude = typeof body.altitude === 'number' ? body.altitude : 120;
+        const validatableWaypoints = body.waypoints.map(
+          (wp: Record<string, unknown>, i: number) => ({
+            number: typeof wp.number === 'number' ? (wp.number as number) : i + 1,
+            lat: wp.lat as number,
+            lng: wp.lng as number,
+            altitudeFeet:
+              typeof wp.altitudeOverride === 'number'
+                ? (wp.altitudeOverride as number)
+                : altitude,
+          })
+        );
+        const result = validateFlightPath(
+          body.flightPath as [number, number][],
+          validatableWaypoints,
+          geofence,
+          noFlyZones,
+          { defaultAltitudeFeet: altitude }
+        );
+        if (!result.valid) {
+          return NextResponse.json(
+            {
+              error: 'Mission violates restricted airspace',
+              violations: result.violations,
+            },
+            { status: 422 }
+          );
+        }
+      } catch (validationErr) {
+        console.warn('Airspace validation skipped due to error:', validationErr);
+        // Fail-open on validation infrastructure errors so mock/demo paths still work.
+      }
+    }
 
     // Set defaults
     const missionData = transformMissionToDb({
       ...body,
       id: missionId,
-      projectId: body.projectId || DEFAULT_PROJECT_ID,
+      projectId: resolvedProjectId,
       status: body.status || 'planned',
       flightTimeMinutes: body.flightTimeMinutes || 0,
       altitude: body.altitude || 120,
