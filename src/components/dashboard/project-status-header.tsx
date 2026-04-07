@@ -1,11 +1,24 @@
 'use client';
 
-import { Shield, User, FileText, Cloud } from 'lucide-react';
+import { useEffect } from 'react';
+import { Shield, User, FileText, Cloud, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useProjectStore } from '@/stores/project-store';
+import { usePermitsStore } from '@/stores/permits-store';
 
 export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
   const project = useProjectStore((s) => s.currentProject());
+  const projectId = useProjectStore((s) => s.currentProjectId);
+  const permits = usePermitsStore((s) => s.permitsByProject[projectId] ?? []);
+  const fetchPermits = usePermitsStore((s) => s.fetchPermits);
+
+  useEffect(() => {
+    if (project?.projectType === 'linear' && projectId) {
+      fetchPermits(projectId);
+    }
+  }, [project?.projectType, projectId, fetchPermits]);
+
+  const expiringPermits = permits.filter((p) => p.status === 'expiring' || p.status === 'expired');
 
   const riskLabel = `RL-${project?.riskLevel ?? 2}`;
   const qspDisplay = compact
@@ -69,6 +82,20 @@ export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
         <span className="text-xs text-muted-foreground">Weather</span>
         <span className="text-xs text-foreground">Partly Cloudy, 72°F</span>
       </div>
+      {expiringPermits.length > 0 && (
+        <>
+          <div className="h-6 w-px bg-border" />
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-400" />
+            <Badge
+              variant="outline"
+              className="border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs"
+            >
+              {expiringPermits.length} permit{expiringPermits.length !== 1 ? 's' : ''} expiring
+            </Badge>
+          </div>
+        </>
+      )}
     </div>
   );
 }

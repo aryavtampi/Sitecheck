@@ -9,9 +9,11 @@ import {
   CloudRain,
   FileBarChart,
   Rocket,
+  Waypoints,
+  ShieldCheck,
 } from 'lucide-react';
 
-export const ONBOARDING_VERSION = 1;
+export const ONBOARDING_VERSION = 2;
 
 export interface OnboardingStepDef {
   id: string;
@@ -51,15 +53,44 @@ export const onboardingSteps: OnboardingStepDef[] = [
     ],
   },
   {
+    id: 'linear-projects',
+    title: 'Linear Projects',
+    description:
+      'Pipelines, transmission lines, and other corridor-based infrastructure get a dedicated experience: centerline visualization, named segments, station-based labeling, and right-of-way (ROW) overlays.',
+    icon: Waypoints,
+    accentColor: 'text-emerald-400',
+    highlights: [
+      'Corridor centerline rendered on every map',
+      'Named segments with start/end stations (e.g., STA 0+00 → STA 68+64)',
+      'Right-of-way boundaries auto-generated from corridor width',
+      'Create new linear projects by drawing on the map or uploading GeoJSON',
+    ],
+  },
+  {
+    id: 'crossings-permits',
+    title: 'Crossings & Permits',
+    description:
+      'Track stream, road, utility, railroad, and wetland crossings along your corridor. Monitor permit expiration and stay ahead of regulatory deadlines.',
+    icon: ShieldCheck,
+    accentColor: 'text-cyan-400',
+    highlights: [
+      'Stream HDDs, road bores, utility crossings, rail crossings, and wetland approaches',
+      'Per-crossing permit checklists (404, 401, NPDES, encroachment)',
+      'Expiring permit alerts with 30-day warning badge on the dashboard',
+      'Crossings panel grouped by segment with status tracking',
+    ],
+  },
+  {
     id: 'dashboard',
     title: 'Command Dashboard',
     description:
-      'Your real-time command center. View compliance metrics, site maps, and activity feeds at a glance.',
+      'Your real-time command center. View compliance metrics, site or corridor maps, crossings, permits, and activity feeds at a glance.',
     icon: Home,
     accentColor: 'text-amber-500',
     highlights: [
       'BMP checkpoint counts and compliance rate',
-      'Interactive site map with checkpoint markers',
+      'Interactive site or corridor overview map with checkpoint and crossing markers',
+      'Linear projects show corridor length, crossings, and active permits',
       'Live activity feed with recent inspections and events',
     ],
   },
@@ -80,12 +111,13 @@ export const onboardingSteps: OnboardingStepDef[] = [
     id: 'missions',
     title: 'Drone Mission Center',
     description:
-      'Plan, execute, and review drone inspection flights with a guided 3-step wizard.',
+      'Plan, execute, and review drone inspection flights with a guided 3-step wizard. Linear projects automatically generate corridor-following flight paths.',
     icon: Plane,
     accentColor: 'text-blue-400',
     highlights: [
-      'Choose inspection scope and target BMPs',
+      'Choose inspection scope: full project, single segment, or station range',
       'AI-generated flight paths with waypoint editing',
+      'Corridor-following routes that lower altitude near crossings for closer inspection',
       'Live telemetry, flight replay, and AI review',
     ],
   },
@@ -132,7 +164,7 @@ export const onboardingSteps: OnboardingStepDef[] = [
     id: 'ready',
     title: "You're All Set",
     description:
-      'Your SiteCheck workspace is ready. Dive into the dashboard to start managing your construction site compliance.',
+      'Your SiteCheck workspace is ready. Dive into the dashboard to start managing your project compliance.',
     icon: Rocket,
     accentColor: 'text-amber-500',
     highlights: [],

@@ -92,4 +92,12 @@ export const linearProject: Project = {
       endStation: 27456,
     },
   ],
+  // ROW: 100-foot easement (50 ft each side of centerline)
+  // Boundaries auto-generated from centerline + width when left/right are empty
+  rowBoundaries: {
+    left: [],
+    right: [],
+    easementDescription: 'Existing 100-ft utility easement granted by Madera County (Doc #2018-074521)',
+    widthFeet: 100,
+  },
 };

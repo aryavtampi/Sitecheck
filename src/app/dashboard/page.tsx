@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { ProjectStatusHeader } from '@/components/dashboard/project-status-header';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
-import { CheckCircle, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
+import { CheckCircle, TrendingUp, Calendar, AlertTriangle, Waypoints, ShieldCheck, Route } from 'lucide-react';
 import { PageTransition } from '@/components/shared/page-transition';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { useProjectStore } from '@/stores/project-store';
@@ -29,6 +29,12 @@ interface DashboardMetrics {
   lastInspectionDate: string | null;
   activeDeficiencies: number;
   checkpointsByStatus: { compliant: number; deficient: number; needsReview: number };
+  isLinear?: boolean;
+  corridorLengthFeet?: number | null;
+  corridorLengthMiles?: number | null;
+  acreage?: number | null;
+  crossingsCount?: number;
+  permits?: { active: number; expiring: number; expired: number; total: number };
 }
 
 function formatInspectionType(type: string | null): string {
@@ -65,7 +71,7 @@ export default function DashboardPage() {
         <h1 className={cn('font-heading text-2xl font-bold tracking-wide', isApp && 'text-lg')}>Command Dashboard</h1>
         {!isApp && (
           <p className="mt-1 text-sm text-muted-foreground">
-            Real-time overview of site compliance and inspection status
+            Real-time overview of project compliance and inspection status
           </p>
         )}
       </div>
@@ -123,6 +129,54 @@ export default function DashboardPage() {
               compact={isApp}
             />
           </Link>
+        </div>
+      )}
+
+      {/* Linear-only metrics row */}
+      {metrics?.isLinear && (
+        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', isApp && 'grid-cols-3 gap-2')}>
+          <MetricCard
+            title="Corridor Length"
+            value={metrics.corridorLengthMiles ?? 0}
+            suffix=" mi"
+            decimals={2}
+            icon={Route}
+            subtitle={
+              metrics.corridorLengthFeet != null
+                ? `${Math.round(metrics.corridorLengthFeet).toLocaleString()} ft total`
+                : 'Centerline length'
+            }
+            accentColor="text-emerald-400"
+            compact={isApp}
+          />
+          <Link href="/crossings" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+            <MetricCard
+              title="Crossings"
+              value={metrics.crossingsCount ?? 0}
+              icon={Waypoints}
+              subtitle="Streams, roads, utilities, rail, wetlands"
+              accentColor="text-cyan-400"
+              compact={isApp}
+            />
+          </Link>
+          <MetricCard
+            title="Permits"
+            value={metrics.permits?.active ?? 0}
+            icon={ShieldCheck}
+            subtitle={
+              metrics.permits
+                ? `${metrics.permits.active} active · ${metrics.permits.expiring} expiring · ${metrics.permits.expired} expired`
+                : 'No permits tracked'
+            }
+            accentColor={
+              (metrics.permits?.expired ?? 0) > 0
+                ? 'text-red-400'
+                : (metrics.permits?.expiring ?? 0) > 0
+                  ? 'text-amber-400'
+                  : 'text-green-400'
+            }
+            compact={isApp}
+          />
         </div>
       )}
 

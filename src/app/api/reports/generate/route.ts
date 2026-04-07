@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const projectId = body.projectId || DEFAULT_PROJECT_ID;
     const inspectionId = body.inspectionId;
+    const segmentId = body.segmentId as string | undefined;
 
     // 1. Fetch project data
     const { data: project, error: projectError } = await supabase
@@ -33,6 +34,22 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    const isLinear = project.project_type === 'linear';
+
+    // Fetch segments for linear projects
+    let segments: Array<{ id: string; name: string; start_station: number; end_station: number }> = [];
+    if (isLinear) {
+      const { data: segmentRows } = await supabase
+        .from('project_segments')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sort_order');
+      segments = segmentRows || [];
+    }
+
+    // Determine if scoped to a single segment
+    const scopedSegment = segmentId && segments.find(s => s.id === segmentId);
 
     // 2. Fetch latest inspection (or specific one if provided)
     let inspectionQuery = supabase
@@ -65,10 +82,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Fetch checkpoints and compute status counts
-    const { data: checkpoints, error: checkpointsError } = await supabase
+    let checkpointQuery = supabase
       .from('checkpoints')
       .select('*')
       .eq('project_id', projectId);
+
+    if (scopedSegment) {
+      checkpointQuery = checkpointQuery.eq('segment_id', scopedSegment.id);
+    }
+
+    const { data: checkpoints, error: checkpointsError } = await checkpointQuery;
 
     if (checkpointsError) {
       console.error('Error fetching checkpoints:', checkpointsError);
@@ -113,18 +136,30 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const reportId = `report-${Date.now()}`;
 
-    // Section 1: Site Information
-    const siteInfoContent = `
-**Project Name:** ${project.name}
-**Address:** ${project.address}
-**WDID:** ${project.wdid}
-**Permit Number:** ${project.permit_number}
-**Risk Level:** ${project.risk_level}
-**Total Acreage:** ${project.acreage} acres
-**Project Status:** ${project.status}
-**Start Date:** ${project.start_date}
-**Estimated Completion:** ${project.estimated_completion}
-    `.trim();
+    // Section 1: Project Information (dynamic by project type)
+    const corridorMileage = project.linear_mileage
+      ? `${Number(project.linear_mileage).toFixed(2)} miles`
+      : project.corridor_total_length
+        ? `${(Number(project.corridor_total_length) / 5280).toFixed(2)} miles`
+        : 'N/A';
+
+    const siteInfoLines = [
+      `**Project Name:** ${project.name}`,
+      `**Address:** ${project.address}`,
+      `**WDID:** ${project.wdid}`,
+      `**Permit Number:** ${project.permit_number}`,
+      `**Risk Level:** ${project.risk_level}`,
+      isLinear
+        ? `**Corridor Length:** ${corridorMileage}`
+        : `**Total Acreage:** ${project.acreage} acres`,
+      isLinear && segments.length > 0
+        ? `**Segments:** ${segments.length}${scopedSegment ? ` (Report scoped to: ${scopedSegment.name})` : ''}`
+        : null,
+      `**Project Status:** ${project.status}`,
+      `**Start Date:** ${project.start_date}`,
+      `**Estimated Completion:** ${project.estimated_completion}`,
+    ].filter(Boolean);
+    const siteInfoContent = siteInfoLines.join('\n');
 
     // Section 2: Inspection Details
     const inspectionContent = inspection ? `
@@ -166,9 +201,27 @@ Weather conditions should be recorded at the time of inspection.
 `;
 
     for (const bmp of bmpStatusSummary) {
-      const typeName = bmp.type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const typeName = bmp.type.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
       bmpStatusContent += `
 - **${typeName}:** ${bmp.total} total (${bmp.compliant} compliant, ${bmp.deficient} deficient, ${bmp.needsReview} needs review)`;
+    }
+
+    // Per-segment breakdown for linear projects (full report only)
+    if (isLinear && !scopedSegment && segments.length > 0) {
+      bmpStatusContent += `\n\n**Per-Segment Compliance Breakdown:**\n`;
+      for (const seg of segments) {
+        const segCheckpoints = checkpointList.filter(c => c.segment_id === seg.id);
+        const segCompliant = segCheckpoints.filter(c => c.status === 'compliant').length;
+        const segDeficient = segCheckpoints.filter(c => c.status === 'deficient').length;
+        const segReview = segCheckpoints.filter(c => c.status === 'needs-review').length;
+        const compliancePct = segCheckpoints.length > 0
+          ? Math.round((segCompliant / segCheckpoints.length) * 100)
+          : 0;
+        const stationStart = `STA ${Math.floor(seg.start_station / 100)}+${(seg.start_station % 100).toString().padStart(2, '0')}`;
+        const stationEnd = `STA ${Math.floor(seg.end_station / 100)}+${(seg.end_station % 100).toString().padStart(2, '0')}`;
+        bmpStatusContent += `
+- **${seg.name}** (${stationStart} – ${stationEnd}): ${segCheckpoints.length} BMPs, ${compliancePct}% compliant (${segDeficient} deficient, ${segReview} needs review)`;
+      }
     }
 
     // Section 5: Deficiency Log
@@ -226,7 +279,7 @@ This inspection was conducted in accordance with the requirements of:
     const sections: ReportSection[] = [
       {
         id: 'site-info',
-        title: 'Site Information',
+        title: isLinear ? 'Corridor Information' : 'Site Information',
         content: siteInfoContent,
         type: 'text',
         editable: false,

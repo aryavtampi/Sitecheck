@@ -11,10 +11,12 @@ import {
   FileBarChart,
   CloudRain,
   RotateCcw,
+  Waypoints,
 } from 'lucide-react';
 import { useOnboardingStore } from '@/stores/onboarding-store';
+import { useProjectStore } from '@/stores/project-store';
 
-const navItems = [
+const baseNavItems = [
   { href: '/dashboard', icon: Home, label: 'Dashboard' },
   { href: '/swppp', icon: FileText, label: 'SWPPP Intelligence' },
   { href: '/missions', icon: Plane, label: 'Drone Missions' },
@@ -25,6 +27,15 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const project = useProjectStore((s) => s.currentProject());
+  const navItems =
+    project?.projectType === 'linear'
+      ? [
+          ...baseNavItems.slice(0, 4),
+          { href: '/crossings', icon: Waypoints, label: 'Crossings' },
+          ...baseNavItems.slice(4),
+        ]
+      : baseNavItems;
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 flex-col border-r border-border bg-[#0A0A0A] transition-all duration-300 hover:w-56 sm:flex group/sidebar">

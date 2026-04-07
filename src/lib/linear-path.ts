@@ -4,11 +4,30 @@
  * No return-to-launch loop — flies sequentially start to end.
  */
 
+import { distanceFeet } from './format';
+
 interface LinearCheckpoint {
   lat: number;
   lng: number;
   linearRef?: { station: number; offset: number; segmentId?: string };
 }
+
+interface CrossingHint {
+  location: [number, number];
+  /** Altitude (in feet AGL) to use when within proximity of this crossing */
+  altitudeFeet?: number;
+}
+
+export interface AltitudeHint {
+  /** Index into the path array */
+  pathIndex: number;
+  altitudeFeet: number;
+  reason: string;
+}
+
+const DEFAULT_CRUISE_ALTITUDE = 200; // ft AGL
+const CROSSING_INSPECT_ALTITUDE = 80; // ft AGL — closer for crossing detail
+const CROSSING_PROXIMITY_FT = 50;
 
 /**
  * Find the closest point on a centerline to a given lat/lng.
@@ -86,6 +105,60 @@ export function generateLinearFlightPath(
   }
 
   return path;
+}
+
+/**
+ * Generate altitude hints for a path based on proximity to crossings.
+ * Each hint says: "at this path index, drop altitude because we're near a crossing".
+ *
+ * Returns one hint per path point that is within CROSSING_PROXIMITY_FT of any crossing.
+ */
+export function generateCrossingAltitudeHints(
+  path: [number, number][],
+  crossings: CrossingHint[]
+): AltitudeHint[] {
+  const hints: AltitudeHint[] = [];
+  if (crossings.length === 0) return hints;
+
+  for (let i = 0; i < path.length; i++) {
+    let closestCrossing: CrossingHint | null = null;
+    let closestDist = Infinity;
+
+    for (const crossing of crossings) {
+      const dist = distanceFeet(path[i], crossing.location);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestCrossing = crossing;
+      }
+    }
+
+    if (closestCrossing && closestDist <= CROSSING_PROXIMITY_FT) {
+      hints.push({
+        pathIndex: i,
+        altitudeFeet: closestCrossing.altitudeFeet ?? CROSSING_INSPECT_ALTITUDE,
+        reason: `Within ${Math.round(closestDist)} ft of crossing — lowering for inspection`,
+      });
+    }
+  }
+
+  return hints;
+}
+
+/**
+ * Convenience helper that returns a per-waypoint altitude profile for a given path.
+ * Default altitude is `DEFAULT_CRUISE_ALTITUDE`; reduced near crossings.
+ */
+export function buildAltitudeProfile(
+  path: [number, number][],
+  crossings: CrossingHint[],
+  cruiseAltitude = DEFAULT_CRUISE_ALTITUDE
+): number[] {
+  const profile = new Array(path.length).fill(cruiseAltitude);
+  const hints = generateCrossingAltitudeHints(path, crossings);
+  for (const hint of hints) {
+    profile[hint.pathIndex] = hint.altitudeFeet;
+  }
+  return profile;
 }
 
 /**

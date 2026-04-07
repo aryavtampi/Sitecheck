@@ -17,4 +17,10 @@ export interface Inspection {
   findings: InspectionFinding[];
   overallCompliance: number;
   missionId?: string;
+  /** For linear projects: which segment this inspection covered (if any) */
+  segmentId?: string;
+  /** For linear projects: station range start in feet */
+  stationRangeStart?: number;
+  /** For linear projects: station range end in feet */
+  stationRangeEnd?: number;
 }

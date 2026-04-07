@@ -11,8 +11,11 @@ import { cn } from '@/lib/utils';
 import { STATUS_COLORS, STATUS_LABELS, BMP_CATEGORY_LABELS } from '@/lib/constants';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useProjectStore } from '@/stores/project-store';
+import { useCrossingsStore } from '@/stores/crossings-store';
 import { fitBoundsFromPoints } from '@/lib/map-utils';
 import { CorridorLayer } from '@/components/map/corridor-layer';
+import { CrossingsLayer } from '@/components/map/crossings-layer';
+import { RowLayer } from '@/components/map/row-layer';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 
 export function SiteOverviewMap() {
@@ -21,10 +24,20 @@ export function SiteOverviewMap() {
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const currentProjectId = useProjectStore((s) => s.currentProjectId);
   const project = useProjectStore((s) => s.currentProject());
+  const fetchCrossings = useCrossingsStore((s) => s.fetchCrossings);
+  const crossings = useCrossingsStore((s) =>
+    project?.projectType === 'linear' ? s.crossingsByProject[currentProjectId] ?? [] : []
+  );
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
   }, [checkpoints.length, fetchCheckpoints]);
+
+  useEffect(() => {
+    if (project?.projectType === 'linear' && currentProjectId) {
+      fetchCrossings(currentProjectId);
+    }
+  }, [project?.projectType, currentProjectId, fetchCrossings]);
 
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
 
@@ -70,7 +83,9 @@ export function SiteOverviewMap() {
   return (
     <div className="relative rounded-lg border border-border bg-surface overflow-hidden">
       <div className="border-b border-border px-4 py-3">
-        <h3 className="font-heading text-sm font-semibold tracking-wide">Site Overview</h3>
+        <h3 className="font-heading text-sm font-semibold tracking-wide">
+          {project?.projectType === 'linear' ? 'Corridor Overview' : 'Site Overview'}
+        </h3>
       </div>
 
       <div className={cn('relative', isApp ? 'h-[200px]' : 'h-[400px]')}>
@@ -88,6 +103,17 @@ export function SiteOverviewMap() {
               centerline={project.corridor.centerline}
               widthFeet={project.corridor.corridorWidthFeet}
             />
+          )}
+          {project?.corridor?.centerline && project.rowBoundaries?.widthFeet && (
+            <RowLayer
+              centerline={project.corridor.centerline}
+              leftBoundary={project.rowBoundaries.left.length > 0 ? project.rowBoundaries.left : undefined}
+              rightBoundary={project.rowBoundaries.right.length > 0 ? project.rowBoundaries.right : undefined}
+              widthFeet={project.rowBoundaries.widthFeet}
+            />
+          )}
+          {project?.projectType === 'linear' && crossings.length > 0 && (
+            <CrossingsLayer crossings={crossings} />
           )}
 
           {checkpoints.map((cp) => {

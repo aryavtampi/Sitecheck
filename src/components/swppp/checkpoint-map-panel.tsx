@@ -70,7 +70,9 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
       <div className="border-b border-white/5 bg-[#141414] px-3 py-2">
         <div className="flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-xs font-medium text-foreground">Site Map</span>
+          <span className="text-xs font-medium text-foreground">
+            {project?.projectType === 'linear' ? 'Corridor Map' : 'Site Map'}
+          </span>
         </div>
         <p className="mt-0.5 text-[10px] text-muted-foreground">
           Click a pin to select a checkpoint

@@ -5,7 +5,7 @@ import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 // Transform snake_case DB row to camelCase
 function transformCheckpoint(row: Record<string, unknown>) {
-  return {
+  const result: Record<string, unknown> = {
     id: row.id,
     projectId: row.project_id,
     name: row.name,
@@ -25,9 +25,21 @@ function transformCheckpoint(row: Record<string, unknown>) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+  if (row.station_number != null || row.segment_id != null) {
+    result.linearRef = {
+      station: Number(row.station_number ?? 0),
+      offset: Number(row.station_offset_feet ?? 0),
+      segmentId: row.segment_id || undefined,
+    };
+  }
+  if (row.station_label) {
+    result.stationLabel = row.station_label;
+  }
+  return result;
 }
 
 // Transform camelCase request body to snake_case for DB
+// Handles flat field aliases (e.g. stationNumber) AND nested linearRef object
 function toSnakeCase(data: Record<string, unknown>) {
   const mapping: Record<string, string> = {
     projectId: 'project_id',
@@ -40,10 +52,21 @@ function toSnakeCase(data: Record<string, unknown>) {
     swpppPage: 'swppp_page',
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    stationNumber: 'station_number',
+    stationOffsetFeet: 'station_offset_feet',
+    segmentId: 'segment_id',
+    stationLabel: 'station_label',
   };
 
   const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
+    if (key === 'linearRef' && value && typeof value === 'object') {
+      const ref = value as Record<string, unknown>;
+      if (ref.station != null) result.station_number = ref.station;
+      if (ref.offset != null) result.station_offset_feet = ref.offset;
+      if (ref.segmentId) result.segment_id = ref.segmentId;
+      continue;
+    }
     const snakeKey = mapping[key] || key;
     result[snakeKey] = value;
   }

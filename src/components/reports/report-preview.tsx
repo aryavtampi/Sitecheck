@@ -2,12 +2,17 @@
 
 import { useEffect } from 'react';
 import { useReportStore } from '@/stores/report-store';
+import { useProjectStore } from '@/stores/project-store';
 import { EditableSection } from '@/components/reports/editable-section';
 import { SignatureBlock } from '@/components/reports/signature-block';
 
 export function ReportPreview() {
   const { sections, setSections, updateSection, signed, signedBy, signedDate, sign, unsign, loading, generateReport } =
     useReportStore();
+  const currentProject = useProjectStore((s) => s.currentProject());
+  const isLinear = currentProject?.projectType === 'linear';
+  const reportTitle = isLinear ? 'Corridor Inspection Report' : 'Site Inspection Report';
+  const projectDisplayName = currentProject?.name ?? 'Riverside Commercial — Phase 2';
 
   useEffect(() => {
     if (sections.length === 0) {
@@ -40,10 +45,10 @@ export function ReportPreview() {
               California Construction General Permit
             </p>
             <h1 className="mt-2 text-xl font-bold tracking-wide text-neutral-800">
-              Site Inspection Report
+              {reportTitle}
             </h1>
             <p className="mt-1 text-sm text-neutral-500">
-              Riverside Commercial — Phase 2
+              {projectDisplayName}
             </p>
             <div className="mx-auto mt-3 h-px w-24 bg-neutral-300" />
             <p className="mt-2 text-xs text-neutral-400">

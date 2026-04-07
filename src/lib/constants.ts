@@ -7,6 +7,12 @@ export const BMP_CATEGORY_LABELS: Record<BMPCategory, string> = {
   'wind-erosion': 'Wind Erosion',
   'materials-management': 'Materials Management',
   'non-storm-water': 'Non-Storm Water',
+  // Linear infrastructure BMPs
+  'trench-plug': 'Trench Plug',
+  'slope-breaker': 'Slope Breaker',
+  'water-bar': 'Water Bar',
+  'hdd-containment': 'HDD Containment',
+  'stream-crossing-erosion': 'Stream Crossing Erosion',
 };
 
 export const BMP_CATEGORY_COLORS: Record<BMPCategory, string> = {
@@ -16,6 +22,12 @@ export const BMP_CATEGORY_COLORS: Record<BMPCategory, string> = {
   'wind-erosion': '#06B6D4',
   'materials-management': '#EC4899',
   'non-storm-water': '#10B981',
+  // Linear infrastructure BMPs
+  'trench-plug': '#EAB308',
+  'slope-breaker': '#14B8A6',
+  'water-bar': '#0EA5E9',
+  'hdd-containment': '#F97316',
+  'stream-crossing-erosion': '#A855F7',
 };
 
 export const STATUS_COLORS = {
@@ -62,7 +74,7 @@ import type {
 } from '@/types/drone';
 
 export const MISSION_SCOPE_LABELS: Record<MissionScope, string> = {
-  full: 'Full Site',
+  full: 'Full Project',
   'selected-bmps': 'Selected BMPs',
   priority: 'Priority Only',
   deficient: 'Deficient Only',

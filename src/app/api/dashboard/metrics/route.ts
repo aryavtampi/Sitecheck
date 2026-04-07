@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { linearCrossings } from '@/data/linear-crossings';
+import { linearPermits } from '@/data/linear-permits';
+import { deriveLivePermitStatus } from '@/types/permit';
 
 
 export async function GET(request: NextRequest) {
@@ -8,6 +11,27 @@ export async function GET(request: NextRequest) {
     const supabase = createServerClient();
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
+
+    // Query project to determine type and corridor data
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id, project_type, linear_mileage, corridor_total_length, acreage')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (projectError) {
+      console.error('Failed to fetch project:', projectError.message);
+    }
+
+    const isLinear = project?.project_type === 'linear';
+    const corridorLengthFeet = project?.corridor_total_length
+      ? Number(project.corridor_total_length)
+      : null;
+    const corridorLengthMiles = project?.linear_mileage
+      ? Number(project.linear_mileage)
+      : corridorLengthFeet
+        ? corridorLengthFeet / 5280
+        : null;
 
     // Query checkpoints: count total and count by status
     const { data: checkpoints, error: checkpointsError } = await supabase
@@ -67,6 +91,57 @@ export async function GET(request: NextRequest) {
       daysSinceInspection = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     }
 
+    // Linear-only metrics: crossings count + permit status counts
+    let crossingsCount = 0;
+    let permitsActive = 0;
+    let permitsExpiring = 0;
+    let permitsExpired = 0;
+
+    if (isLinear) {
+      // Crossings count (DB first, mock fallback)
+      try {
+        const { data: crossings, error: crossingsError } = await supabase
+          .from('crossings')
+          .select('id')
+          .eq('project_id', projectId);
+
+        if (crossingsError) throw crossingsError;
+        crossingsCount = crossings?.length ?? 0;
+      } catch {
+        crossingsCount = linearCrossings.filter((c) => c.projectId === projectId).length;
+      }
+
+      // Permit status counts (DB first, mock fallback)
+      type PermitRow = { id: string; status: string; expiration_date: string | null };
+      try {
+        const { data: permits, error: permitsError } = await supabase
+          .from('segment_permits')
+          .select('id, status, expiration_date')
+          .eq('project_id', projectId);
+
+        if (permitsError) throw permitsError;
+        for (const p of (permits ?? []) as PermitRow[]) {
+          const live = deriveLivePermitStatus({
+            id: p.id,
+            projectId,
+            permitType: '',
+            status: p.status as 'active',
+            expirationDate: p.expiration_date ?? undefined,
+          });
+          if (live === 'active') permitsActive++;
+          else if (live === 'expiring') permitsExpiring++;
+          else if (live === 'expired') permitsExpired++;
+        }
+      } catch {
+        for (const p of linearPermits.filter((m) => m.projectId === projectId)) {
+          const live = deriveLivePermitStatus(p);
+          if (live === 'active') permitsActive++;
+          else if (live === 'expiring') permitsExpiring++;
+          else if (live === 'expired') permitsExpired++;
+        }
+      }
+    }
+
     return NextResponse.json({
       totalCheckpoints,
       complianceRate,
@@ -78,6 +153,18 @@ export async function GET(request: NextRequest) {
         compliant: compliantCount,
         deficient: deficientCount,
         needsReview: needsReviewCount,
+      },
+      // Project-type-aware fields
+      isLinear,
+      corridorLengthFeet,
+      corridorLengthMiles,
+      acreage: project?.acreage ? Number(project.acreage) : null,
+      crossingsCount,
+      permits: {
+        active: permitsActive,
+        expiring: permitsExpiring,
+        expired: permitsExpired,
+        total: permitsActive + permitsExpiring + permitsExpired,
       },
     });
   } catch (error: unknown) {

@@ -30,6 +30,17 @@ export interface ProjectSegment {
   centerlineSlice?: [number, number][];
 }
 
+export interface RowBoundaries {
+  /** Left ROW boundary line: GeoJSON LineString [[lng, lat], ...] */
+  left: [number, number][];
+  /** Right ROW boundary line: GeoJSON LineString [[lng, lat], ...] */
+  right: [number, number][];
+  /** Easement description (legal language, agency, etc.) */
+  easementDescription?: string;
+  /** Total ROW width in feet (used to auto-generate boundaries from centerline) */
+  widthFeet?: number;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -52,4 +63,6 @@ export interface Project {
   segments?: ProjectSegment[];
   /** Total linear mileage (only for linear projects) */
   linearMileage?: number;
+  /** Right-of-way boundaries (linear projects only) */
+  rowBoundaries?: RowBoundaries;
 }

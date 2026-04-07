@@ -4,7 +4,13 @@ export type BMPCategory =
   | 'tracking-control'
   | 'wind-erosion'
   | 'materials-management'
-  | 'non-storm-water';
+  | 'non-storm-water'
+  // Linear infrastructure-specific BMP types
+  | 'trench-plug'
+  | 'slope-breaker'
+  | 'water-bar'
+  | 'hdd-containment'
+  | 'stream-crossing-erosion';
 
 export type CheckpointStatus = 'compliant' | 'deficient' | 'needs-review';
 export type Priority = 'high' | 'medium' | 'low';
@@ -17,6 +23,8 @@ export interface LinearReference {
   offset: number;
   /** Which segment this checkpoint belongs to */
   segmentId?: string;
+  /** Optional crossing this checkpoint is associated with */
+  crossingId?: string;
 }
 
 export interface Checkpoint {
