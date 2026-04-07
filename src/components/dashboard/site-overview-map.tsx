@@ -16,6 +16,9 @@ import { fitBoundsFromPoints } from '@/lib/map-utils';
 import { CorridorLayer } from '@/components/map/corridor-layer';
 import { CrossingsLayer } from '@/components/map/crossings-layer';
 import { RowLayer } from '@/components/map/row-layer';
+import { GeofenceLayer } from '@/components/map/geofence-layer';
+import { NoFlyZonesLayer } from '@/components/map/nofly-zones-layer';
+import { useAirspace } from '@/hooks/use-airspace';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 import type { Crossing } from '@/types/crossing';
 
@@ -35,6 +38,7 @@ export function SiteOverviewMap() {
   const crossings = project?.projectType === 'linear'
     ? (crossingsForProject ?? EMPTY_CROSSINGS)
     : EMPTY_CROSSINGS;
+  const { geofence, noFlyZones } = useAirspace(currentProjectId);
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
@@ -122,6 +126,10 @@ export function SiteOverviewMap() {
           {project?.projectType === 'linear' && crossings.length > 0 && (
             <CrossingsLayer crossings={crossings} />
           )}
+
+          {/* Block 3 — Airspace overlays */}
+          <GeofenceLayer geofence={geofence} />
+          <NoFlyZonesLayer zones={noFlyZones} />
 
           {checkpoints.map((cp) => {
             const color = STATUS_COLORS[cp.status];

@@ -8,6 +8,9 @@ import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useProjectStore } from '@/stores/project-store';
 import { fitBoundsFromPoints } from '@/lib/map-utils';
 import { CorridorLayer } from '@/components/map/corridor-layer';
+import { GeofenceLayer } from '@/components/map/geofence-layer';
+import { NoFlyZonesLayer } from '@/components/map/nofly-zones-layer';
+import { useAirspace } from '@/hooks/use-airspace';
 import { BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
@@ -33,6 +36,7 @@ export function RouteEditorMap({
   const { isApp } = useAppMode();
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const project = useProjectStore((s) => s.currentProject());
+  const { geofence, noFlyZones } = useAirspace(project?.id);
   const [hoveredWp, setHoveredWp] = useState<number | null>(null);
 
   const checkpointMap = useMemo(() => {
@@ -95,6 +99,11 @@ export function RouteEditorMap({
             widthFeet={project.corridor.corridorWidthFeet}
           />
         )}
+
+        {/* Block 3 — Airspace overlays */}
+        <GeofenceLayer geofence={geofence} />
+        <NoFlyZonesLayer zones={noFlyZones} />
+
         {/* Flight path line */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <Source id="flight-path" type="geojson" data={pathGeoJson as any}>

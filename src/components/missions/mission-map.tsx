@@ -11,6 +11,9 @@ import { useProjectStore } from '@/stores/project-store';
 import { STATUS_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { CorridorLayer } from '@/components/map/corridor-layer';
+import { GeofenceLayer } from '@/components/map/geofence-layer';
+import { NoFlyZonesLayer } from '@/components/map/nofly-zones-layer';
+import { useAirspace } from '@/hooks/use-airspace';
 import { cn } from '@/lib/utils';
 
 interface MissionMapProps {
@@ -33,6 +36,7 @@ export function MissionMap({
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const project = useProjectStore((s) => s.currentProject());
+  const { geofence, noFlyZones } = useAirspace(project?.id);
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
@@ -165,6 +169,11 @@ export function MissionMap({
             widthFeet={project.corridor.corridorWidthFeet}
           />
         )}
+
+        {/* Block 3 — Airspace overlays */}
+        <GeofenceLayer geofence={geofence} />
+        <NoFlyZonesLayer zones={noFlyZones} />
+
         {/* Full planned flight path - dashed amber */}
         <Source id="planned-path" type="geojson" data={plannedPathGeoJSON}>
           <Layer

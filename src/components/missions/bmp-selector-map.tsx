@@ -9,6 +9,9 @@ import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { fitBoundsFromPoints } from '@/lib/map-utils';
 import { useProjectStore } from '@/stores/project-store';
 import { CorridorLayer } from '@/components/map/corridor-layer';
+import { GeofenceLayer } from '@/components/map/geofence-layer';
+import { NoFlyZonesLayer } from '@/components/map/nofly-zones-layer';
+import { useAirspace } from '@/hooks/use-airspace';
 
 interface BmpSelectorMapProps {
   checkpoints: Checkpoint[];
@@ -22,6 +25,7 @@ export function BmpSelectorMap({
   onToggle,
 }: BmpSelectorMapProps) {
   const project = useProjectStore((s) => s.currentProject());
+  const { geofence, noFlyZones } = useAirspace(project?.id);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [cursor, setCursor] = useState<string>('grab');
 
@@ -63,6 +67,11 @@ export function BmpSelectorMap({
             widthFeet={project.corridor.corridorWidthFeet}
           />
         )}
+
+        {/* Block 3 — Airspace overlays */}
+        <GeofenceLayer geofence={geofence} />
+        <NoFlyZonesLayer zones={noFlyZones} />
+
         {checkpoints.map((cp) => {
           const lng = cp.lng ?? cp.location.lng;
           const lat = cp.lat ?? cp.location.lat;
