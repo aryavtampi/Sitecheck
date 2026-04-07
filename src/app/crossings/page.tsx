@@ -11,7 +11,9 @@ import {
   CROSSING_STATUS_LABELS,
   CROSSING_STATUS_COLORS,
 } from '@/types/crossing';
-import type { CrossingStatus } from '@/types/crossing';
+import type { Crossing, CrossingStatus } from '@/types/crossing';
+
+const EMPTY_CROSSINGS: Crossing[] = [];
 
 const SiteOverviewMap = dynamic(
   () =>
@@ -28,9 +30,9 @@ export default function CrossingsPage() {
   const router = useRouter();
   const project = useProjectStore((s) => s.currentProject());
   const projectId = useProjectStore((s) => s.currentProjectId);
-  const crossings = useCrossingsStore(
-    (s) => s.crossingsByProject[projectId] ?? []
-  );
+  // Select raw value (stable ref) and default outside the selector — see error #185.
+  const crossingsForProject = useCrossingsStore((s) => s.crossingsByProject[projectId]);
+  const crossings = crossingsForProject ?? EMPTY_CROSSINGS;
   const fetchCrossings = useCrossingsStore((s) => s.fetchCrossings);
 
   useEffect(() => {

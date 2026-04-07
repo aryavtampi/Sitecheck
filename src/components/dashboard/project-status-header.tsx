@@ -5,11 +5,16 @@ import { Shield, User, FileText, Cloud, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useProjectStore } from '@/stores/project-store';
 import { usePermitsStore } from '@/stores/permits-store';
+import type { SegmentPermit } from '@/types/permit';
+
+const EMPTY_PERMITS: SegmentPermit[] = [];
 
 export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
   const project = useProjectStore((s) => s.currentProject());
   const projectId = useProjectStore((s) => s.currentProjectId);
-  const permits = usePermitsStore((s) => s.permitsByProject[projectId] ?? []);
+  // Select raw value so the reference is stable across renders.
+  const permitsForProject = usePermitsStore((s) => s.permitsByProject[projectId]);
+  const permits = permitsForProject ?? EMPTY_PERMITS;
   const fetchPermits = usePermitsStore((s) => s.fetchPermits);
 
   useEffect(() => {

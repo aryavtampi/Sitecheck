@@ -4,8 +4,10 @@ import { useEffect } from 'react';
 import { useProjectStore } from '@/stores/project-store';
 import { usePermitsStore } from '@/stores/permits-store';
 import { PERMIT_STATUS_LABELS, PERMIT_STATUS_COLORS } from '@/types/permit';
-import type { PermitStatus } from '@/types/permit';
+import type { PermitStatus, SegmentPermit } from '@/types/permit';
 import { formatDate } from '@/lib/format';
+
+const EMPTY_PERMITS: SegmentPermit[] = [];
 
 interface PermitStatusPanelProps {
   /** Optional project id override (defaults to current project) */
@@ -16,7 +18,9 @@ export function PermitStatusPanel({ projectId: projectIdOverride }: PermitStatus
   const project = useProjectStore((s) => s.currentProject());
   const currentProjectId = useProjectStore((s) => s.currentProjectId);
   const projectId = projectIdOverride ?? currentProjectId;
-  const permits = usePermitsStore((s) => s.permitsByProject[projectId] ?? []);
+  // Select raw value (stable ref) and default outside the selector — see error #185.
+  const permitsForProject = usePermitsStore((s) => s.permitsByProject[projectId]);
+  const permits = permitsForProject ?? EMPTY_PERMITS;
   const loading = usePermitsStore((s) => s.loading);
   const fetchPermits = usePermitsStore((s) => s.fetchPermits);
 

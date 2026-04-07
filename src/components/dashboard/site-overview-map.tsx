@@ -17,6 +17,9 @@ import { CorridorLayer } from '@/components/map/corridor-layer';
 import { CrossingsLayer } from '@/components/map/crossings-layer';
 import { RowLayer } from '@/components/map/row-layer';
 import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
+import type { Crossing } from '@/types/crossing';
+
+const EMPTY_CROSSINGS: Crossing[] = [];
 
 export function SiteOverviewMap() {
   const { isApp } = useAppMode();
@@ -25,9 +28,13 @@ export function SiteOverviewMap() {
   const currentProjectId = useProjectStore((s) => s.currentProjectId);
   const project = useProjectStore((s) => s.currentProject());
   const fetchCrossings = useCrossingsStore((s) => s.fetchCrossings);
-  const crossings = useCrossingsStore((s) =>
-    project?.projectType === 'linear' ? s.crossingsByProject[currentProjectId] ?? [] : []
-  );
+  // IMPORTANT: select the raw value (stable ref) and default outside the selector,
+  // otherwise a new [] is created on every render and Zustand re-renders forever
+  // (React error #185 — maximum update depth exceeded).
+  const crossingsForProject = useCrossingsStore((s) => s.crossingsByProject[currentProjectId]);
+  const crossings = project?.projectType === 'linear'
+    ? (crossingsForProject ?? EMPTY_CROSSINGS)
+    : EMPTY_CROSSINGS;
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();

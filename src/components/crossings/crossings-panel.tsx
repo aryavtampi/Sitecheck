@@ -12,6 +12,8 @@ import {
 import type { Crossing } from '@/types/crossing';
 import { CrossingForm } from './crossing-form';
 
+const EMPTY_CROSSINGS: Crossing[] = [];
+
 interface CrossingsPanelProps {
   /** When true, render compact list (no header). Useful for embedding inside other panels. */
   compact?: boolean;
@@ -20,7 +22,9 @@ interface CrossingsPanelProps {
 export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
   const project = useProjectStore((s) => s.currentProject());
   const projectId = useProjectStore((s) => s.currentProjectId);
-  const crossings = useCrossingsStore((s) => s.crossingsByProject[projectId] ?? []);
+  // Select raw value (stable ref) and default outside the selector — see error #185.
+  const crossingsForProject = useCrossingsStore((s) => s.crossingsByProject[projectId]);
+  const crossings = crossingsForProject ?? EMPTY_CROSSINGS;
   const loading = useCrossingsStore((s) => s.loading);
   const fetchCrossings = useCrossingsStore((s) => s.fetchCrossings);
 
