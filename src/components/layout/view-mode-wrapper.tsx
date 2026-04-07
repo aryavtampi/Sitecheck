@@ -67,7 +67,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
+  Home,
   FileText,
   Plane,
   CheckCircle,
@@ -76,7 +76,7 @@ import {
 } from 'lucide-react';
 
 const mobileNavItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
+  { href: '/dashboard', icon: Home, label: 'Home' },
   { href: '/swppp', icon: FileText, label: 'SWPPP' },
   { href: '/missions', icon: Plane, label: 'Drone' },
   { href: '/checkpoints', icon: CheckCircle, label: 'BMPs' },

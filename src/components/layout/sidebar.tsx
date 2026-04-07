@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
+  Home,
   FileText,
   Plane,
   CheckCircle,
@@ -15,7 +15,7 @@ import {
 import { useOnboardingStore } from '@/stores/onboarding-store';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard', icon: Home, label: 'Dashboard' },
   { href: '/swppp', icon: FileText, label: 'SWPPP Intelligence' },
   { href: '/missions', icon: Plane, label: 'Drone Missions' },
   { href: '/checkpoints', icon: CheckCircle, label: 'Checkpoints' },

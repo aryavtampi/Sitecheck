@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Monitor,
   FolderKanban,
-  LayoutDashboard,
+  Home,
   FileText,
   Plane,
   CheckCircle,
@@ -55,7 +55,7 @@ export const onboardingSteps: OnboardingStepDef[] = [
     title: 'Command Dashboard',
     description:
       'Your real-time command center. View compliance metrics, site maps, and activity feeds at a glance.',
-    icon: LayoutDashboard,
+    icon: Home,
     accentColor: 'text-amber-500',
     highlights: [
       'BMP checkpoint counts and compliance rate',
