@@ -8,6 +8,7 @@ import {
   FileText,
   Plane,
   CheckCircle,
+  ClipboardCheck,
   FileBarChart,
   CloudRain,
   RotateCcw,
@@ -22,6 +23,7 @@ const baseNavItems = [
   { href: '/swppp', icon: FileText, label: 'SWPPP Intelligence' },
   { href: '/missions', icon: Plane, label: 'Drone Missions' },
   { href: '/checkpoints', icon: CheckCircle, label: 'Checkpoints' },
+  { href: '/inspections', icon: ClipboardCheck, label: 'Inspections' },
   { href: '/reports', icon: FileBarChart, label: 'Reports' },
   { href: '/weather', icon: CloudRain, label: 'Weather' },
 ];
@@ -35,7 +37,7 @@ export function Sidebar() {
           ...baseNavItems.slice(0, 4),
           { href: '/crossings', icon: Waypoints, label: 'Crossings' },
           { href: '/nofly-zones', icon: ShieldAlert, label: 'No-Fly Zones' },
-          ...baseNavItems.slice(4),
+          ...baseNavItems.slice(4), // Inspections, Reports, Weather
         ]
       : baseNavItems;
 

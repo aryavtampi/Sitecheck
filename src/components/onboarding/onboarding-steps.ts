@@ -6,6 +6,7 @@ import {
   FileText,
   Plane,
   CheckCircle,
+  ClipboardCheck,
   CloudRain,
   FileBarChart,
   Rocket,
@@ -15,7 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export const ONBOARDING_VERSION = 4;
+export const ONBOARDING_VERSION = 5;
 
 export interface OnboardingStepDef {
   id: string;
@@ -190,6 +191,22 @@ export const onboardingSteps: OnboardingStepDef[] = [
       'Auto-generated from drone mission data',
       'Editable sections and digital signature blocks',
       'PDF export for regulatory submission',
+    ],
+  },
+  {
+    id: 'inspections-workflow',
+    title: 'Inspections & Compliance Workflow',
+    description:
+      'Block 5 closes the regulatory loop. Rain events automatically draft post-storm inspections with a 48-hour countdown, every inspection rolls up the AI findings + QSP decisions from Block 4, and a single click renders a CGP-compliant PDF the regulator can read.',
+    icon: ClipboardCheck,
+    accentColor: 'text-amber-300',
+    highlights: [
+      'QPE rain events (≥0.5") auto-create draft inspections with a 48-hour CGP deadline',
+      'Color-tiered banner on the dashboard: emerald → amber → red as the deadline narrows',
+      'Inspection records page lists every draft, in-progress, and submitted inspection',
+      'Detail page shows AI findings, QSP decisions, corrective actions, and a real PDF download',
+      'Corrective actions track each AI deficiency from open → resolved with proof photos',
+      'Submitting an inspection freezes it and links the rendered report permanently',
     ],
   },
   {

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import { ProjectStatusHeader } from '@/components/dashboard/project-status-header';
+import { RainEventBanner } from '@/components/dashboard/rain-event-banner';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { CheckCircle, TrendingUp, Calendar, AlertTriangle, Waypoints, ShieldCheck, Route } from 'lucide-react';
@@ -75,6 +76,9 @@ export default function DashboardPage() {
           </p>
         )}
       </div>
+
+      {/* Rain-event banner — auto-checks for QPE events on mount */}
+      <RainEventBanner />
 
       {/* Project Status Bar */}
       <ProjectStatusHeader compact={isApp} />

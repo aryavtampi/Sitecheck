@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
 interface ReportSection {
@@ -9,6 +9,46 @@ interface ReportSection {
   content: string;
   type: 'text' | 'table' | 'signature';
   editable: boolean;
+}
+
+// ─────────────────────────────────────────────
+// Block 5 helpers — fetch Block 4 mission data
+// ─────────────────────────────────────────────
+interface MissionRollupRow {
+  missionId: string;
+  missionName: string | null;
+  status: string | null;
+  completedAt: string | null;
+  totalFlightSeconds: number | null;
+  capturedWaypoints: number;
+  plannedWaypoints: number;
+}
+
+interface AiAnalysisRow {
+  id: string;
+  mission_id: string;
+  waypoint_number: number;
+  checkpoint_id: string;
+  photo_url: string;
+  summary: string;
+  status: string;
+  confidence: number;
+  details: unknown;
+  cgp_reference: string;
+  recommendations: unknown;
+  created_at: string;
+}
+
+interface QspReviewRow {
+  id: string;
+  mission_id: string;
+  waypoint_number: number;
+  checkpoint_id: string;
+  decision: string;
+  override_status: string | null;
+  override_notes: string | null;
+  ai_analysis_id: string | null;
+  reviewed_at: string;
 }
 
 // POST /api/reports/generate - Generate a report from live data
@@ -69,6 +109,103 @@ export async function POST(request: NextRequest) {
     }
 
     const inspection = inspections?.[0] || null;
+
+    // ─────────────────────────────────────────────
+    // Block 5 — Block 4 mission roll-up (additive)
+    //
+    // When the resolved inspection has linked missions, pull the AI
+    // analyses + QSP reviews for those missions so we can inject two
+    // extra sections into the report. Legacy projectId-only callers
+    // skip this entirely and get the same 7 sections as before.
+    // ─────────────────────────────────────────────
+    let missionRollup: MissionRollupRow[] = [];
+    let aiAnalyses: AiAnalysisRow[] = [];
+    let qspReviews: QspReviewRow[] = [];
+    const checkpointNameById = new Map<string, string>();
+
+    if (inspection) {
+      const { data: linkRows } = await supabase
+        .from('inspection_missions')
+        .select('mission_id')
+        .eq('inspection_id', inspection.id);
+
+      const missionIds = (linkRows ?? [])
+        .map((r) => r.mission_id as string)
+        .filter(Boolean);
+
+      if (missionIds.length > 0) {
+        // a) the missions themselves
+        const { data: missionRows } = await supabase
+          .from('drone_missions')
+          .select('id, name, status, completed_at, total_flight_seconds')
+          .in('id', missionIds);
+
+        // b) waypoint counts per mission
+        const { data: waypointRows } = await supabase
+          .from('waypoints')
+          .select('mission_id, capture_status')
+          .in('mission_id', missionIds);
+
+        const waypointStats = new Map<string, { total: number; captured: number }>();
+        for (const wp of waypointRows ?? []) {
+          const mid = wp.mission_id as string;
+          const stat = waypointStats.get(mid) ?? { total: 0, captured: 0 };
+          stat.total += 1;
+          if (wp.capture_status === 'captured') stat.captured += 1;
+          waypointStats.set(mid, stat);
+        }
+
+        missionRollup = (missionRows ?? []).map((row) => {
+          const stat = waypointStats.get(row.id as string) ?? { total: 0, captured: 0 };
+          return {
+            missionId: row.id as string,
+            missionName: (row.name as string) ?? null,
+            status: (row.status as string) ?? null,
+            completedAt: (row.completed_at as string) ?? null,
+            totalFlightSeconds: (row.total_flight_seconds as number) ?? null,
+            capturedWaypoints: stat.captured,
+            plannedWaypoints: stat.total,
+          };
+        });
+
+        // c) AI analyses for these missions
+        const { data: analysisRows } = await supabase
+          .from('mission_ai_analyses')
+          .select('*')
+          .in('mission_id', missionIds)
+          .order('mission_id')
+          .order('waypoint_number');
+
+        aiAnalyses = (analysisRows ?? []) as AiAnalysisRow[];
+
+        // d) QSP reviews for these missions
+        const { data: reviewRows } = await supabase
+          .from('mission_qsp_reviews')
+          .select('*')
+          .in('mission_id', missionIds);
+
+        qspReviews = (reviewRows ?? []) as QspReviewRow[];
+
+        // e) Resolve checkpoint names referenced by the analyses/reviews
+        const checkpointIds = Array.from(
+          new Set(
+            [
+              ...aiAnalyses.map((a) => a.checkpoint_id),
+              ...qspReviews.map((r) => r.checkpoint_id),
+            ].filter(Boolean)
+          )
+        );
+        if (checkpointIds.length > 0) {
+          const { data: cpRows } = await supabase
+            .from('checkpoints')
+            .select('id, name')
+            .in('id', checkpointIds);
+          for (const cp of cpRows ?? []) {
+            checkpointNameById.set(cp.id as string, cp.name as string);
+          }
+        }
+      }
+    }
 
     // 3. Fetch current weather
     const { data: weatherSnapshot, error: weatherError } = await supabase
@@ -162,7 +299,7 @@ export async function POST(request: NextRequest) {
     const siteInfoContent = siteInfoLines.join('\n');
 
     // Section 2: Inspection Details
-    const inspectionContent = inspection ? `
+    let inspectionContent = inspection ? `
 **Inspection Date:** ${new Date(inspection.date).toLocaleDateString()}
 **Inspection Type:** ${inspection.type}
 **Inspector:** ${inspection.inspector}
@@ -173,6 +310,48 @@ export async function POST(request: NextRequest) {
 
 A new inspection should be conducted to generate accurate compliance information.
     `.trim();
+
+    // Block 5 — append rich inspection metadata when present
+    if (inspection) {
+      const block5Lines: string[] = [];
+      if (inspection.trigger && inspection.trigger !== 'manual') {
+        block5Lines.push(`**Trigger:** ${inspection.trigger}`);
+      }
+      if (inspection.status) {
+        block5Lines.push(`**Status:** ${inspection.status}`);
+      }
+      if (inspection.due_by) {
+        block5Lines.push(`**Inspection Due By:** ${new Date(inspection.due_by).toLocaleString()}`);
+      }
+      if (inspection.submitted_at) {
+        block5Lines.push(`**Submitted At:** ${new Date(inspection.submitted_at).toLocaleString()}`);
+      }
+      if (typeof inspection.ai_overall_compliance === 'number') {
+        block5Lines.push(`**AI Overall Compliance:** ${inspection.ai_overall_compliance}%`);
+      }
+      if (typeof inspection.qsp_overall_compliance === 'number') {
+        block5Lines.push(`**QSP Overall Compliance:** ${inspection.qsp_overall_compliance}%`);
+      }
+      if (inspection.narrative) {
+        block5Lines.push('');
+        block5Lines.push('**QSP Narrative:**');
+        block5Lines.push(inspection.narrative);
+      }
+      if (block5Lines.length > 0) {
+        inspectionContent += '\n' + block5Lines.join('\n');
+      }
+
+      // Mission roll-up addendum
+      if (missionRollup.length > 0) {
+        inspectionContent += `\n\n**Mission Roll-up (${missionRollup.length}):**`;
+        for (const m of missionRollup) {
+          const flightMin = m.totalFlightSeconds
+            ? `${(m.totalFlightSeconds / 60).toFixed(1)} min`
+            : 'N/A';
+          inspectionContent += `\n- ${m.missionName ?? m.missionId} — ${m.status ?? 'unknown'} — ${m.capturedWaypoints}/${m.plannedWaypoints} waypoints captured · ${flightMin}`;
+        }
+      }
+    }
 
     // Section 3: Weather Conditions
     const weatherContent = weatherSnapshot ? `
@@ -276,6 +455,78 @@ This inspection was conducted in accordance with the requirements of:
 **Date:** _________________________
     `.trim();
 
+    // ─────────────────────────────────────────────
+    // Block 5 — AI Findings & QSP Decisions sections
+    // (only built when the inspection has linked missions)
+    // ─────────────────────────────────────────────
+    const reviewByCheckpoint = new Map<string, QspReviewRow>();
+    for (const r of qspReviews) {
+      reviewByCheckpoint.set(`${r.mission_id}:${r.waypoint_number}`, r);
+    }
+
+    let aiFindingsContent = '';
+    if (aiAnalyses.length > 0) {
+      const compliantCount = aiAnalyses.filter((a) => a.status === 'compliant').length;
+      const deficientCount = aiAnalyses.filter((a) => a.status === 'deficient').length;
+      const reviewCount = aiAnalyses.filter((a) => a.status === 'needs-review').length;
+      const compliancePct = Math.round((compliantCount / aiAnalyses.length) * 100);
+
+      aiFindingsContent = `
+**Claude Vision Analysis Summary:**
+- Total Waypoints Analyzed: ${aiAnalyses.length}
+- Compliant: ${compliantCount} (${compliancePct}%)
+- Deficient: ${deficientCount}
+- Needs Review: ${reviewCount}
+
+**Per-Waypoint Findings:**
+`;
+      for (const a of aiAnalyses) {
+        const cpName = checkpointNameById.get(a.checkpoint_id) ?? a.checkpoint_id;
+        const recs = Array.isArray(a.recommendations) ? a.recommendations : [];
+        aiFindingsContent += `
+---
+**Waypoint ${a.waypoint_number} — ${cpName}** (${a.status} · ${a.confidence}% confidence)
+- CGP Reference: ${a.cgp_reference || 'N/A'}
+- Summary: ${a.summary}`;
+        if (recs.length > 0) {
+          aiFindingsContent += `\n- Recommendations: ${(recs as string[]).join('; ')}`;
+        }
+      }
+    } else if (missionRollup.length > 0) {
+      aiFindingsContent = '**No AI analyses recorded for the linked missions yet.**\n\nRun the analyzer from the Mission Review panel to populate this section.';
+    }
+
+    let qspDecisionsContent = '';
+    if (qspReviews.length > 0) {
+      const accepted = qspReviews.filter((r) => r.decision === 'accept').length;
+      const overridden = qspReviews.filter((r) => r.decision === 'override').length;
+      const pending = qspReviews.filter((r) => r.decision === 'pending').length;
+
+      qspDecisionsContent = `
+**QSP Review Decisions:**
+- Accepted as Reported: ${accepted}
+- Overridden: ${overridden}
+- Pending Review: ${pending}
+
+**Per-Waypoint Decisions:**
+`;
+      for (const r of qspReviews) {
+        const cpName = checkpointNameById.get(r.checkpoint_id) ?? r.checkpoint_id;
+        qspDecisionsContent += `
+---
+**Waypoint ${r.waypoint_number} — ${cpName}** (${r.decision})`;
+        if (r.override_status) {
+          qspDecisionsContent += `\n- Override Status: ${r.override_status}`;
+        }
+        if (r.override_notes) {
+          qspDecisionsContent += `\n- QSP Notes: ${r.override_notes}`;
+        }
+        qspDecisionsContent += `\n- Reviewed At: ${new Date(r.reviewed_at).toLocaleString()}`;
+      }
+    } else if (missionRollup.length > 0) {
+      qspDecisionsContent = '**No QSP decisions recorded yet.**\n\nReview AI findings in the Mission Review panel to populate this section.';
+    }
+
     const sections: ReportSection[] = [
       {
         id: 'site-info',
@@ -305,6 +556,26 @@ This inspection was conducted in accordance with the requirements of:
         type: 'table',
         editable: false,
       },
+      // Block 5 — AI Findings (only when there's something to show)
+      ...(aiFindingsContent
+        ? [{
+            id: 'ai-findings',
+            title: 'AI Findings (Claude Vision)',
+            content: aiFindingsContent.trim(),
+            type: 'text' as const,
+            editable: true,
+          }]
+        : []),
+      // Block 5 — QSP Decisions (only when there's something to show)
+      ...(qspDecisionsContent
+        ? [{
+            id: 'qsp-decisions',
+            title: 'QSP Review Decisions',
+            content: qspDecisionsContent.trim(),
+            type: 'text' as const,
+            editable: true,
+          }]
+        : []),
       {
         id: 'deficiency-log',
         title: 'Deficiency Log',
