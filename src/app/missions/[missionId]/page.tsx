@@ -42,6 +42,14 @@ const ReviewPanel = dynamic(
   }
 );
 
+const MissionDeviationPanel = dynamic(
+  () =>
+    import('@/components/missions/mission-deviation-panel').then((m) => ({
+      default: m.MissionDeviationPanel,
+    })),
+  { ssr: false }
+);
+
 export default function MissionDetailPage({
   params,
 }: {
@@ -58,10 +66,20 @@ export default function MissionDetailPage({
     setPlaybackState,
     setTelemetry,
     clearTelemetry,
+    loadCompletedMissionTrack,
   } = useDroneStore();
 
   const mission = missions.find((m) => m.id === missionId);
   const telemetryUnsubRef = useRef<(() => void) | null>(null);
+
+  // Block 4 — when a completed mission is opened, hydrate its persisted
+  // actual flight track into the store so MissionMap, FlightReplay, and
+  // MissionDeviationPanel all see it on first render.
+  useEffect(() => {
+    if (mission?.status === 'completed') {
+      loadCompletedMissionTrack(missionId);
+    }
+  }, [mission?.status, missionId, loadCompletedMissionTrack]);
 
   // Subscribe to telemetry when mission is active
   useEffect(() => {
@@ -251,6 +269,10 @@ export default function MissionDetailPage({
       {isCompleted && (
         <>
           <FlightReplay mission={mission} />
+
+          {/* Block 4 — flight quality summary above the 2-column grid.
+              The panel auto-hides when there's no persisted actual track. */}
+          <MissionDeviationPanel mission={mission} />
 
           <div className={cn(
             'grid gap-4',

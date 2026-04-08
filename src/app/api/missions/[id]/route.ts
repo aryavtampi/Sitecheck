@@ -30,6 +30,10 @@ function transformMissionToClient(row: Record<string, unknown>) {
     sourceDocumentPages: row.source_document_pages,
     manualOverrideActive: row.manual_override_active,
     notes: row.notes,
+    // Block 4 additions
+    actualFlightPath: row.actual_flight_path ?? [],
+    completedAt: row.completed_at ?? null,
+    totalFlightSeconds: row.total_flight_seconds ?? null,
   };
 }
 
@@ -53,6 +57,12 @@ function transformWaypointToClient(row: Record<string, unknown>) {
     captureMode: row.capture_mode,
     operatorNotes: row.operator_notes,
     sortOrder: row.sort_order,
+    // Block 4 additions
+    photos: Array.isArray(row.photos) ? row.photos : [],
+    actualLat: row.actual_lat ?? null,
+    actualLng: row.actual_lng ?? null,
+    actualAltitude: row.actual_altitude ?? null,
+    capturedAt: row.captured_at ?? null,
   };
 }
 

@@ -12,9 +12,10 @@ import {
   Waypoints,
   ShieldCheck,
   ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 
-export const ONBOARDING_VERSION = 3;
+export const ONBOARDING_VERSION = 4;
 
 export interface OnboardingStepDef {
   id: string;
@@ -135,6 +136,21 @@ export const onboardingSteps: OnboardingStepDef[] = [
       'AI-generated flight paths with waypoint editing',
       'Corridor-following routes that lower altitude near crossings for closer inspection',
       'Live telemetry, flight replay, and AI review',
+    ],
+  },
+  {
+    id: 'mission-replay-ai',
+    title: 'Mission Replay & AI Review',
+    description:
+      'Every flight records a real telemetry track sample-by-sample. After completion, Claude analyzes each captured photo against the CGP, and your QSP accept/override decisions persist across sessions.',
+    icon: Sparkles,
+    accentColor: 'text-pink-400',
+    highlights: [
+      'Animated replay drives off the actual flight track in solid magenta over the dashed planned path',
+      'Deviation overlay flags any sample more than 30 ft off the planned route',
+      'Claude analyzes every captured photo for CGP compliance with one-click re-analyze',
+      'QSP accept/override decisions persist across sessions and refreshes',
+      'Mission auto-completes when the last waypoint is captured (or hit Complete Mission manually)',
     ],
   },
   {

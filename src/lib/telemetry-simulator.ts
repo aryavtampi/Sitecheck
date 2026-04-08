@@ -49,7 +49,13 @@ function haversineDistanceFeet(
 
 export function createTelemetrySimulator(
   config: SimulatorConfig,
-  onUpdate: (telemetry: DroneTelemetry) => void
+  onUpdate: (telemetry: DroneTelemetry) => void,
+  /**
+   * Block 4: optional fire-and-forget persistence callback. Invoked once per
+   * emit, after `onUpdate`. Failures inside `onPersist` must NOT break the
+   * live UI — callers should swallow errors at the call site.
+   */
+  onPersist?: (telemetry: DroneTelemetry) => void
 ): TelemetrySimulator {
   const { flightPath, altitude, batteryStart, batteryEnd } = config;
   let pathIndex = 0;
@@ -103,6 +109,15 @@ export function createTelemetrySimulator(
     };
 
     onUpdate(telemetry);
+
+    // Block 4: fire-and-forget persistence hook
+    if (onPersist) {
+      try {
+        onPersist(telemetry);
+      } catch {
+        // Persistence failures must never break the live UI
+      }
+    }
 
     if (!paused) {
       pathIndex++;

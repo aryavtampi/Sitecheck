@@ -8,12 +8,14 @@ import { Crosshair } from 'lucide-react';
 import { DroneMission } from '@/types/drone';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useProjectStore } from '@/stores/project-store';
+import { useDroneStore } from '@/stores/drone-store';
 import { STATUS_COLORS } from '@/lib/constants';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { CorridorLayer } from '@/components/map/corridor-layer';
 import { GeofenceLayer } from '@/components/map/geofence-layer';
 import { NoFlyZonesLayer } from '@/components/map/nofly-zones-layer';
 import { useAirspace } from '@/hooks/use-airspace';
+import { findHighDeviationSamples } from '@/lib/mission-deviation';
 import { cn } from '@/lib/utils';
 
 interface MissionMapProps {
@@ -37,6 +39,12 @@ export function MissionMap({
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const project = useProjectStore((s) => s.currentProject());
   const { geofence, noFlyZones } = useAirspace(project?.id);
+
+  // Block 4 — read the persisted actual flight track for this mission. Empty
+  // when the mission hasn't been flown (or is still in progress without any
+  // samples persisted yet); the overlay layers no-op in that case.
+  const actualSamples = useDroneStore((s) => s.getActualFlightPath(mission.id));
+  const hasActualTrack = actualSamples.length >= 2;
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
@@ -118,9 +126,63 @@ export function MissionMap({
     };
   }, [mission.flightPath, playbackProgress]);
 
-  // Drone position interpolated along the flight path
+  // Block 4 — actual flight track GeoJSON (solid magenta line above the
+  // dashed planned path). When no samples are persisted, this collapses to an
+  // empty geometry and the layer paint never matches anything.
+  const actualPathGeoJSON = useMemo(() => {
+    const coords: [number, number][] = hasActualTrack
+      ? actualSamples.map((s) => [s.lng, s.lat])
+      : [];
+    return {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: coords,
+      },
+    };
+  }, [actualSamples, hasActualTrack]);
+
+  // Block 4 — deviation arrows. Any sample more than 30 ft off the nearest
+  // planned segment is rendered as a small magenta dot on top of the actual
+  // track. Cheap to compute (O(samples × segments)) and runs once per change.
+  const deviationFeatures = useMemo(() => {
+    if (!hasActualTrack) return { type: 'FeatureCollection' as const, features: [] };
+    const flagged = findHighDeviationSamples(mission.flightPath, [...actualSamples], 30);
+    return {
+      type: 'FeatureCollection' as const,
+      features: flagged.map((s, i) => ({
+        type: 'Feature' as const,
+        properties: { idx: i },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [s.lng, s.lat],
+        },
+      })),
+    };
+  }, [mission.flightPath, actualSamples, hasActualTrack]);
+
+  // Drone position interpolated along the flight path. Block 4 — when an
+  // actual track exists, drive the marker along the real samples; otherwise
+  // fall back to the planned path so older / in-progress missions still
+  // animate their marker the same way as before.
   const dronePosition = useMemo(() => {
     if (playbackProgress <= 0) return null;
+
+    if (hasActualTrack) {
+      const totalSamples = actualSamples.length;
+      const progressIndex = Math.min(
+        Math.floor(playbackProgress * (totalSamples - 1)),
+        totalSamples - 2
+      );
+      const fraction = playbackProgress * (totalSamples - 1) - progressIndex;
+      const from = actualSamples[progressIndex];
+      const to = actualSamples[Math.min(progressIndex + 1, totalSamples - 1)];
+      return {
+        longitude: from.lng + (to.lng - from.lng) * fraction,
+        latitude: from.lat + (to.lat - from.lat) * fraction,
+      };
+    }
 
     const totalPoints = mission.flightPath.length;
     const progressIndex = Math.min(
@@ -135,7 +197,7 @@ export function MissionMap({
       longitude: from[0] + (to[0] - from[0]) * fraction,
       latitude: from[1] + (to[1] - from[1]) * fraction,
     };
-  }, [mission.flightPath, playbackProgress]);
+  }, [mission.flightPath, playbackProgress, actualSamples, hasActualTrack]);
 
   // Follow drone: smoothly pan map to drone position
   useEffect(() => {
@@ -188,7 +250,9 @@ export function MissionMap({
           />
         </Source>
 
-        {/* Completed flight path - solid amber */}
+        {/* Completed flight path - solid amber (planned-path slice driven
+            by playbackProgress, kept for back-compat with missions that have
+            no persisted actual track yet) */}
         <Source id="completed-path" type="geojson" data={completedPathGeoJSON}>
           <Layer
             id="completed-path-line"
@@ -196,10 +260,47 @@ export function MissionMap({
             paint={{
               'line-color': '#F59E0B',
               'line-width': 2.5,
-              'line-opacity': 0.8,
+              'line-opacity': hasActualTrack ? 0.25 : 0.8,
             }}
           />
         </Source>
+
+        {/* Block 4 — actual flight track (solid magenta). Drawn above the
+            planned path so deviations are visually obvious. */}
+        {hasActualTrack && (
+          <Source id="actual-path" type="geojson" data={actualPathGeoJSON}>
+            <Layer
+              id="actual-path-line"
+              type="line"
+              paint={{
+                'line-color': '#ec4899',
+                'line-width': 3,
+                'line-opacity': 0.95,
+              }}
+              layout={{
+                'line-cap': 'round',
+                'line-join': 'round',
+              }}
+            />
+          </Source>
+        )}
+
+        {/* Block 4 — deviation markers (>30 ft off the planned segment) */}
+        {hasActualTrack && deviationFeatures.features.length > 0 && (
+          <Source id="deviation-points" type="geojson" data={deviationFeatures}>
+            <Layer
+              id="deviation-points-circle"
+              type="circle"
+              paint={{
+                'circle-radius': 4,
+                'circle-color': '#ef4444',
+                'circle-stroke-color': '#ffffff',
+                'circle-stroke-width': 1.2,
+                'circle-opacity': 0.9,
+              }}
+            />
+          </Source>
+        )}
 
         {/* Waypoint markers */}
         {mission.waypoints.map((wp, i) => {
@@ -295,6 +396,11 @@ export function MissionMap({
       {/* Bottom-left label */}
       <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[9px] text-white/70 font-mono pointer-events-none z-10">
         {mission.waypoints.length} waypoints &middot; {mission.flightPath.length} path points
+        {hasActualTrack && (
+          <>
+            {' '}&middot; <span className="text-pink-300">{actualSamples.length} samples</span>
+          </>
+        )}
       </div>
 
       {/* Follow-drone toggle */}

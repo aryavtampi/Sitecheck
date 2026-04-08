@@ -1,8 +1,11 @@
 import { create } from 'zustand';
-import type { DroneMission, DroneTelemetry, QSPReviewDecision, QSPReviewEntry, ReportReadiness } from '@/types';
+import type { DroneMission, DroneTelemetry, DroneTelemetrySample, QSPReviewDecision, QSPReviewEntry, ReportReadiness } from '@/types';
 import type { CheckpointStatus } from '@/types/checkpoint';
 
 const TELEMETRY_HISTORY_LIMIT = 60; // ~1 minute at 1 Hz
+
+// Block 4: stable-ref empty array for selectors that read actualFlightPathByMission
+const EMPTY_SAMPLES: readonly DroneTelemetrySample[] = Object.freeze([]);
 
 interface DroneStore {
   missions: DroneMission[];
@@ -17,7 +20,11 @@ interface DroneStore {
   telemetry: DroneTelemetry | null;
   telemetryHistory: DroneTelemetry[];
   // Mission Control: QSP checkpoint reviews
+  // @deprecated Block 4 — use useMissionQSPReviewsStore instead. Kept here for
+  // back-compat with components that haven't migrated yet (ReportReadinessGate).
   checkpointReviews: Record<string, QSPReviewEntry>;
+  // Block 4: persisted actual flight track per mission
+  actualFlightPathByMission: Record<string, DroneTelemetrySample[]>;
   // Existing actions
   setSelectedMission: (id: string | null) => void;
   setPlaybackState: (state: 'idle' | 'playing' | 'paused') => void;
@@ -41,6 +48,10 @@ interface DroneStore {
   ) => void;
   clearReviews: () => void;
   getReportReadiness: (missionId: string) => ReportReadiness;
+  // Block 4: actual flight track persistence
+  setActualFlightPath: (missionId: string, samples: DroneTelemetrySample[]) => void;
+  getActualFlightPath: (missionId: string) => readonly DroneTelemetrySample[];
+  loadCompletedMissionTrack: (missionId: string) => Promise<void>;
 }
 
 export const useDroneStore = create<DroneStore>((set, get) => ({
@@ -55,6 +66,7 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
   telemetry: null,
   telemetryHistory: [],
   checkpointReviews: {},
+  actualFlightPathByMission: {},
   setSelectedMission: (id) => set({ selectedMissionId: id }),
   setPlaybackState: (playbackState) => set({ playbackState }),
   setPlaybackSpeed: (playbackSpeed) => set({ playbackSpeed }),
@@ -140,5 +152,50 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
     if (reviewed.length === 0) return 'not-ready';
     if (reviewed.length < enabledWaypoints.length) return 'partially-reviewed';
     return 'ready';
+  },
+
+  // --- Block 4: persisted actual flight track ---
+
+  setActualFlightPath: (missionId, samples) =>
+    set((state) => ({
+      actualFlightPathByMission: {
+        ...state.actualFlightPathByMission,
+        [missionId]: samples,
+      },
+    })),
+
+  getActualFlightPath: (missionId) =>
+    get().actualFlightPathByMission[missionId] ?? EMPTY_SAMPLES,
+
+  loadCompletedMissionTrack: async (missionId) => {
+    if (get().actualFlightPathByMission[missionId]) return;
+    try {
+      const res = await fetch(`/api/missions/${missionId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const samples: DroneTelemetrySample[] = Array.isArray(data?.actualFlightPath)
+        ? data.actualFlightPath
+        : [];
+      set((state) => ({
+        actualFlightPathByMission: {
+          ...state.actualFlightPathByMission,
+          [missionId]: samples,
+        },
+        // Mirror the new fields onto the in-memory mission record so other
+        // components reading mission.actualFlightPath stay in sync.
+        missions: state.missions.map((m) =>
+          m.id === missionId
+            ? {
+                ...m,
+                actualFlightPath: samples,
+                completedAt: data?.completedAt ?? m.completedAt,
+                totalFlightSeconds: data?.totalFlightSeconds ?? m.totalFlightSeconds,
+              }
+            : m
+        ),
+      }));
+    } catch {
+      // Mock fallback — leave the store empty so the UI just hides the overlay
+    }
   },
 }));

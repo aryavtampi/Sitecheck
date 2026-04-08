@@ -33,6 +33,8 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
       const photoUrl = await provider.captureImage(mission.id, currentWp.number);
       setLastCaptureUrl(photoUrl);
 
+      const capturedAt = new Date().toISOString();
+
       // Update waypoint with captured status
       await fetch(`/api/missions/${mission.id}/waypoints/${currentWp.number}`, {
         method: 'PUT',
@@ -40,13 +42,24 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
         body: JSON.stringify({
           captureStatus: 'captured',
           photo: photoUrl,
+          capturedAt,
         }),
       }).catch(() => {});
 
-      // Update store
+      // Block 4 — mirror the new persisted fields onto the optimistic store
+      // update so the rest of the UI (ReviewPanel, ReportReadinessGate, etc.)
+      // sees the photo+timestamp without waiting for a refetch.
       const updatedWaypoints = mission.waypoints.map((wp) =>
         wp.number === currentWp.number
-          ? { ...wp, captureStatus: 'captured' as const, photo: photoUrl ?? undefined }
+          ? {
+              ...wp,
+              captureStatus: 'captured' as const,
+              photo: photoUrl ?? undefined,
+              photos: [...(wp.photos ?? []), photoUrl].filter(
+                (p): p is string => !!p
+              ),
+              capturedAt,
+            }
           : wp
       );
       updateMission(mission.id, { waypoints: updatedWaypoints });
@@ -67,10 +80,46 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
             missionId: mission.id,
             waypointNumber: currentWp.number,
             photoUrl,
-            timestamp: new Date().toISOString(),
+            timestamp: capturedAt,
           },
         }),
       }).catch(() => {});
+
+      // Block 4 — auto-complete the mission once every enabled waypoint has
+      // been captured (or otherwise resolved). Fires only once because the
+      // /complete endpoint is idempotent on already-completed missions.
+      const enabledRemaining = updatedWaypoints.filter(
+        (wp) =>
+          wp.enabled !== false &&
+          (!wp.captureStatus || wp.captureStatus === 'pending')
+      );
+
+      if (
+        enabledRemaining.length === 0 &&
+        mission.status !== 'completed'
+      ) {
+        try {
+          const res = await fetch(`/api/missions/${mission.id}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger: 'auto' }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            updateMission(mission.id, {
+              status: 'completed',
+              completedAt: data?.completedAt,
+              totalFlightSeconds: data?.totalFlightSeconds,
+              actualFlightPath: Array.isArray(data?.actualFlightPath)
+                ? data.actualFlightPath
+                : undefined,
+            });
+          }
+        } catch {
+          // Network failure — leave the mission in its current status; the
+          // user can still hit the manual Complete button on the control bar.
+        }
+      }
     } finally {
       setCapturing(false);
     }

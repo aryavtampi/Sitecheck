@@ -60,7 +60,10 @@ export type FlightControlAction =
 
 // --- Mission Control types ---
 
-// Live telemetry streamed from drone hardware
+// Live telemetry streamed from drone hardware. Block 4: this shape is now also
+// the persisted-sample shape — every emitted frame is POSTed to
+// /api/missions/[id]/telemetry/sample and appended to the mission's
+// actual_flight_path JSONB array.
 export interface DroneTelemetry {
   lat: number;
   lng: number;
@@ -72,6 +75,11 @@ export interface DroneTelemetry {
   gpsSatellites: number;
   timestamp: string;            // ISO 8601
 }
+
+// Block 4: alias for the persisted shape so callers that mean "a single
+// recorded flight sample" can be self-documenting without diverging from
+// the live telemetry contract.
+export type DroneTelemetrySample = DroneTelemetry;
 
 // Manual override actions available during manual control mode
 export type ManualOverrideAction =
@@ -129,6 +137,11 @@ export interface Waypoint {
   // Mission Control additions
   photos?: string[];              // multiple captures per waypoint
   qspReview?: QSPReviewEntry;     // QSP review data
+  // Block 4 additions: persisted captured-position metadata
+  actualLat?: number;
+  actualLng?: number;
+  actualAltitude?: number;
+  capturedAt?: string;            // ISO 8601 timestamp of the capture
 }
 
 // Extended DroneMission — all new fields are optional for backwards compatibility
@@ -156,6 +169,34 @@ export interface DroneMission {
   notes?: string;
   // Mission Control additions
   reportReadiness?: ReportReadiness;
+  // Block 4 additions: persisted actual telemetry track + completion metadata
+  actualFlightPath?: DroneTelemetrySample[];
+  completedAt?: string;
+  totalFlightSeconds?: number;
+}
+
+// Block 4: persisted Claude vision analysis for one captured photo, returned by
+// the new mission_ai_analyses endpoints. Extends the legacy AIAnalysis shape so
+// existing UI components keep working with no field renames.
+export interface MissionAIAnalysis extends AIAnalysis {
+  id: string;
+  missionId: string;
+  waypointNumber: number;
+  photoUrl: string;
+  model: string;
+  createdAt: string;
+}
+
+// Block 4: aggregate flight-quality metrics rendered by MissionDeviationPanel.
+export interface MissionDeviationStats {
+  maxDeviationFeet: number;
+  meanDeviationFeet: number;
+  maxAltitudeDeviationFeet: number;
+  capturedWaypointCount: number;
+  plannedWaypointCount: number;
+  meanGroundSpeedMph: number;
+  totalFlightSeconds: number;
+  sampleCount: number;
 }
 
 // --- Drone hardware abstraction ---

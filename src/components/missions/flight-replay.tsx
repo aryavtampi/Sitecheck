@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { useDroneStore } from '@/stores/drone-store';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
+import { useMissionAIAnalysesStore } from '@/stores/mission-ai-analyses-store';
 import { MissionMap } from '@/components/missions/mission-map';
 import { DroneMission } from '@/types/drone';
 
@@ -30,31 +30,71 @@ export function FlightReplay({ mission }: FlightReplayProps) {
 
   const checkpoints = useCheckpointStore((s) => s.checkpoints);
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
-  const aiAnalyses: any[] = [];
+
+  // Block 4 — read AI analyses for this mission from the persisted store.
+  const aiAnalyses = useMissionAIAnalysesStore((s) => s.getForMission(mission.id));
+  const fetchAnalyses = useMissionAIAnalysesStore((s) => s.fetchForMission);
+  const loadCompletedTrack = useDroneStore((s) => s.loadCompletedMissionTrack);
+  const actualSamples = useDroneStore((s) => s.getActualFlightPath(mission.id));
+  const hasActualTrack = actualSamples.length >= 2;
 
   useEffect(() => {
     if (checkpoints.length === 0) fetchCheckpoints();
   }, [checkpoints.length, fetchCheckpoints]);
 
+  // Block 4 — fetch persisted analyses + completed-mission track on mount.
+  useEffect(() => {
+    fetchAnalyses(mission.id);
+    if (mission.status === 'completed') {
+      loadCompletedTrack(mission.id);
+    }
+  }, [mission.id, mission.status, fetchAnalyses, loadCompletedTrack]);
+
   const animRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
 
-  const totalPathLength = mission.flightPath.length;
-
-  // Map waypoints to approximate progress positions
-  const waypointProgresses = mission.waypoints.map((wp) => {
-    // Find closest flight path point to this waypoint
-    let closestIdx = 0;
-    let closestDist = Infinity;
-    mission.flightPath.forEach(([lng, lat], idx) => {
-      const dist = Math.abs(lng - wp.lng) + Math.abs(lat - wp.lat);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestIdx = idx;
-      }
+  // Block 4 — when an actual track is available, drive waypoint progress
+  // from the recorded samples (so the playhead pauses at the *actual* moment
+  // the drone reached each waypoint). Otherwise fall back to the planned path.
+  const waypointProgresses = useMemo(() => {
+    if (hasActualTrack) {
+      const total = actualSamples.length;
+      return mission.waypoints.map((wp) => {
+        let closestIdx = 0;
+        let closestDist = Infinity;
+        actualSamples.forEach((s, idx) => {
+          const d = Math.abs(s.lng - wp.lng) + Math.abs(s.lat - wp.lat);
+          if (d < closestDist) {
+            closestDist = d;
+            closestIdx = idx;
+          }
+        });
+        return total > 1 ? closestIdx / (total - 1) : 0;
+      });
+    }
+    const totalPathLength = mission.flightPath.length;
+    return mission.waypoints.map((wp) => {
+      let closestIdx = 0;
+      let closestDist = Infinity;
+      mission.flightPath.forEach(([lng, lat], idx) => {
+        const dist = Math.abs(lng - wp.lng) + Math.abs(lat - wp.lat);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestIdx = idx;
+        }
+      });
+      return totalPathLength > 1 ? closestIdx / (totalPathLength - 1) : 0;
     });
-    return closestIdx / (totalPathLength - 1);
-  });
+  }, [mission.waypoints, mission.flightPath, actualSamples, hasActualTrack]);
+
+  // Block 4 — total flight time string for the scrub-bar tooltip. When an
+  // actual track is present, derive from first/last sample timestamps.
+  const totalSeconds = useMemo(() => {
+    if (!hasActualTrack) return null;
+    const first = new Date(actualSamples[0].timestamp).getTime();
+    const last = new Date(actualSamples[actualSamples.length - 1].timestamp).getTime();
+    return Math.max(0, Math.round((last - first) / 1000));
+  }, [actualSamples, hasActualTrack]);
 
   const animate = useCallback(
     (time: number) => {
@@ -115,8 +155,10 @@ export function FlightReplay({ mission }: FlightReplayProps) {
   const currentCp = currentWaypoint
     ? checkpoints.find((c) => c.id === currentWaypoint.checkpointId)
     : null;
+  // Block 4 — match the persisted analysis by waypoint number (not checkpoint
+  // id) so two waypoints visiting the same checkpoint don't collide.
   const currentAnalysis = currentWaypoint
-    ? aiAnalyses.find((a) => a.checkpointId === currentWaypoint.checkpointId)
+    ? aiAnalyses.find((a) => a.waypointNumber === currentWaypoint.number)
     : null;
 
   function handlePlayPause() {
@@ -250,9 +292,14 @@ export function FlightReplay({ mission }: FlightReplayProps) {
                 <StatusBadge status={currentCp.status} />
               </>
             )}
+            {hasActualTrack && totalSeconds != null && (
+              <span className="font-mono text-pink-300/80">
+                {actualSamples.length} samples · {totalSeconds}s total
+              </span>
+            )}
             {currentAnalysis && (
               <span className="ml-auto font-mono text-muted-foreground">
-                {currentAnalysis.confidence}% confidence
+                Claude · {currentAnalysis.confidence}% confidence
               </span>
             )}
           </div>

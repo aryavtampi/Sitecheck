@@ -1,6 +1,23 @@
 import type { DroneProvider, DroneCapabilities, DroneTelemetry } from '@/types/drone';
 import { createTelemetrySimulator, type TelemetrySimulator } from './telemetry-simulator';
 
+// Block 4: bundled placeholder photos for the stub provider. The set covers
+// the five major BMP categories so the per-photo Claude vision pass returns a
+// believable analysis even without a real drone camera.
+const DEMO_PHOTOS = [
+  '/demo-photos/sediment-control/photo-1.jpg',
+  '/demo-photos/sediment-control/photo-2.jpg',
+  '/demo-photos/erosion-control/photo-1.jpg',
+  '/demo-photos/erosion-control/photo-2.jpg',
+  '/demo-photos/storm-drain/photo-1.jpg',
+  '/demo-photos/stabilization/photo-1.jpg',
+  '/demo-photos/housekeeping/photo-1.jpg',
+];
+
+function getDemoPhotoUrl(waypointNumber: number): string {
+  return DEMO_PHOTOS[Math.abs(waypointNumber) % DEMO_PHOTOS.length];
+}
+
 /**
  * Stub drone hardware provider.
  *
@@ -59,9 +76,12 @@ function createStubProvider(): DroneProvider {
 
     async captureImage(missionId: string, waypointNumber: number): Promise<string | null> {
       log('captureImage', missionId, `waypoint #${waypointNumber}`);
-      // TODO: Trigger camera capture on drone hardware
-      // Returns photo URL or null if capture failed
-      return null;
+      // Block 4: stub provider returns a deterministic local placeholder URL
+      // from the bundled `/public/demo-photos` set. The capture-controls flow
+      // fetches this URL into a Blob and POSTs it to the real upload endpoint
+      // (`/api/missions/[id]/waypoints/[number]/photos`), which re-hosts it
+      // to Supabase Storage so the demo and production flows share one path.
+      return getDemoPhotoUrl(waypointNumber);
     },
 
     isConnected(): boolean {
@@ -102,7 +122,22 @@ function createStubProvider(): DroneProvider {
           batteryStart: mission.batteryStart,
           batteryEnd: mission.batteryEnd,
         },
-        onUpdate
+        onUpdate,
+        // Block 4: fire-and-forget persistence — POST every emitted sample to
+        // /api/missions/[id]/telemetry/sample so the actual flight track is
+        // recorded for replay. Failures are swallowed so the live UI keeps
+        // running off the in-memory ring buffer if the network is down.
+        (sample) => {
+          if (typeof window === 'undefined') return; // SSR safety
+          fetch(`/api/missions/${missionId}/telemetry/sample`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sample),
+            keepalive: true,
+          }).catch(() => {
+            /* swallow — never break the live UI */
+          });
+        }
       );
       activeSim.start();
       return () => {
