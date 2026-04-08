@@ -18,7 +18,11 @@ const COMPLETED_STATUSES = new Set([
 export function MissionCard({ mission }: MissionCardProps) {
   const statusColor = MISSION_STATUS_COLORS[mission.status];
   const statusLabel = MISSION_STATUS_LABELS[mission.status];
-  const weatherIcon = WEATHER_ICONS[mission.weatherAtFlight.condition] || '';
+  // Hot-fix — `weatherAtFlight` is optional on the persisted record (Block 4
+  // missions and freshly-planned missions don't have a flight-time weather
+  // snapshot yet). Guard every read so the card still renders.
+  const weather = mission.weatherAtFlight;
+  const weatherIcon = weather ? WEATHER_ICONS[weather.condition] || '' : '';
   const capturedCount = mission.waypoints.filter((w) => COMPLETED_STATUSES.has(w.captureStatus)).length;
 
   return (
@@ -76,13 +80,20 @@ export function MissionCard({ mission }: MissionCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-white/5 pt-3 text-xs text-muted-foreground">
-          <span>{weatherIcon} {mission.weatherAtFlight.temperature}°F</span>
-          <span>
-            <Wind className="inline h-3 w-3" /> {mission.weatherAtFlight.windSpeedMph} mph
-          </span>
-          <span>Humidity {mission.weatherAtFlight.humidity}%</span>
-        </div>
+        {weather ? (
+          <div className="flex items-center gap-3 border-t border-white/5 pt-3 text-xs text-muted-foreground">
+            <span>{weatherIcon} {weather.temperature}°F</span>
+            <span>
+              <Wind className="inline h-3 w-3" /> {weather.windSpeedMph} mph
+            </span>
+            <span>Humidity {weather.humidity}%</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 border-t border-white/5 pt-3 text-xs text-muted-foreground">
+            <Thermometer className="inline h-3 w-3" />
+            <span>No flight-time weather snapshot</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

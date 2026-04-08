@@ -155,7 +155,10 @@ export interface DroneMission {
   altitude: number;
   batteryStart: number;
   batteryEnd: number;
-  weatherAtFlight: WeatherSnapshot;
+  // Optional — freshly-planned missions and Block 4 records won't carry a
+  // flight-time weather snapshot until the mission actually flies. Every
+  // consumer must null-guard this read.
+  weatherAtFlight?: WeatherSnapshot;
   waypoints: Waypoint[];
   flightPath: [number, number][];
   // Phase 16 additions
