@@ -15,7 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { uploadMissionPhoto } from '@/lib/supabase/storage';
 
 interface RouteContext {
@@ -32,6 +32,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Invalid waypoint number' }, { status: 400 });
     }
 
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+
     let file: Blob | null = null;
     const contentType = request.headers.get('content-type') ?? '';
     if (contentType.includes('multipart/form-data')) {
@@ -39,8 +43,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const f = form.get('file');
       if (f instanceof Blob) file = f;
     }
-
-    const supabase = createServerClient();
 
     // Look up mission to derive projectId for the storage path
     const { data: mission, error: missionErr } = await supabase

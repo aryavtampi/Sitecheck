@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -34,7 +34,9 @@ function transformAnalysis(row: Record<string, unknown>) {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id: missionId } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { data, error } = await supabase
       .from('mission_ai_analyses')
       .select('*')

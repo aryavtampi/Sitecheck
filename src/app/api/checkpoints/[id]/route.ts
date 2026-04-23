@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { checkpointUpdate } from '@/lib/validations';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -98,7 +100,9 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // Fetch checkpoint
     const { data: checkpoint, error: checkpointError } = await supabase
@@ -157,8 +161,10 @@ export async function PUT(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = checkpointUpdate.parse(await request.json());
 
     // Get current checkpoint to check for status change
     const { data: existing, error: existingError } = await supabase
@@ -227,6 +233,9 @@ export async function PUT(
 
     return NextResponse.json(checkpoint);
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Checkpoint PUT error:', error);
     const message = error instanceof Error ? error.message : 'Failed to update checkpoint';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -239,7 +248,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // Check if checkpoint exists
     const { data: existing, error: existingError } = await supabase

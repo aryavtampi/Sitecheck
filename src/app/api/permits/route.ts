@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { permitCreate, permitUpdate } from '@/lib/validations';
 import { linearPermits } from '@/data/linear-permits';
 import { deriveLivePermitStatus } from '@/types/permit';
 import type { SegmentPermit } from '@/types/permit';
@@ -55,7 +57,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     let query = supabase.from('segment_permits').select('*').eq('project_id', projectId);
     if (segmentId) query = query.eq('segment_id', segmentId);
     if (crossingId) query = query.eq('crossing_id', crossingId);
@@ -84,18 +88,13 @@ export async function GET(request: NextRequest) {
 // POST /api/permits
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as Partial<SegmentPermit>;
-    if (!body.projectId || !body.permitType) {
-      return NextResponse.json(
-        { error: 'Missing required fields: projectId, permitType' },
-        { status: 400 }
-      );
-    }
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = permitCreate.parse(await request.json()) as Partial<SegmentPermit>;
     if (!body.id) {
       body.id = `permit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     }
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('segment_permits')
       .insert(toSnakeCase(body))
@@ -110,6 +109,9 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json(transformPermit(data), { status: 201 });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to create permit: ${
@@ -129,7 +131,10 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'id query parameter required' }, { status: 400 });
   }
   try {
-    const body = (await request.json()) as Partial<SegmentPermit>;
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = permitUpdate.parse(await request.json()) as Partial<SegmentPermit>;
     const updates: Record<string, unknown> = {};
     if (body.segmentId !== undefined) updates.segment_id = body.segmentId;
     if (body.crossingId !== undefined) updates.crossing_id = body.crossingId;
@@ -141,8 +146,6 @@ export async function PATCH(request: NextRequest) {
     if (body.status !== undefined) updates.status = body.status;
     if (body.notes !== undefined) updates.notes = body.notes;
     updates.updated_at = new Date().toISOString();
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('segment_permits')
       .update(updates)
@@ -158,6 +161,9 @@ export async function PATCH(request: NextRequest) {
     }
     return NextResponse.json(transformPermit(data));
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to update permit: ${

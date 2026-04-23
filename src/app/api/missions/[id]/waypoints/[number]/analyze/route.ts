@@ -16,7 +16,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { waypointAnalyze } from '@/lib/validations';
 import { analyzeBmpPhoto, mockAnalyzeBmpPhoto, type AnalyzeBmpPhotoResult } from '@/lib/ai-vision';
 import type { CheckpointStatus } from '@/types/checkpoint';
 
@@ -37,14 +39,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Invalid waypoint number' }, { status: 400 });
     }
 
-    let body: AnalyzeBody = {};
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    let rawBody: unknown = undefined;
     try {
-      body = (await request.json()) as AnalyzeBody;
+      rawBody = await request.json();
     } catch {
       // empty body is fine
     }
-
-    const supabase = createServerClient();
+    const body: AnalyzeBody = waypointAnalyze.parse(rawBody) ?? {};
 
     // Look up the waypoint + its checkpoint metadata
     const { data: waypoint, error: wpErr } = await supabase
@@ -161,6 +165,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       createdAt: persisted.created_at,
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.issues }, { status: 400 });
+    }
     console.error('analyze POST failed:', err);
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });
   }

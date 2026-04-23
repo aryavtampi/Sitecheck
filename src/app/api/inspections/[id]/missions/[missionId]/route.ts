@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import {
   computeComplianceForMissions,
   writeComplianceToInspection,
@@ -20,7 +20,9 @@ interface RouteContext {
 export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const { id: inspectionId, missionId } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     const { error } = await supabase
       .from('inspection_missions')

@@ -16,7 +16,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { telemetrySample } from '@/lib/validations';
 import type { DroneTelemetrySample } from '@/types/drone';
 
 const MAX_SAMPLES = 1000;
@@ -49,13 +51,11 @@ function isValidSample(s: unknown): s is DroneTelemetrySample {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const sample = (await request.json()) as unknown;
-
-    if (!isValidSample(sample)) {
-      return NextResponse.json({ error: 'Invalid telemetry sample' }, { status: 400 });
-    }
-
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const sample = telemetrySample.parse(raw);
 
     // Read current mission to check status + array length
     const { data: mission, error: fetchErr } = await supabase
@@ -98,6 +98,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       capped: next.length >= MAX_SAMPLES,
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.issues }, { status: 400 });
+    }
     console.error('telemetry/sample POST failed:', err);
     return NextResponse.json({ samplesPersisted: 0, mock: true });
   }

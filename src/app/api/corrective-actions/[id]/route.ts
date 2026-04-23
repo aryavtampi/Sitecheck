@@ -16,7 +16,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { correctiveActionUpdate } from '@/lib/validations';
 
 const VALID_SEVERITIES = new Set(['low', 'medium', 'high']);
 const VALID_STATUSES = new Set(['open', 'in-progress', 'resolved', 'verified']);
@@ -72,7 +74,9 @@ function transformCorrectiveAction(row: DbCorrectiveActionRow) {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     const { data, error } = await supabase
       .from('corrective_actions')
@@ -96,8 +100,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = correctiveActionUpdate.parse(await request.json());
 
     const updates: Record<string, unknown> = {};
     if (typeof body.description === 'string') updates.description = body.description;
@@ -158,6 +164,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       transformCorrectiveAction(data as DbCorrectiveActionRow)
     );
   } catch (err: unknown) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     console.error('Corrective action PATCH error:', err);
     return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }

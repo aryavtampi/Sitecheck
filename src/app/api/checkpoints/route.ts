@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { requireAuth } from '@/lib/auth';
+import { checkpointCreate } from '@/lib/validations';
+import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
+import { ZodError } from 'zod';
 
 
 // Transform snake_case DB row to camelCase
@@ -70,9 +72,18 @@ function generateActivityId() {
   return `act-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+// Sanitize search input for safe use in Supabase .ilike() filters
+function sanitizeSearch(input: string): string {
+  // Escape Postgres LIKE special characters and commas that could break .or() syntax
+  return input.replace(/[%_,\\()]/g, '');
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+
     const { searchParams } = new URL(request.url);
 
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
@@ -114,7 +125,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+      const safe = sanitizeSearch(search);
+      if (safe.length > 0) {
+        query = query.or(`name.ilike.%${safe}%,description.ilike.%${safe}%`);
+      }
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
@@ -135,8 +149,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+
+    const raw = await request.json();
+    const body = checkpointCreate.parse(raw);
 
     // Ensure required fields
     const checkpointId = body.id || generateId();
@@ -179,13 +197,18 @@ export async function POST(request: NextRequest) {
 
     if (activityError) {
       console.error('Failed to create activity event:', activityError.message);
-      // Don't fail the request, just log it
     }
 
     const checkpoint = transformCheckpoint(data);
 
     return NextResponse.json(checkpoint, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.issues },
+        { status: 400 }
+      );
+    }
     console.error('Checkpoints POST error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create checkpoint';
     return NextResponse.json({ error: message }, { status: 500 });

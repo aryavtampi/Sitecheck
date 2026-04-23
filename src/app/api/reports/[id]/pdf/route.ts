@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { InspectionReportPdf } from '@/lib/pdf/inspection-pdf';
 import type {
   PdfReportSection,
@@ -27,7 +27,9 @@ interface RouteContext {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // 1. Report
     const { data: report, error: reportError } = await supabase

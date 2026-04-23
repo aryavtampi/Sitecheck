@@ -18,7 +18,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { missionComplete } from '@/lib/validations';
 import { analyzeBmpPhoto, mockAnalyzeBmpPhoto } from '@/lib/ai-vision';
 import type { CheckpointStatus } from '@/types/checkpoint';
 
@@ -45,15 +47,17 @@ function totalFlightSeconds(samples: SampleRow[]): number {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id: missionId } = await context.params;
-    let body: CompleteBody = {};
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    let rawBody: unknown = undefined;
     try {
-      body = (await request.json()) as CompleteBody;
+      rawBody = await request.json();
     } catch {
       // empty body OK
     }
+    const body: CompleteBody = missionComplete.parse(rawBody) ?? {};
     const trigger = body.trigger ?? 'manual';
-
-    const supabase = createServerClient();
 
     // Load mission
     const { data: mission, error: missionErr } = await supabase
@@ -219,6 +223,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       wasAlreadyComplete,
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.issues }, { status: 400 });
+    }
     console.error('complete POST failed:', err);
     return NextResponse.json({ error: 'Complete failed' }, { status: 500 });
   }

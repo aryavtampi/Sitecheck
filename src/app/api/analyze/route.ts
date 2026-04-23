@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { analyzeCheckpoint } from '@/lib/validations';
 import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({
@@ -7,7 +10,9 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const body = analyzeCheckpoint.parse(await request.json());
     const { checkpointId, checkpointName, bmpCategory, status, description, cgpSection } = body;
 
     const message = await anthropic.messages.create({
@@ -57,6 +62,9 @@ Provide a detailed compliance analysis as JSON.`,
       status, // preserve the original status
     });
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Claude analysis error:', error);
     const message = error instanceof Error ? error.message : 'Analysis failed';
     return NextResponse.json({ error: message }, { status: 500 });

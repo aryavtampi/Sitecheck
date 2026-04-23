@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { generateMission } from '@/lib/validations';
 import { generateSmartFlightPath } from '@/lib/flight-path';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 import { fetchAirspaceContext } from '@/lib/airspace-context';
@@ -22,7 +24,9 @@ interface SiteInfoInput {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const body = generateMission.parse(await request.json());
     const {
       checkpoints,
       siteInfo,
@@ -146,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     // Log route-auto-generated audit event
     try {
-      const supabase = createServerClient();
+      const { supabase } = auth;
       await supabase.from('activity_events').insert({
         id: `activity-${Date.now()}`,
         project_id: projectId,
@@ -174,6 +178,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(mission);
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Mission generation error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Mission generation failed';
     return NextResponse.json({ error: errorMessage }, { status: 500 });

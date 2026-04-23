@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { crossingUpdate } from '@/lib/validations';
 import type { Crossing } from '@/types/crossing';
 
 function transformCrossing(row: Record<string, unknown>): Crossing {
@@ -28,7 +30,9 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { data, error } = await supabase
       .from('crossings')
       .select('*')
@@ -51,7 +55,10 @@ export async function PATCH(
 ) {
   const { id } = await params;
   try {
-    const body = (await request.json()) as Partial<Crossing>;
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = crossingUpdate.parse(await request.json()) as Partial<Crossing>;
     const updates: Record<string, unknown> = {};
     if (body.segmentId !== undefined) updates.segment_id = body.segmentId;
     if (body.crossingType !== undefined) updates.crossing_type = body.crossingType;
@@ -63,8 +70,6 @@ export async function PATCH(
     if (body.permitsRequired !== undefined) updates.permits_required = body.permitsRequired;
     if (body.status !== undefined) updates.status = body.status;
     updates.updated_at = new Date().toISOString();
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('crossings')
       .update(updates)
@@ -80,6 +85,9 @@ export async function PATCH(
     }
     return NextResponse.json(transformCrossing(data));
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to update crossing: ${
@@ -98,7 +106,9 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { error } = await supabase.from('crossings').delete().eq('id', id);
     if (error) {
       return NextResponse.json(

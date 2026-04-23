@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { fetchForecast } from '@/lib/weather-api';
 import { WeatherDay } from '@/types/weather';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
@@ -25,7 +25,9 @@ function transformForecastToClient(row: Record<string, unknown>): WeatherDay {
 // GET /api/weather/forecast - Get 7-day forecast with caching
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
 
@@ -102,7 +104,9 @@ export async function GET(request: NextRequest) {
 
     // If OpenWeatherMap fails, try to return stale cached data
     try {
-      const supabase = createServerClient();
+      const fallbackAuth = await requireAuth();
+      if (fallbackAuth.error) return fallbackAuth.error;
+      const { supabase } = fallbackAuth;
       const { searchParams } = new URL(request.url);
       const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
 

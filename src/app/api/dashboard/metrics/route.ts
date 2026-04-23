@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 import { linearCrossings } from '@/data/linear-crossings';
 import { linearPermits } from '@/data/linear-permits';
@@ -8,7 +8,9 @@ import { deriveLivePermitStatus } from '@/types/permit';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
 

@@ -12,7 +12,7 @@
  * so the demo continues to render bundled `/public/demo-photos/*` images.
  */
 
-import { createServerClient } from './server';
+import { createAdminClient } from './server';
 
 export const MISSION_PHOTOS_BUCKET = 'mission-photos';
 
@@ -36,7 +36,7 @@ export async function uploadMissionPhoto(
   if (!isStorageConfigured()) {
     throw new Error('Supabase Storage not configured');
   }
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.storage
     .from(MISSION_PHOTOS_BUCKET)
     .upload(path, file, {
@@ -64,7 +64,7 @@ export async function getSignedPhotoUrl(
 ): Promise<string> {
   if (!isStorageConfigured()) return path;
   try {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase.storage
       .from(MISSION_PHOTOS_BUCKET)
       .createSignedUrl(path, expiresInSec);
@@ -81,7 +81,7 @@ export async function getSignedPhotoUrl(
 export async function deleteMissionPhoto(path: string): Promise<void> {
   if (!isStorageConfigured()) return;
   try {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
     await supabase.storage.from(MISSION_PHOTOS_BUCKET).remove([path]);
   } catch {
     // best-effort

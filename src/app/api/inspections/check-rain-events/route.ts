@@ -17,7 +17,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { checkRainEvents } from '@/lib/validations';
 import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 import { detectRainEventForProject } from '@/lib/rain-event-detector';
 
@@ -71,15 +73,18 @@ function transformInspection(row: DbInspectionRow) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    let rawBody = {};
+    try { rawBody = await request.json(); } catch { /* empty body ok */ }
+    const body = checkRainEvents.parse(rawBody);
     const projectId = (body?.projectId as string) || DEFAULT_PROJECT_ID;
 
     const rainEvent = await detectRainEventForProject(projectId);
     if (!rainEvent) {
       return NextResponse.json({ rainEvent: null, inspection: null });
     }
-
-    const supabase = createServerClient();
 
     // Idempotent lookup — same project, same trigger event id
     const { data: existing, error: existingError } = await supabase
@@ -160,6 +165,9 @@ export async function POST(request: NextRequest) {
       inspection: transformInspection(inserted as DbInspectionRow),
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     console.error('check-rain-events unexpected error:', err);
     return NextResponse.json({ rainEvent: null, inspection: null });
   }

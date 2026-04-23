@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { reportGenerate } from '@/lib/validations';
 import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -54,8 +56,10 @@ interface QspReviewRow {
 // POST /api/reports/generate - Generate a report from live data
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = reportGenerate.parse(await request.json());
     const projectId = body.projectId || DEFAULT_PROJECT_ID;
     const inspectionId = body.inspectionId;
     const segmentId = body.segmentId as string | undefined;
@@ -658,6 +662,9 @@ This inspection was conducted in accordance with the requirements of:
       updatedAt: report.updated_at,
     }, { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Unexpected error in POST /api/reports/generate:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

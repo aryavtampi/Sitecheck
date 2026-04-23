@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { deficiencyUpdate } from '@/lib/validations';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -68,7 +70,9 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     const { data, error } = await supabase
       .from('deficiencies')
@@ -109,8 +113,10 @@ export async function PUT(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = deficiencyUpdate.parse(await request.json());
 
     // Get current deficiency to check for status change
     const { data: existing, error: existingError } = await supabase
@@ -192,6 +198,9 @@ export async function PUT(
 
     return NextResponse.json(deficiency);
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Deficiency PUT error:', error);
     const message = error instanceof Error ? error.message : 'Failed to update deficiency';
     return NextResponse.json({ error: message }, { status: 500 });

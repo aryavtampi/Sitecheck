@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({
@@ -7,6 +8,8 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -16,6 +19,10 @@ export async function POST(request: NextRequest) {
 
     if (file.type !== 'application/pdf') {
       return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 });
+    }
+
+    if (file.size > 25 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large (max 25MB)' }, { status: 400 });
     }
 
     // Convert to base64

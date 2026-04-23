@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { missionCreate } from '@/lib/validations';
 import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 import { fetchAirspaceContext } from '@/lib/airspace-context';
 import { validateFlightPath } from '@/lib/geofence';
@@ -93,7 +95,9 @@ function transformWaypointToDb(waypoint: Record<string, unknown>, missionId: str
 // GET /api/missions - List all drone missions
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
 
@@ -126,8 +130,11 @@ export async function GET(request: NextRequest) {
 // POST /api/missions - Create a new mission
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = missionCreate.parse(raw);
 
     // Generate ID if not provided
     const missionId = body.id || `mission-${Date.now()}`;
@@ -254,6 +261,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(transformMissionToClient(mission), { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 });
+    }
     console.error('Unexpected error in POST /api/missions:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

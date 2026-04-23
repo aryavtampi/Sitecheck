@@ -17,7 +17,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { InspectionReportPdf } from '@/lib/pdf/inspection-pdf';
 import type {
   PdfReportSection,
@@ -39,14 +39,14 @@ interface ReportRow {
   signed_date: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureReportForInspection(
   request: NextRequest,
+  supabase: any,
   inspectionId: string,
   projectId: string,
   existingReportId: string | null
 ): Promise<ReportRow | null> {
-  const supabase = createServerClient();
-
   // Try the linked report first.
   if (existingReportId) {
     const { data } = await supabase
@@ -78,7 +78,9 @@ async function ensureReportForInspection(
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // 1. Inspection
     const { data: inspection, error: inspectionError } = await supabase
@@ -105,6 +107,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // 3. Report (existing or freshly generated)
     const report = await ensureReportForInspection(
       request,
+      supabase,
       id,
       inspection.project_id,
       (inspection.report_id as string) ?? null

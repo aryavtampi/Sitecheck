@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { deficiencyCreate } from '@/lib/validations';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -70,7 +72,9 @@ function generateNotificationId() {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
 
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
@@ -113,8 +117,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = deficiencyCreate.parse(await request.json());
 
     // Ensure required fields
     const deficiencyId = body.id || generateId();
@@ -186,7 +192,7 @@ export async function POST(request: NextRequest) {
       project_id: projectId,
       type: 'warning',
       title: 'New Deficiency Detected',
-      message: `A deficiency has been detected at checkpoint "${checkpointName}". Corrective action required by ${new Date(body.deadline).toLocaleDateString()}.`,
+      message: `A deficiency has been detected at checkpoint "${checkpointName}". Corrective action required by ${body.deadline ? new Date(body.deadline).toLocaleDateString() : 'N/A'}.`,
       timestamp: new Date().toISOString(),
       read: false,
       link: `/checkpoints/${body.checkpointId}`,
@@ -204,6 +210,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(deficiency, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Deficiencies POST error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create deficiency';
     return NextResponse.json({ error: message }, { status: 500 });

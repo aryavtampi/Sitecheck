@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { checkpointBulk } from '@/lib/validations';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -85,8 +87,10 @@ function generateActivityId() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = checkpointBulk.parse(await request.json());
 
     if (!Array.isArray(body.checkpoints)) {
       return NextResponse.json(
@@ -156,6 +160,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Checkpoints bulk POST error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create checkpoints';
     return NextResponse.json({ error: message }, { status: 500 });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 
@@ -35,7 +35,9 @@ function transformQPEventToDb(data: Record<string, unknown>) {
 // GET /api/weather/qpe-events - List QPE events
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
     const limit = parseInt(searchParams.get('limit') || '10', 10);
@@ -70,7 +72,9 @@ export async function GET(request: NextRequest) {
 // POST /api/weather/qpe-events - Create a new QPE event
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const body = await request.json();
 
     // Generate ID if not provided

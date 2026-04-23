@@ -9,7 +9,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { inspectionSubmit } from '@/lib/validations';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -18,8 +20,12 @@ interface RouteContext {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
-    const body = await request.json().catch(() => ({}));
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    let rawBody = {};
+    try { rawBody = await request.json(); } catch { /* empty body ok */ }
+    const body = inspectionSubmit.parse(rawBody);
     const reportId = typeof body?.reportId === 'string' ? body.reportId : null;
 
     const submittedAt = new Date().toISOString();
@@ -65,6 +71,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       reportId: data.report_id ?? null,
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     console.error('Inspection submit unexpected error:', err);
     return NextResponse.json({ error: 'Submit failed' }, { status: 500 });
   }

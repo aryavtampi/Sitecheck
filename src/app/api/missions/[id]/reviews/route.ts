@@ -16,7 +16,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { missionReviewCreate } from '@/lib/validations';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -48,7 +50,9 @@ function transformReview(row: Record<string, unknown>) {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id: missionId } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { data, error } = await supabase
       .from('mission_qsp_reviews')
       .select('*')
@@ -66,17 +70,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id: missionId } = await context.params;
-    const body = (await request.json()) as UpsertBody;
-
-    if (
-      typeof body.waypointNumber !== 'number' ||
-      !body.checkpointId ||
-      !['accept', 'override', 'pending'].includes(body.decision)
-    ) {
-      return NextResponse.json({ error: 'Invalid review payload' }, { status: 400 });
-    }
-
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = missionReviewCreate.parse(raw);
     const id = `qsp-${missionId}-${body.waypointNumber}`;
     const row = {
       id,
@@ -103,6 +101,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json(transformReview(data));
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: err.issues }, { status: 400 });
+    }
     console.error('reviews POST failed:', err);
     return NextResponse.json({ error: 'Review save failed' }, { status: 500 });
   }

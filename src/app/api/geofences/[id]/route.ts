@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { geofenceUpdate } from '@/lib/validations';
 import { transformGeofence } from '@/lib/airspace-context';
 import type { Geofence } from '@/types/geofence';
 
@@ -10,7 +12,10 @@ export async function PATCH(
 ) {
   const { id } = await params;
   try {
-    const body = (await request.json()) as Partial<Geofence>;
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = geofenceUpdate.parse(await request.json()) as Partial<Geofence>;
     const updates: Record<string, unknown> = {};
     if (body.name !== undefined) updates.name = body.name;
     if (body.polygon !== undefined) updates.polygon = body.polygon;
@@ -19,8 +24,6 @@ export async function PATCH(
     if (body.notes !== undefined) updates.notes = body.notes;
     if (body.source !== undefined) updates.source = body.source;
     updates.updated_at = new Date().toISOString();
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('geofences')
       .update(updates)
@@ -36,6 +39,9 @@ export async function PATCH(
     }
     return NextResponse.json(transformGeofence(data));
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to update geofence: ${
@@ -54,7 +60,9 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { error } = await supabase.from('geofences').delete().eq('id', id);
     if (error) {
       return NextResponse.json(

@@ -12,7 +12,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { inspectionUpdate } from '@/lib/validations';
 import {
   computeComplianceForMissions,
   writeComplianceToInspection,
@@ -162,7 +164,9 @@ interface RouteContext {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // Inspection row
     const { data: inspection, error: inspectionError } = await supabase
@@ -250,8 +254,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const body = await request.json();
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = inspectionUpdate.parse(raw);
 
     const updates: Record<string, unknown> = {};
 
@@ -312,6 +319,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       transformInspection((refreshed ?? data) as DbInspectionRow, missionIds)
     );
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Inspection PATCH error:', error);
     const message = error instanceof Error ? error.message : 'Failed to update inspection';
     return NextResponse.json({ error: message }, { status: 500 });

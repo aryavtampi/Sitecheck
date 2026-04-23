@@ -11,7 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { inspectionCreate } from '@/lib/validations';
 import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 import {
   computeComplianceForMissions,
@@ -162,7 +164,9 @@ function generateActivityId() {
 // ─────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
 
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
@@ -222,8 +226,11 @@ export async function GET(request: NextRequest) {
 // ─────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = inspectionCreate.parse(raw);
 
     const inspectionId = body.id || generateId();
     const projectId = body.projectId || DEFAULT_PROJECT_ID;
@@ -353,6 +360,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: unknown) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Inspections POST error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create inspection';
     return NextResponse.json({ error: message }, { status: 500 });

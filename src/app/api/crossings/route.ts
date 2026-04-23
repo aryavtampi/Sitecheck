@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { crossingCreate } from '@/lib/validations';
 import { linearCrossings } from '@/data/linear-crossings';
 import type { Crossing } from '@/types/crossing';
 
@@ -52,7 +54,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     let query = supabase.from('crossings').select('*').eq('project_id', projectId);
     if (segmentId) query = query.eq('segment_id', segmentId);
     query = query.order('station_number', { ascending: true });
@@ -80,19 +84,14 @@ export async function GET(request: NextRequest) {
 // POST /api/crossings
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as Partial<Crossing>;
-    if (!body.projectId || !body.name || !body.crossingType) {
-      return NextResponse.json(
-        { error: 'Missing required fields: projectId, name, crossingType' },
-        { status: 400 }
-      );
-    }
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = crossingCreate.parse(await request.json()) as Partial<Crossing>;
 
     if (!body.id) {
       body.id = `crossing-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     }
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('crossings')
       .insert(toSnakeCase(body))
@@ -108,6 +107,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(transformCrossing(data), { status: 201 });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to create crossing: ${

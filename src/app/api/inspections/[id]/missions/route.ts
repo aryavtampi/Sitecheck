@@ -11,7 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { inspectionAddMission } from '@/lib/validations';
 import {
   computeComplianceForMissions,
   writeComplianceToInspection,
@@ -24,14 +26,16 @@ interface RouteContext {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id: inspectionId } = await context.params;
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = inspectionAddMission.parse(raw);
     const missionId = body.missionId as string | undefined;
 
     if (!missionId) {
       return NextResponse.json({ error: 'missionId is required' }, { status: 400 });
     }
-
-    const supabase = createServerClient();
 
     const linkRow = {
       id: `link-${inspectionId}-${missionId}`,
@@ -69,6 +73,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       qspOverallCompliance: computation.qspOverallCompliance,
     });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     console.error('inspection missions POST failed:', err);
     return NextResponse.json({ error: 'Link failed' }, { status: 500 });
   }

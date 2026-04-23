@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
 
 // Transform snake_case database row to camelCase
 function transformNotificationToClient(row: Record<string, unknown>) {
@@ -27,7 +27,9 @@ export async function POST(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     const { data: notification, error } = await supabase
       .from('notifications')

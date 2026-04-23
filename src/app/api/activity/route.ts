@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { activityCreate } from '@/lib/validations';
 import { resolveProjectId, DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 const DEFAULT_LIMIT = 20;
@@ -42,7 +44,9 @@ function transformActivityToDb(data: Record<string, unknown>) {
 // GET /api/activity - List activity events
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
     const limit = parseInt(searchParams.get('limit') || String(DEFAULT_LIMIT), 10);
@@ -85,8 +89,10 @@ export async function GET(request: NextRequest) {
 // POST /api/activity - Create activity event
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = activityCreate.parse(await request.json());
 
     // Validate required fields
     if (!body.type || !body.title || !body.description) {
@@ -134,6 +140,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(transformActivityToClient(activity), { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     console.error('Unexpected error in POST /api/activity:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

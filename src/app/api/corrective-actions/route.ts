@@ -10,7 +10,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { correctiveActionCreate } from '@/lib/validations';
 import { DEFAULT_PROJECT_ID } from '@/lib/project-context';
 
 const VALID_SEVERITIES = new Set(['low', 'medium', 'high']);
@@ -69,7 +71,9 @@ function generateId() {
 // ─────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId') || DEFAULT_PROJECT_ID;
     const status = searchParams.get('status');
@@ -105,8 +109,10 @@ export async function GET(request: NextRequest) {
 // ─────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = correctiveActionCreate.parse(await request.json());
 
     if (!body.description || !body.dueDate) {
       return NextResponse.json(
@@ -167,6 +173,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (err: unknown) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     console.error('Corrective actions POST error:', err);
     const message = err instanceof Error ? err.message : 'Failed to create corrective action';
     return NextResponse.json({ error: message }, { status: 500 });

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { projectCreate } from '@/lib/validations';
 import { project as riversideProject } from '@/data/project';
 import { linearProject } from '@/data/linear-project';
 import type { ProjectSegment } from '@/types/project';
@@ -72,7 +74,9 @@ function transformProject(row: Record<string, unknown>, segments: ProjectSegment
 
 export async function GET() {
   try {
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -113,8 +117,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = projectCreate.parse(await request.json());
 
     // Validate required fields
     if (!body.id || !body.name) {
@@ -183,7 +189,7 @@ export async function POST(request: NextRequest) {
 
     // Insert segments if present
     if (body.segments && Array.isArray(body.segments) && body.segments.length > 0) {
-      const segmentRows = body.segments.map((seg: ProjectSegment, idx: number) => ({
+      const segmentRows = body.segments.map((seg: { id?: string; name: string; startStation?: number; endStation?: number; centerlineSlice?: [number, number][] }, idx: number) => ({
         id: seg.id,
         project_id: body.id,
         name: seg.name,
@@ -209,6 +215,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(insertedProject, { status: 201 });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       { error: `Failed to create project: ${err instanceof Error ? err.message : 'unknown error'}` },
       { status: 500 }

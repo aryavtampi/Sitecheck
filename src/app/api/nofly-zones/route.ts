@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { ZodError } from 'zod';
+import { requireAuth } from '@/lib/auth';
+import { noflyZoneCreate } from '@/lib/validations';
 import {
   fetchNoFlyZonesForProject,
   noFlyZoneToSnakeCase,
@@ -9,6 +11,9 @@ import type { NoFlyZone } from '@/types/nofly-zone';
 
 // GET /api/nofly-zones?projectId=...&active=true
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get('projectId');
   const activeParam = searchParams.get('active');
@@ -28,25 +33,14 @@ export async function GET(request: NextRequest) {
 // POST /api/nofly-zones
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as Partial<NoFlyZone>;
-    if (!body.projectId || !body.name || !body.category || !body.polygon) {
-      return NextResponse.json(
-        { error: 'Missing required fields: projectId, name, category, polygon' },
-        { status: 400 }
-      );
-    }
-    if (!Array.isArray(body.polygon) || body.polygon.length < 3) {
-      return NextResponse.json(
-        { error: 'polygon must be an array of at least 3 [lng,lat] points' },
-        { status: 400 }
-      );
-    }
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const body = noflyZoneCreate.parse(await request.json()) as Partial<NoFlyZone>;
     if (!body.id) {
       body.id = `nfz-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     }
     if (body.active === undefined) body.active = true;
-
-    const supabase = createServerClient();
     const { data, error } = await supabase
       .from('nofly_zones')
       .insert(noFlyZoneToSnakeCase(body))
@@ -61,6 +55,9 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json(transformNoFlyZone(data), { status: 201 });
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
+    }
     return NextResponse.json(
       {
         error: `Failed to create no-fly zone: ${

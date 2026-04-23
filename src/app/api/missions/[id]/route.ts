@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { requireAuth } from '@/lib/auth';
+import { ZodError } from 'zod';
+import { missionUpdate } from '@/lib/validations';
 
 // Transform snake_case database row to camelCase
 function transformMissionToClient(row: Record<string, unknown>) {
@@ -110,7 +112,9 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
 
     // Fetch mission
     const { data: mission, error: missionError } = await supabase
@@ -168,8 +172,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await context.params;
-    const supabase = createServerClient();
-    const body = await request.json();
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+    const { supabase } = auth;
+    const raw = await request.json();
+    const body = missionUpdate.parse(raw);
 
     // Transform to database format
     const updateData = transformMissionUpdateToDb(body);
@@ -275,6 +282,9 @@ export async function PUT(
 
     return NextResponse.json(transformMissionToClient(mission));
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 });
+    }
     console.error('Unexpected error in PUT /api/missions/[id]:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
