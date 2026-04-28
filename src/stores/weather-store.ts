@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { WeatherDay, QPEvent } from '@/types';
 import { WeatherSnapshot } from '@/types/weather';
+import {
+  currentWeather as staticCurrent,
+  forecast as staticForecast,
+  qpEvents as staticQpEvents,
+} from '@/data/weather';
 
 interface WeatherStore {
   forecast: WeatherDay[];
@@ -14,9 +19,12 @@ interface WeatherStore {
 }
 
 export const useWeatherStore = create<WeatherStore>((set, get) => ({
-  forecast: [],
-  qpEvents: [],
-  current: null,
+  // Seed with static demo data so /weather (current conditions, 7-day chart,
+  // alerts, timeline) renders immediately and stays populated when the API
+  // is unavailable (e.g. demo mode).
+  forecast: staticForecast,
+  qpEvents: staticQpEvents,
+  current: staticCurrent,
   selectedDay: null,
   loading: false,
   error: null,
@@ -41,9 +49,21 @@ export const useWeatherStore = create<WeatherStore>((set, get) => ({
         qpeRes.json(),
       ]);
 
-      set({ current, forecast, qpEvents, loading: false });
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
+      set({
+        current: current ?? staticCurrent,
+        forecast: Array.isArray(forecast) && forecast.length > 0 ? forecast : staticForecast,
+        qpEvents: Array.isArray(qpEvents) && qpEvents.length > 0 ? qpEvents : staticQpEvents,
+        loading: false,
+      });
+    } catch {
+      // Fall back to static demo data when the API is unavailable.
+      set({
+        current: staticCurrent,
+        forecast: staticForecast,
+        qpEvents: staticQpEvents,
+        loading: false,
+        error: null,
+      });
     }
   },
 }));
