@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { INSPECTION_TYPE_LABELS } from '@/lib/constants';
 import type { InspectionType } from '@/types/drone';
+import { inspections as staticInspections } from '@/data/inspections';
 
 const typeColors: Record<InspectionType, { bg: string; border: string; text: string; dot: string }> = {
   routine: {
@@ -41,9 +42,18 @@ export function InspectionTimeline() {
 
   useEffect(() => {
     fetch('/api/inspections')
-      .then((res) => res.json())
-      .then((data) => { setInspections(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setInspections(Array.isArray(data) ? data : staticInspections);
+        setLoading(false);
+      })
+      .catch(() => {
+        setInspections(staticInspections);
+        setLoading(false);
+      });
   }, []);
 
   const latestId = inspections[inspections.length - 1]?.id;

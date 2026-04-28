@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useWeatherStore } from '@/stores/weather-store';
 import type { WeatherDay } from '@/types/weather';
+import { deficiencies as staticDeficiencies } from '@/data/deficiencies';
 
 interface Alert {
   id: string;
@@ -111,9 +112,16 @@ export function AlertPanel() {
   useEffect(() => {
     if (forecast.length === 0) fetchWeather();
     fetch('/api/deficiencies')
-      .then((res) => res.json())
-      .then(setDeficiencies)
-      .catch(() => {});
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setDeficiencies(Array.isArray(data) ? data : staticDeficiencies);
+      })
+      .catch(() => {
+        setDeficiencies(staticDeficiencies);
+      });
   }, [forecast.length, fetchWeather]);
 
   const alerts = getAlerts(forecast, deficiencies);

@@ -11,6 +11,7 @@ import { useProjectStore } from '@/stores/project-store';
 import { useSupabaseRealtime } from '@/hooks/use-supabase-realtime';
 import type { ActivityEvent } from '@/types/activity';
 import { ActivityType } from '@/types/activity';
+import { activityEvents as staticActivityEvents } from '@/data/activity-events';
 
 // Transform snake_case DB row from realtime to camelCase ActivityEvent
 function transformRealtimeActivity(row: Record<string, unknown>): ActivityEvent {
@@ -88,9 +89,19 @@ export function ActivityFeed() {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/activity?projectId=${currentProjectId}`)
-      .then((res) => res.json())
-      .then((data) => { setEvents(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        setEvents(Array.isArray(data) ? data : staticActivityEvents);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fall back to static demo data on auth/network failure
+        setEvents(staticActivityEvents);
+        setLoading(false);
+      });
   }, [currentProjectId]);
 
   // Real-time: listen for new activity events

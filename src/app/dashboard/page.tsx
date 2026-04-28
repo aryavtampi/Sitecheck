@@ -13,6 +13,9 @@ import { PageTransition } from '@/components/shared/page-transition';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { useProjectStore } from '@/stores/project-store';
 import { cn } from '@/lib/utils';
+import { checkpoints as staticCheckpoints } from '@/data/checkpoints';
+import { inspections as staticInspections } from '@/data/inspections';
+import { deficiencies as staticDeficiencies } from '@/data/deficiencies';
 
 const SiteOverviewMap = dynamic(
   () => import('@/components/dashboard/site-overview-map').then((m) => ({ default: m.SiteOverviewMap })),
@@ -46,6 +49,32 @@ function formatInspectionType(type: string | null): string {
     .join('-');
 }
 
+/**
+ * Compute dashboard metrics from static demo data — used as a fallback
+ * when /api/dashboard/metrics is unavailable (e.g. in demo mode).
+ */
+function computeStaticMetrics(): DashboardMetrics {
+  const total = staticCheckpoints.length;
+  const compliant = staticCheckpoints.filter((c) => c.status === 'compliant').length;
+  const deficient = staticCheckpoints.filter((c) => c.status === 'deficient').length;
+  const needsReview = staticCheckpoints.filter((c) => c.status === 'needs-review').length;
+  const lastInspection = [...staticInspections].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )[0];
+  const daysSince = lastInspection
+    ? Math.floor((Date.now() - new Date(lastInspection.date).getTime()) / 86_400_000)
+    : null;
+  return {
+    totalCheckpoints: total,
+    complianceRate: total > 0 ? Math.round((compliant / total) * 1000) / 10 : 0,
+    daysSinceInspection: daysSince,
+    lastInspectionType: lastInspection?.type ?? null,
+    lastInspectionDate: lastInspection?.date ?? null,
+    activeDeficiencies: staticDeficiencies.filter((d) => d.status === 'open').length,
+    checkpointsByStatus: { compliant, deficient, needsReview },
+  };
+}
+
 export default function DashboardPage() {
   const { isApp } = useAppMode();
   const currentProjectId = useProjectStore((s) => s.currentProjectId);
@@ -55,9 +84,19 @@ export default function DashboardPage() {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/dashboard/metrics?projectId=${currentProjectId}`)
-      .then((res) => res.json())
-      .then((data) => { setMetrics(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: DashboardMetrics) => {
+        setMetrics(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fall back to static demo metrics when the API is unavailable
+        setMetrics(computeStaticMetrics());
+        setLoading(false);
+      });
   }, [currentProjectId]);
 
   const inspectionSubtitle = metrics?.lastInspectionType && metrics?.lastInspectionDate
