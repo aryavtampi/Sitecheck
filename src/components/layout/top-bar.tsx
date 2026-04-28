@@ -1,22 +1,36 @@
 'use client';
 
-import { Bell, Cloud, Droplets, Wind, ThermometerSun, ChevronDown, MapPin, GitBranch } from 'lucide-react';
+import { Bell, Cloud, Droplets, Wind, ThermometerSun, ChevronDown, MapPin, GitBranch, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { useAppMode } from '@/hooks/use-app-mode';
+import { useDemoSession } from '@/hooks/use-demo-session';
 import { useProjectStore } from '@/stores/project-store';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useDroneStore } from '@/stores/drone-store';
+import { useDemoTourStore } from '@/stores/demo-tour-store';
+import { exitDemoSession } from '@/lib/demo/start-demo';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
 
 export function TopBar() {
+  const router = useRouter();
   const { isApp } = useAppMode();
+  const { inDemo } = useDemoSession();
+  const exitDemoTour = useDemoTourStore((s) => s.exit);
   const { projects, currentProjectId, setCurrentProject, currentProject: getCurrentProject } = useProjectStore();
   const fetchCheckpoints = useCheckpointStore((s) => s.fetchCheckpoints);
   const fetchMissions = useDroneStore((s) => s.fetchMissions);
   const project = getCurrentProject();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  function handleExitDemo() {
+    exitDemoSession();
+    exitDemoTour();
+    router.push('/login');
+    router.refresh();
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -128,7 +142,22 @@ export function TopBar() {
       </div>
 
       {/* Right side: Weather + Notifications */}
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        {/* Exit Demo pill — visible only during a demo session */}
+        {inDemo && (
+          <button
+            onClick={handleExitDemo}
+            className={cn(
+              'flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/5 text-amber-400 transition-colors hover:bg-amber-500/15',
+              isApp ? 'px-2 py-1 text-[10px]' : 'px-3 py-1 text-xs'
+            )}
+            aria-label="Exit demo"
+          >
+            <LogOut className={cn(isApp ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+            Exit Demo
+          </button>
+        )}
+
         {/* Weather Widget — hidden in app mode and on small screens */}
         {!isApp && (
           <div className="hidden items-center gap-4 rounded-md border border-border bg-surface px-3 py-1.5 text-xs md:flex">

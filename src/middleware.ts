@@ -18,6 +18,10 @@ function isApiRoute(pathname: string): boolean {
   return pathname.startsWith('/api/');
 }
 
+function isDemoSession(request: NextRequest): boolean {
+  return request.cookies.get('sitecheck_demo')?.value === '1';
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -77,7 +81,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // For page routes, redirect to login if unauthenticated
-  if (!user) {
+  // Allow demo sessions through without a Supabase user (cookie-only signal).
+  if (!user && !isDemoSession(request)) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', pathname);

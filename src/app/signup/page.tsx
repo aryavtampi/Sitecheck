@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { startDemoSession } from '@/lib/demo/start-demo';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -14,6 +16,14 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  function handleStartDemo() {
+    setDemoLoading(true);
+    startDemoSession();
+    router.push('/dashboard');
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -145,6 +155,31 @@ export default function SignupPage() {
             {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
+
+        <div className="space-y-2">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-card px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                or
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleStartDemo}
+            disabled={demoLoading}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-500/40 bg-transparent px-4 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/10 disabled:opacity-50"
+          >
+            <Sparkles className="h-4 w-4" />
+            {demoLoading ? 'Starting demo...' : 'Try Live Demo'}
+          </button>
+          <p className="text-center text-[11px] text-muted-foreground">
+            No signup. Sample project pre-loaded.
+          </p>
+        </div>
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}

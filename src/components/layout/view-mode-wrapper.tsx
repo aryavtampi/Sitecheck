@@ -7,7 +7,9 @@ import { AppPanel } from '@/components/layout/app-panel';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useViewModeStore } from '@/stores/view-mode-store';
 import { useOnboardingStore } from '@/stores/onboarding-store';
+import { useDemoTourStore } from '@/stores/demo-tour-store';
 import { OnboardingOverlay } from '@/components/onboarding/onboarding-overlay';
+import { DemoTourOverlay } from '@/components/onboarding/demo-tour-overlay';
 import { ONBOARDING_VERSION } from '@/components/onboarding/onboarding-steps';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -18,6 +20,7 @@ interface ViewModeWrapperProps {
 export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
   const { viewMode } = useViewModeStore();
   const { hasCompleted, completedVersion } = useOnboardingStore();
+  const demoTourActive = useDemoTourStore((s) => s.active);
 
   const onboardingActive = !hasCompleted || completedVersion < ONBOARDING_VERSION;
 
@@ -25,6 +28,9 @@ export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
     <TooltipProvider>
       {/* Onboarding overlay — shown until user completes or skips */}
       {onboardingActive && <OnboardingOverlay />}
+
+      {/* Demo tour panel — shown only when a demo session was started */}
+      {demoTourActive && <DemoTourOverlay />}
 
       <AnimatePresence mode="wait">
         {viewMode === 'website' ? (
