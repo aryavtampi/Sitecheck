@@ -81,16 +81,42 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-6 rounded-lg border border-border bg-card p-8">
-        <div className="space-y-2 text-center">
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            SiteCheck
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Create your account
-          </p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-background py-8">
+      <div className="w-full max-w-sm space-y-4">
+        {/* Prominent Demo CTA */}
+        <button
+          type="button"
+          onClick={handleStartDemo}
+          disabled={demoLoading}
+          className="group flex w-full items-center gap-4 rounded-xl border-2 border-amber-500/50 bg-gradient-to-r from-amber-500/15 to-amber-500/5 p-5 text-left transition-all hover:border-amber-500 hover:from-amber-500/25 hover:to-amber-500/10 hover:shadow-lg hover:shadow-amber-500/10 disabled:opacity-50"
+        >
+          <div className="shrink-0 rounded-lg border border-amber-500/40 bg-amber-500/15 p-3 transition-colors group-hover:bg-amber-500/25">
+            <Sparkles className="h-6 w-6 text-amber-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-heading text-base font-bold tracking-wide text-amber-400">
+                {demoLoading ? 'Starting demo...' : 'Try Live Demo'}
+              </span>
+              <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
+                No signup
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              See the full app with sample data &amp; a guided tour →
+            </p>
+          </div>
+        </button>
+
+        <div className="space-y-6 rounded-lg border border-border bg-card p-8">
+          <div className="space-y-2 text-center">
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+              SiteCheck
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Create your account
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -156,37 +182,13 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <div className="space-y-2">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-card px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                or
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleStartDemo}
-            disabled={demoLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-500/40 bg-transparent px-4 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/10 disabled:opacity-50"
-          >
-            <Sparkles className="h-4 w-4" />
-            {demoLoading ? 'Starting demo...' : 'Try Live Demo'}
-          </button>
-          <p className="text-center text-[11px] text-muted-foreground">
-            No signup. Sample project pre-loaded.
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
-        </p>
       </div>
     </div>
   );

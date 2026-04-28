@@ -21,6 +21,8 @@
  */
 
 import { ONBOARDING_VERSION } from '@/components/onboarding/onboarding-steps';
+import { useOnboardingStore } from '@/stores/onboarding-store';
+import { useDemoTourStore } from '@/stores/demo-tour-store';
 
 const DEMO_COOKIE = 'sitecheck_demo';
 const DEMO_COOKIE_TTL_SECONDS = 60 * 60 * 4; // 4 hours
@@ -71,6 +73,17 @@ export function startDemoSession(): void {
     // Safari private mode etc. — cookie alone is enough for middleware to
     // let them through; tour overlay simply won't appear.
   }
+
+  // Update the in-memory Zustand stores too. Both stores read from
+  // localStorage only at module-init time, so without these calls the
+  // 14-step onboarding overlay can re-appear and the tour panel won't open
+  // until the next full reload.
+  try {
+    useOnboardingStore.getState().completeOnboarding();
+    useDemoTourStore.setState({ active: true, currentStep: 0 });
+  } catch {
+    // ignore
+  }
 }
 
 /**
@@ -85,6 +98,11 @@ export function exitDemoSession(): void {
     // Remove the onboarding completion shim so a real signup post-demo gets
     // the standard 14-step overlay.
     localStorage.removeItem(ONBOARDING_KEY);
+  } catch {
+    // ignore
+  }
+  try {
+    useDemoTourStore.getState().exit();
   } catch {
     // ignore
   }

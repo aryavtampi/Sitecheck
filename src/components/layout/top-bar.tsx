@@ -143,19 +143,40 @@ export function TopBar() {
 
       {/* Right side: Weather + Notifications */}
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-        {/* Exit Demo pill — visible only during a demo session */}
+        {/* Demo session indicator + Exit button — prominent so VCs always
+            know they're in a sandbox and how to leave. */}
         {inDemo && (
-          <button
-            onClick={handleExitDemo}
+          <div
             className={cn(
-              'flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/5 text-amber-400 transition-colors hover:bg-amber-500/15',
-              isApp ? 'px-2 py-1 text-[10px]' : 'px-3 py-1 text-xs'
+              'flex shrink-0 items-center gap-2 rounded-md border-2 border-amber-500/60 bg-amber-500/10',
+              isApp ? 'px-2 py-1' : 'px-2.5 py-1'
             )}
-            aria-label="Exit demo"
           >
-            <LogOut className={cn(isApp ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
-            Exit Demo
-          </button>
+            <span
+              className={cn(
+                'flex items-center gap-1 font-bold uppercase tracking-wider text-amber-400',
+                isApp ? 'text-[9px]' : 'text-[10px]'
+              )}
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-400" />
+              </span>
+              Demo Mode
+            </span>
+            <span className="h-3 w-px bg-amber-500/40" />
+            <button
+              onClick={handleExitDemo}
+              className={cn(
+                'flex items-center gap-1 rounded-sm font-semibold text-amber-300 transition-colors hover:text-amber-100',
+                isApp ? 'text-[10px]' : 'text-xs'
+              )}
+              aria-label="Exit demo"
+            >
+              <LogOut className={cn(isApp ? 'h-3 w-3' : 'h-3.5 w-3.5')} />
+              Exit Demo
+            </button>
+          </div>
         )}
 
         {/* Weather Widget — hidden in app mode and on small screens */}

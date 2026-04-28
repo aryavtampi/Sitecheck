@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { DroneMission, DroneTelemetry, DroneTelemetrySample, QSPReviewDecision, QSPReviewEntry, ReportReadiness } from '@/types';
 import type { CheckpointStatus } from '@/types/checkpoint';
+import { droneMissions as staticMissions } from '@/data/drone-missions';
 
 const TELEMETRY_HISTORY_LIMIT = 60; // ~1 minute at 1 Hz
 
@@ -55,8 +56,10 @@ interface DroneStore {
 }
 
 export const useDroneStore = create<DroneStore>((set, get) => ({
-  missions: [],
-  selectedMissionId: null,
+  // Seed with static demo missions so /missions and /missions/[id] render
+  // immediately and stay populated when /api/missions is unavailable.
+  missions: staticMissions,
+  selectedMissionId: staticMissions.length > 0 ? staticMissions[0].id : null,
   playbackState: 'idle',
   playbackSpeed: 1,
   currentWaypointIndex: 0,
@@ -94,13 +97,21 @@ export const useDroneStore = create<DroneStore>((set, get) => ({
       const res = await fetch(`/api/missions?projectId=${projectId}`);
       if (!res.ok) throw new Error('Failed to fetch missions');
       const data = await res.json();
+      // Keep static demo missions visible if the API has no data (unseeded DB).
+      const next = Array.isArray(data) && data.length > 0 ? data : staticMissions;
       set({
-        missions: data,
-        selectedMissionId: data.length > 0 ? data[0].id : null,
+        missions: next,
+        selectedMissionId: next.length > 0 ? next[0].id : null,
         loading: false,
       });
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false });
+    } catch {
+      // Fall back to static demo missions when the API is unavailable.
+      set({
+        missions: staticMissions,
+        selectedMissionId: staticMissions.length > 0 ? staticMissions[0].id : null,
+        loading: false,
+        error: null,
+      });
     }
   },
 
