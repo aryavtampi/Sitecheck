@@ -21,8 +21,11 @@ function LoginForm() {
   function handleStartDemo() {
     setDemoLoading(true);
     startDemoSession();
+    // No router.refresh() — it triggers a server re-fetch that briefly
+    // re-renders the tree and can flash the welcome overlay before the
+    // demo cookie is read by middleware. The cookie + Zustand updates
+    // already happened synchronously in startDemoSession().
     router.push('/dashboard');
-    router.refresh();
   }
 
   async function handleSubmit(e: React.FormEvent) {

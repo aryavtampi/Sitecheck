@@ -22,7 +22,6 @@ export default function SignupPage() {
     setDemoLoading(true);
     startDemoSession();
     router.push('/dashboard');
-    router.refresh();
   }
 
   async function handleSubmit(e: React.FormEvent) {
