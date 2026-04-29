@@ -21,7 +21,6 @@
  */
 
 import { ONBOARDING_VERSION } from '@/components/onboarding/onboarding-steps';
-import { useOnboardingStore } from '@/stores/onboarding-store';
 import { useDemoTourStore } from '@/stores/demo-tour-store';
 
 const DEMO_COOKIE = 'sitecheck_demo';
@@ -43,8 +42,19 @@ function clearCookie(name: string) {
 }
 
 /**
- * Begin a demo session: drop the cookie, suppress the standard onboarding,
- * and queue the guided tour. Caller is responsible for navigation.
+ * Begin a demo session and hard-navigate to the dashboard.
+ *
+ * Uses `window.location.assign('/dashboard')` instead of Next's router.push
+ * because:
+ *   - The middleware needs to see the new sitecheck_demo cookie on the
+ *     /dashboard request. A hard navigation guarantees a fresh request
+ *     with the cookie attached.
+ *   - SPA navigation via router.push can stall on cold edge functions or
+ *     when the browser starts prefetching /dashboard before our cookie
+ *     was visible to middleware.
+ *   - On the new page load, the demo-tour Zustand store re-initializes
+ *     from localStorage (which we just seeded with active=true) so the
+ *     tour panel opens automatically.
  */
 export function startDemoSession(): void {
   if (typeof window === 'undefined') return;
@@ -61,7 +71,8 @@ export function startDemoSession(): void {
       })
     );
 
-    // Seed the demo-tour store: active + on step 0.
+    // Seed the demo-tour store: active + on step 0. The store will read
+    // this on the next page load and the DemoTourOverlay will open.
     localStorage.setItem(
       DEMO_TOUR_KEY,
       JSON.stringify({ active: true, currentStep: 0 })
@@ -74,16 +85,9 @@ export function startDemoSession(): void {
     // let them through; tour overlay simply won't appear.
   }
 
-  // Update the in-memory Zustand stores too. Both stores read from
-  // localStorage only at module-init time, so without these calls the
-  // 14-step onboarding overlay can re-appear and the tour panel won't open
-  // until the next full reload.
-  try {
-    useOnboardingStore.getState().completeOnboarding();
-    useDemoTourStore.setState({ active: true, currentStep: 0 });
-  } catch {
-    // ignore
-  }
+  // Hard-navigate so the new cookie is sent with the request and middleware
+  // recognises the demo session. router.push can be slow on cold edges.
+  window.location.assign('/dashboard');
 }
 
 /**

@@ -20,12 +20,10 @@ function LoginForm() {
 
   function handleStartDemo() {
     setDemoLoading(true);
+    // startDemoSession() does a hard navigation to /dashboard internally.
+    // We don't need router.push — and using it would race with the cookie
+    // not being visible to middleware on the prefetch.
     startDemoSession();
-    // No router.refresh() — it triggers a server re-fetch that briefly
-    // re-renders the tree and can flash the welcome overlay before the
-    // demo cookie is read by middleware. The cookie + Zustand updates
-    // already happened synchronously in startDemoSession().
-    router.push('/dashboard');
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,6 +50,10 @@ function LoginForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (demoLoading) {
+    return <DemoLoadingScreen />;
   }
 
   return (
@@ -145,6 +147,25 @@ function LoginForm() {
           <Link href="/signup" className="text-primary hover:underline">
             Sign up
           </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DemoLoadingScreen() {
+  return (
+    <div className="flex w-full flex-col items-center gap-5 text-center">
+      <div className="relative">
+        <div className="h-14 w-14 animate-spin rounded-full border-2 border-amber-500/20 border-t-amber-500" />
+        <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-amber-400" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="font-heading text-lg font-bold tracking-wide text-amber-400">
+          Starting demo session
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Loading sample project &amp; guided tour...
         </p>
       </div>
     </div>

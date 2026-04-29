@@ -1,15 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { startDemoSession } from '@/lib/demo/start-demo';
 
 export default function SignupPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [orgName, setOrgName] = useState('');
@@ -20,8 +17,8 @@ export default function SignupPage() {
 
   function handleStartDemo() {
     setDemoLoading(true);
+    // startDemoSession() does a hard navigation to /dashboard internally.
     startDemoSession();
-    router.push('/dashboard');
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -74,6 +71,27 @@ export default function SignupPage() {
           >
             Back to sign in
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (demoLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex w-full max-w-sm flex-col items-center gap-5 text-center">
+          <div className="relative">
+            <div className="h-14 w-14 animate-spin rounded-full border-2 border-amber-500/20 border-t-amber-500" />
+            <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-amber-400" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="font-heading text-lg font-bold tracking-wide text-amber-400">
+              Starting demo session
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Loading sample project &amp; guided tour...
+            </p>
+          </div>
         </div>
       </div>
     );
