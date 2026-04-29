@@ -22,6 +22,9 @@ import {
   BMP_CATEGORY_COLORS,
   STATUS_COLORS,
 } from '@/lib/constants';
+import { checkpoints as staticCheckpoints } from '@/data/checkpoints';
+import { aiAnalyses as staticAnalyses } from '@/data/ai-analyses';
+import { deficiencies as staticDeficiencies } from '@/data/deficiencies';
 import { formatDateTime, formatCoordinate } from '@/lib/format';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { AIAnalysisPanel } from '@/components/checkpoints/ai-analysis-panel';
@@ -45,6 +48,25 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    function fallbackToStatic() {
+      const cp = staticCheckpoints.find((c) => c.id === checkpointId);
+      if (!cp) {
+        setError('Not found');
+        setLoading(false);
+        return;
+      }
+      setCheckpoint({
+        ...cp,
+        location: cp.location ?? { lat: cp.lat, lng: cp.lng },
+      });
+      setAnalysis(staticAnalyses.find((a) => a.checkpointId === checkpointId) ?? null);
+      setMatchingDeficiencies(
+        staticDeficiencies.filter((d) => d.checkpointId === checkpointId)
+      );
+      setError(null);
+      setLoading(false);
+    }
+
     fetch(`/api/checkpoints/${checkpointId}`)
       .then((res) => {
         if (!res.ok) throw new Error('Not found');
@@ -61,9 +83,9 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         setMatchingDeficiencies(data.deficiencies || []);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
+      .catch(() => {
+        // Fall back to static demo data when the API is unavailable (demo mode).
+        fallbackToStatic();
       });
   }, [checkpointId]);
 

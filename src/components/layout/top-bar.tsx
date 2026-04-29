@@ -130,7 +130,7 @@ export function TopBar() {
           <Badge
             variant="outline"
             className={cn(
-              'shrink-0 text-xs',
+              'hidden shrink-0 text-xs lg:inline-flex',
               project?.status === 'active'
                 ? 'border-amber-500/30 bg-amber-500/10 text-amber-500'
                 : 'border-muted-foreground/30 bg-muted-foreground/10 text-muted-foreground'
@@ -142,14 +142,16 @@ export function TopBar() {
       </div>
 
       {/* Right side: Weather + Notifications */}
-      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-4">
         {/* Demo session indicator + Exit button — prominent so VCs always
-            know they're in a sandbox and how to leave. */}
+            know they're in a sandbox and how to leave. The "Demo Mode"
+            label hides on narrow viewports to keep the header from
+            wrapping; the dot + Exit Demo button stay visible. */}
         {inDemo && (
           <div
             className={cn(
-              'flex shrink-0 items-center gap-2 rounded-md border-2 border-amber-500/60 bg-amber-500/10',
-              isApp ? 'px-2 py-1' : 'px-2.5 py-1'
+              'flex shrink-0 items-center gap-1.5 rounded-md border-2 border-amber-500/60 bg-amber-500/10',
+              isApp ? 'px-1.5 py-1' : 'px-2 py-1 sm:gap-2 sm:px-2.5'
             )}
           >
             <span
@@ -162,9 +164,9 @@ export function TopBar() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-400" />
               </span>
-              Demo Mode
+              <span className="hidden sm:inline">Demo Mode</span>
             </span>
-            <span className="h-3 w-px bg-amber-500/40" />
+            <span className="hidden h-3 w-px bg-amber-500/40 sm:inline-block" />
             <button
               onClick={handleExitDemo}
               className={cn(
