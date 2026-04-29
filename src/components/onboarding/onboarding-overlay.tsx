@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Monitor, Smartphone, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useOnboardingStore } from '@/stores/onboarding-store';
 import { useViewModeStore } from '@/stores/view-mode-store';
+import { useDemoTourStore } from '@/stores/demo-tour-store';
+import { isDemoSession } from '@/lib/demo/start-demo';
 import { onboardingSteps, ONBOARDING_VERSION } from './onboarding-steps';
 import { cn } from '@/lib/utils';
 
@@ -54,6 +56,7 @@ export function OnboardingOverlay() {
     completeOnboarding,
   } = useOnboardingStore();
   const { viewMode, setViewMode } = useViewModeStore();
+  const demoTourActive = useDemoTourStore((s) => s.active);
 
   const [mounted, setMounted] = useState(false);
   const directionRef = useRef(1);
@@ -67,6 +70,11 @@ export function OnboardingOverlay() {
   }, [currentStep]);
 
   if (!mounted) return null;
+  // Defense-in-depth: never show the standard onboarding to a demo user,
+  // even if ViewModeWrapper somehow mounts us. Checks both the demo cookie
+  // (synchronous read of document.cookie post-hydration) and the in-memory
+  // demo-tour flag.
+  if (demoTourActive || isDemoSession()) return null;
   if (hasCompleted && completedVersion >= ONBOARDING_VERSION) return null;
 
   const step = onboardingSteps[currentStep];
