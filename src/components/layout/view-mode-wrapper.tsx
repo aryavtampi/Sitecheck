@@ -49,7 +49,7 @@ export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
             className="flex min-h-screen"
           >
             <Sidebar />
-            <div className="flex flex-1 flex-col sm:pl-16">
+            <div className="flex flex-1 flex-col sm:pl-56">
               <TopBar />
               <main className="flex-1 overflow-auto">{children}</main>
             </div>
@@ -57,10 +57,10 @@ export function ViewModeWrapper({ children }: ViewModeWrapperProps) {
         ) : (
           <motion.div
             key="app"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <AppPanel>
               <TopBar />
@@ -100,7 +100,7 @@ function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-border bg-[#0A0A0A]/95 px-1 py-2 backdrop-blur-md">
+    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-border bg-surface px-1 py-2">
       {mobileNavItems.map((item) => {
         const isActive =
           pathname === item.href || pathname?.startsWith(item.href + '/');
@@ -113,11 +113,11 @@ function MobileBottomNav() {
             className={cn(
               'flex flex-col items-center gap-0.5 rounded-md px-2 py-1 text-[10px] transition-colors',
               isActive
-                ? 'text-amber-500'
+                ? 'font-medium text-primary'
                 : 'text-muted-foreground'
             )}
           >
-            <Icon className={cn('h-5 w-5', isActive ? 'text-amber-500' : '')} />
+            <Icon className="h-5 w-5" />
             <span>{item.label}</span>
           </Link>
         );

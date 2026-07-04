@@ -16,10 +16,12 @@ export function SectionHeader({ title, description, className, action }: Section
   return (
     <div className={cn('flex items-center justify-between', className)}>
       <div className="min-w-0">
-        <h2 className={cn(
-          'font-heading font-semibold tracking-wide text-foreground',
-          isApp ? 'text-base' : 'text-xl'
-        )}>
+        <h2
+          className={cn(
+            'font-semibold tracking-tight text-foreground',
+            isApp ? 'text-base' : 'text-xl'
+          )}
+        >
           {title}
         </h2>
         {description && !isApp && (

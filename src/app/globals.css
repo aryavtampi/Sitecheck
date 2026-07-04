@@ -9,7 +9,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-oswald);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -47,97 +46,57 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Custom industrial theme colors */
-  --color-amber-50: #FFFBEB;
-  --color-amber-100: #FEF3C7;
-  --color-amber-200: #FDE68A;
-  --color-amber-300: #FCD34D;
-  --color-amber-400: #FBBF24;
-  --color-amber-500: #F59E0B;
-  --color-amber-600: #D97706;
-  --color-amber-700: #B45309;
-  --color-amber-800: #92400E;
-  --color-amber-900: #78350F;
+  /* Surfaces — kept as named utilities (bg-surface etc.) */
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F3F5F4;
+  --color-surface-overlay: #FFFFFF;
 
-  --color-surface: #141414;
-  --color-surface-elevated: #1C1C1C;
-  --color-surface-overlay: #222222;
-
-  --color-status-compliant: #22C55E;
-  --color-status-warning: #F59E0B;
-  --color-status-deficient: #EF4444;
-  --color-status-review: #8B5CF6;
+  /* Status colors — used exclusively for compliance/status semantics.
+     Text weight (readable on light tints): */
+  --color-status-compliant: #15803D;
+  --color-status-warning: #B45309;
+  --color-status-deficient: #B91C1C;
+  --color-status-review: #6D28D9;
+  /* 10% tints for badge/row backgrounds: */
+  --color-status-compliant-bg: #E9F4EC;
+  --color-status-warning-bg: #FBF1E5;
+  --color-status-deficient-bg: #FBEAEA;
+  --color-status-review-bg: #F1EBFB;
 }
 
-/* Always dark mode - industrial theme */
 :root {
-  --background: #0A0A0A;
-  --foreground: #E5E5E5;
-  --card: #141414;
-  --card-foreground: #E5E5E5;
-  --popover: #1C1C1C;
-  --popover-foreground: #E5E5E5;
-  --primary: #F59E0B;
-  --primary-foreground: #0A0A0A;
-  --secondary: #1C1C1C;
-  --secondary-foreground: #A3A3A3;
-  --muted: #1C1C1C;
-  --muted-foreground: #737373;
-  --accent: #292524;
-  --accent-foreground: #F59E0B;
-  --destructive: #EF4444;
-  --border: #2A2A2A;
-  --input: #2A2A2A;
-  --ring: #F59E0B;
-  --chart-1: #F59E0B;
-  --chart-2: #22C55E;
-  --chart-3: #3B82F6;
-  --chart-4: #8B5CF6;
-  --chart-5: #EF4444;
+  --background: #F7F8F8;
+  --foreground: #1C2321;
+  --card: #FFFFFF;
+  --card-foreground: #1C2321;
+  --popover: #FFFFFF;
+  --popover-foreground: #1C2321;
+  --primary: #20614E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF1F0;
+  --secondary-foreground: #3D4644;
+  --muted: #F3F5F4;
+  --muted-foreground: #5A6461;
+  --accent: #E7EEEB;
+  --accent-foreground: #20614E;
+  --destructive: #B91C1C;
+  --border: #E3E7E4;
+  --input: #D6DCD9;
+  --ring: #20614E;
+  --chart-1: #20614E;
+  --chart-2: #4A7FA5;
+  --chart-3: #8A9590;
+  --chart-4: #6D28D9;
+  --chart-5: #B91C1C;
   --radius: 0.5rem;
-  --sidebar: #0A0A0A;
-  --sidebar-foreground: #A3A3A3;
-  --sidebar-primary: #F59E0B;
-  --sidebar-primary-foreground: #0A0A0A;
-  --sidebar-accent: #1C1C1C;
-  --sidebar-accent-foreground: #E5E5E5;
-  --sidebar-border: #2A2A2A;
-  --sidebar-ring: #F59E0B;
-}
-
-/* No light mode - force dark always */
-.dark {
-  --background: #0A0A0A;
-  --foreground: #E5E5E5;
-  --card: #141414;
-  --card-foreground: #E5E5E5;
-  --popover: #1C1C1C;
-  --popover-foreground: #E5E5E5;
-  --primary: #F59E0B;
-  --primary-foreground: #0A0A0A;
-  --secondary: #1C1C1C;
-  --secondary-foreground: #A3A3A3;
-  --muted: #1C1C1C;
-  --muted-foreground: #737373;
-  --accent: #292524;
-  --accent-foreground: #F59E0B;
-  --destructive: #EF4444;
-  --border: #2A2A2A;
-  --input: #2A2A2A;
-  --ring: #F59E0B;
-  --chart-1: #F59E0B;
-  --chart-2: #22C55E;
-  --chart-3: #3B82F6;
-  --chart-4: #8B5CF6;
-  --chart-5: #EF4444;
-  --sidebar: #0A0A0A;
-  --sidebar-foreground: #A3A3A3;
-  --sidebar-primary: #F59E0B;
-  --sidebar-primary-foreground: #0A0A0A;
-  --sidebar-accent: #1C1C1C;
-  --sidebar-accent-foreground: #E5E5E5;
-  --sidebar-border: #2A2A2A;
-  --sidebar-ring: #F59E0B;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #5A6461;
+  --sidebar-primary: #20614E;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EEF3F1;
+  --sidebar-accent-foreground: #20614E;
+  --sidebar-border: #E3E7E4;
+  --sidebar-ring: #20614E;
 }
 
 @layer base {
@@ -152,75 +111,57 @@
   }
 }
 
-/* Industrial texture overlay */
-.texture-concrete {
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+/* Data values — metrics, IDs, coordinates, dates in tables */
+.font-data {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2A2A2A;
-  border-radius: 3px;
+  background: #CDD4D1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3A3A3A;
+  background: #B4BDB9;
 }
 
-/* Mapbox overrides for dark theme */
+/* Mapbox overrides — light chrome around satellite imagery */
 .mapboxgl-popup-content {
-  background: #1C1C1C !important;
-  color: #E5E5E5 !important;
-  border: 1px solid #2A2A2A !important;
+  background: #FFFFFF !important;
+  color: #1C2321 !important;
+  border: 1px solid #E3E7E4 !important;
   border-radius: 0.5rem !important;
   padding: 12px !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(28, 35, 33, 0.12) !important;
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: #1C1C1C !important;
+  border-top-color: #FFFFFF !important;
 }
 
 .mapboxgl-ctrl-group {
-  background: #1C1C1C !important;
-  border: 1px solid #2A2A2A !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E3E7E4 !important;
+  box-shadow: 0 1px 3px rgba(28, 35, 33, 0.08) !important;
 }
 
-.mapboxgl-ctrl-group button {
-  filter: invert(1);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
-
-/* Glow effect for amber elements */
-.glow-amber {
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
-}
-
-/* Pulsing animation for alerts */
-@keyframes pulse-amber {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.animate-pulse-amber {
-  animation: pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Countdown timer red pulse */
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
-  50% { opacity: 0.8; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-}
-
-.animate-pulse-red {
-  animation: pulse-red 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-

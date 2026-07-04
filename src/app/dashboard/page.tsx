@@ -108,10 +108,10 @@ export default function DashboardPage() {
     <div className={cn('space-y-6 p-6', isApp && 'space-y-3 p-3')}>
       {/* Page Header */}
       <div>
-        <h1 className={cn('font-heading text-2xl font-bold tracking-wide', isApp && 'text-lg')}>Command Dashboard</h1>
+        <h1 className={cn('text-2xl font-semibold tracking-tight', isApp && 'text-lg')}>Dashboard</h1>
         {!isApp && (
           <p className="mt-1 text-sm text-muted-foreground">
-            Real-time overview of project compliance and inspection status
+            Compliance and inspection status for this project
           </p>
         )}
       </div>
@@ -131,44 +131,41 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4', isApp && 'grid-cols-2 gap-2')}>
-          <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+          <Link href="/checkpoints" className="block rounded-lg">
             <MetricCard
-              title="BMP Checkpoints"
+              title="BMP checkpoints"
               value={metrics?.totalCheckpoints ?? 0}
               icon={CheckCircle}
               subtitle="Extracted from SWPPP v3.1"
-              accentColor="text-amber-500"
               compact={isApp}
             />
           </Link>
-          <Link href="/reports" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+          <Link href="/reports" className="block rounded-lg">
             <MetricCard
-              title="Compliance Rate"
+              title="Compliance rate"
               value={metrics?.complianceRate ?? 0}
               suffix="%"
               icon={TrendingUp}
               trend={{ value: 3, positive: true }}
-              accentColor="text-green-500"
               compact={isApp}
             />
           </Link>
-          <Link href="/missions" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+          <Link href="/missions" className="block rounded-lg">
             <MetricCard
-              title="Days Since Inspection"
+              title="Days since inspection"
               value={metrics?.daysSinceInspection ?? 0}
               icon={Calendar}
               subtitle={inspectionSubtitle}
-              accentColor="text-blue-400"
               compact={isApp}
             />
           </Link>
-          <Link href="/checkpoints" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+          <Link href="/checkpoints" className="block rounded-lg">
             <MetricCard
-              title="Active Deficiencies"
+              title="Active deficiencies"
               value={metrics?.activeDeficiencies ?? 0}
               icon={AlertTriangle}
               subtitle="72-hour correction window active"
-              accentColor="text-red-500"
+              accentColor={(metrics?.activeDeficiencies ?? 0) > 0 ? 'text-status-deficient' : undefined}
               compact={isApp}
             />
           </Link>
@@ -179,7 +176,7 @@ export default function DashboardPage() {
       {metrics?.isLinear && (
         <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3', isApp && 'grid-cols-3 gap-2')}>
           <MetricCard
-            title="Corridor Length"
+            title="Corridor length"
             value={metrics.corridorLengthMiles ?? 0}
             suffix=" mi"
             decimals={2}
@@ -189,21 +186,19 @@ export default function DashboardPage() {
                 ? `${Math.round(metrics.corridorLengthFeet).toLocaleString()} ft total`
                 : 'Centerline length'
             }
-            accentColor="text-emerald-400"
             compact={isApp}
           />
-          <Link href="/crossings" className="block hover:ring-1 hover:ring-amber-500/30 rounded-lg transition-all">
+          <Link href="/crossings" className="block rounded-lg">
             <MetricCard
               title="Crossings"
               value={metrics.crossingsCount ?? 0}
               icon={Waypoints}
               subtitle="Streams, roads, utilities, rail, wetlands"
-              accentColor="text-cyan-400"
               compact={isApp}
             />
           </Link>
           <MetricCard
-            title="Permits"
+            title="Active permits"
             value={metrics.permits?.active ?? 0}
             icon={ShieldCheck}
             subtitle={
@@ -213,10 +208,10 @@ export default function DashboardPage() {
             }
             accentColor={
               (metrics.permits?.expired ?? 0) > 0
-                ? 'text-red-400'
+                ? 'text-status-deficient'
                 : (metrics.permits?.expiring ?? 0) > 0
-                  ? 'text-amber-400'
-                  : 'text-green-400'
+                  ? 'text-status-warning'
+                  : undefined
             }
             compact={isApp}
           />

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
-import localFont from 'next/font/local';
 import { ViewModeWrapper } from '@/components/layout/view-mode-wrapper';
 import { RealtimeProvider } from '@/components/providers/realtime-provider';
 import { ErrorBoundary } from '@/components/providers/error-boundary';
@@ -16,21 +15,10 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
 });
 
-const oswald = localFont({
-  src: [
-    {
-      path: './fonts/Oswald-Variable.ttf',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-oswald',
-  display: 'swap',
-});
-
 export const metadata: Metadata = {
-  title: 'SiteCheck — AI-Powered Construction Site Intelligence',
+  title: 'SiteCheck — Stormwater Compliance Platform',
   description:
-    'Drone surveillance, blueprint analysis, progress tracking, and safety compliance in one dashboard.',
+    'Drone-assisted SWPPP inspections, BMP checkpoint tracking, and regulatory reporting for construction sites.',
 };
 
 export default function RootLayout({
@@ -39,11 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${oswald.variable} dark`}
-    >
-      <body className="min-h-screen bg-background text-foreground antialiased texture-concrete">
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <ErrorBoundary>
           <RealtimeProvider>
             <ViewModeWrapper>{children}</ViewModeWrapper>
