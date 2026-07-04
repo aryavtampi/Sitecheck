@@ -70,41 +70,41 @@ export function ReinspectionPresets({ onPresetsApplied }: ReinspectionPresetsPro
 
   const presets = [
     {
-      label: 'Fly Deficient BMPs',
+      label: 'Fly deficient BMPs',
       icon: AlertCircle,
       state: deficientState,
       onClick: handleDeficient,
-      color: 'text-red-400',
+      color: 'text-status-deficient',
     },
     {
-      label: 'Fly Ground Follow-up',
+      label: 'Fly ground follow-up',
       icon: ShieldX,
       state: followUpState,
       onClick: () =>
         handleLastMissionByStatus(['ground-follow-up'], setFollowUpState),
-      color: 'text-yellow-400',
+      color: 'text-status-warning',
     },
     {
-      label: 'Fly Not-Visible BMPs',
+      label: 'Fly not-visible BMPs',
       icon: Eye,
       state: notVisibleState,
       onClick: () =>
         handleLastMissionByStatus(['not-visible'], setNotVisibleState),
-      color: 'text-purple-400',
+      color: 'text-status-review',
     },
     {
-      label: 'Fly Blocked BMPs',
+      label: 'Fly blocked BMPs',
       icon: Ban,
       state: blockedState,
       onClick: () =>
         handleLastMissionByStatus(['blocked'], setBlockedState),
-      color: 'text-rose-400',
+      color: 'text-status-deficient',
     },
   ];
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">Quick Presets</p>
+      <p className="text-xs font-medium text-muted-foreground">Quick presets</p>
       <div className="grid grid-cols-2 gap-2">
         {presets.map(({ label, icon: Icon, state, onClick, color }) => (
           <Button
@@ -112,7 +112,7 @@ export function ReinspectionPresets({ onPresetsApplied }: ReinspectionPresetsPro
             type="button"
             variant="outline"
             size="sm"
-            className="h-auto flex-col items-start gap-1.5 px-3 py-2.5 text-left border-border hover:border-foreground/20"
+            className="h-auto flex-col items-start gap-1.5 px-3 py-2.5 text-left border-border hover:border-input"
             onClick={onClick}
             disabled={state.loading}
           >
@@ -126,7 +126,7 @@ export function ReinspectionPresets({ onPresetsApplied }: ReinspectionPresetsPro
               {state.count !== null && (
                 <Badge
                   variant="secondary"
-                  className="ml-auto h-4 px-1.5 text-[10px] bg-blue-500/10 text-blue-400"
+                  className="ml-auto h-4 px-1.5 font-data text-[11px]"
                 >
                   {state.count}
                 </Badge>

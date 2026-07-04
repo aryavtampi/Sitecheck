@@ -19,13 +19,13 @@ export default function MissionsPage() {
     <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
       <div className="flex items-start justify-between">
         <SectionHeader
-          title="Drone Mission Center"
-          description="AI-powered drone survey missions with flight replay and analysis"
+          title="Missions"
+          description="Drone survey missions with flight replay and analysis"
         />
         <Link href="/missions/new">
           <Button size="sm" className="gap-1.5 shrink-0">
             <Plus className="h-4 w-4" />
-            {!isApp && 'New Mission'}
+            {!isApp && 'New mission'}
           </Button>
         </Link>
       </div>

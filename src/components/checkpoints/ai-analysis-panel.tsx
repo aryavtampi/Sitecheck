@@ -15,15 +15,15 @@ interface AIAnalysisPanelProps {
 }
 
 function getConfidenceColor(confidence: number): string {
-  if (confidence >= 90) return 'text-green-500';
-  if (confidence >= 75) return 'text-amber-500';
-  return 'text-red-500';
+  if (confidence >= 90) return 'text-status-compliant';
+  if (confidence >= 75) return 'text-status-warning';
+  return 'text-status-deficient';
 }
 
 function getConfidenceIndicatorClass(confidence: number): string {
-  if (confidence >= 90) return '[&_[data-slot=progress-indicator]]:bg-green-500';
-  if (confidence >= 75) return '[&_[data-slot=progress-indicator]]:bg-amber-500';
-  return '[&_[data-slot=progress-indicator]]:bg-red-500';
+  if (confidence >= 90) return '[&_[data-slot=progress-indicator]]:bg-status-compliant';
+  if (confidence >= 75) return '[&_[data-slot=progress-indicator]]:bg-status-warning';
+  return '[&_[data-slot=progress-indicator]]:bg-status-deficient';
 }
 
 export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) {
@@ -83,10 +83,10 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isLive && analyzedAt && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2.5 py-0.5 text-xs font-medium text-violet-400">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
               <Sparkles className="h-3 w-3" />
-              Live AI Analysis
-              <span className="text-violet-400/60">
+              Live analysis
+              <span className="font-data text-accent-foreground/70">
                 {analyzedAt.toLocaleTimeString()}
               </span>
             </span>
@@ -111,7 +111,7 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
               ) : (
                 <Sparkles className="h-3.5 w-3.5" />
               )}
-              {isLoading ? 'Analyzing...' : 'Re-analyze with AI'}
+              {isLoading ? 'Analyzing...' : 'Re-analyze'}
             </Button>
           )}
         </div>
@@ -119,14 +119,17 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
 
       {/* Error State */}
       {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+        <div className="rounded-lg border border-status-deficient/20 bg-status-deficient-bg p-4">
           <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-status-deficient" />
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-red-500 mb-1">
-                Analysis Error
+              <h4 className="text-xs font-medium text-status-deficient mb-1">
+                Analysis failed
               </h4>
-              <p className="text-sm text-red-400/80 leading-relaxed">{error}</p>
+              <p className="text-sm text-foreground leading-relaxed">{error}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Try re-analyzing, or keep using the cached analysis.
+              </p>
             </div>
           </div>
         </div>
@@ -134,7 +137,7 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
 
       {/* Loading State */}
       {isLoading && (
-        <div className="space-y-6 animate-pulse">
+        <div className="space-y-6">
           <div>
             <div className="h-3 w-20 rounded bg-muted mb-3" />
             <div className="space-y-2">
@@ -162,10 +165,10 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
         <>
           {/* Summary */}
           <div>
-            <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
-              AI Summary
+            <h4 className="text-xs font-medium text-muted-foreground mb-2">
+              Summary
             </h4>
-            <p className="text-sm text-foreground/90 leading-relaxed">
+            <p className="text-sm text-foreground leading-relaxed">
               {displayAnalysis.summary}
             </p>
           </div>
@@ -173,12 +176,12 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
           {/* Confidence Score */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Confidence Score
+              <h4 className="text-xs font-medium text-muted-foreground">
+                Confidence
               </h4>
               <span
                 className={cn(
-                  'font-mono text-sm font-bold',
+                  'font-data text-sm font-semibold',
                   getConfidenceColor(displayAnalysis.confidence)
                 )}
               >
@@ -193,13 +196,13 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
 
           {/* Details */}
           <div>
-            <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-              Analysis Details
+            <h4 className="text-xs font-medium text-muted-foreground mb-3">
+              Details
             </h4>
             <ul className="space-y-2">
               {displayAnalysis.details.map((detail, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                  <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500/70" />
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                  <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-status-compliant/70" />
                   <span>{detail}</span>
                 </li>
               ))}
@@ -207,14 +210,14 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
           </div>
 
           {/* CGP Reference */}
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+          <div className="rounded-lg border border-border bg-surface-elevated p-4">
             <div className="flex items-start gap-2">
-              <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+              <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <h4 className="text-xs font-medium uppercase tracking-wider text-amber-500 mb-1">
-                  CGP Reference
+                <h4 className="text-xs font-medium text-muted-foreground mb-1">
+                  CGP reference
                 </h4>
-                <p className="text-sm text-foreground/80 leading-relaxed">
+                <p className="text-sm text-foreground leading-relaxed">
                   {displayAnalysis.cgpReference}
                 </p>
               </div>
@@ -224,13 +227,13 @@ export function AIAnalysisPanel({ analysis, checkpoint }: AIAnalysisPanelProps) 
           {/* Recommendations */}
           {displayAnalysis.recommendations && displayAnalysis.recommendations.length > 0 && (
             <div>
-              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+              <h4 className="text-xs font-medium text-muted-foreground mb-3">
                 Recommendations
               </h4>
               <ul className="space-y-2">
                 {displayAnalysis.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500/70" />
+                  <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <span>{rec}</span>
                   </li>
                 ))}

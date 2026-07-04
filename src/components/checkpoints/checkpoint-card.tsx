@@ -17,9 +17,9 @@ interface CheckpointCardProps {
 }
 
 const priorityColors: Record<string, string> = {
-  high: 'bg-red-500',
-  medium: 'bg-amber-500',
-  low: 'bg-green-500',
+  high: 'bg-status-deficient',
+  medium: 'bg-status-warning',
+  low: 'bg-status-compliant',
 };
 
 export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
@@ -41,7 +41,7 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
           <CardHeader className={cn('pb-0', isApp && 'px-3 pt-3')}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="font-mono text-xs text-muted-foreground shrink-0">
+                <span className="font-data text-xs text-muted-foreground shrink-0">
                   {checkpoint.id}
                 </span>
                 <CardTitle className={cn('truncate text-sm', isApp && 'text-xs')}>{checkpoint.name}</CardTitle>
@@ -54,7 +54,7 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
             {/* Meta row: BMP type, zone, priority */}
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded"
+                className="text-[11px] font-medium px-1.5 py-0.5 rounded"
                 style={{
                   color: bmpColor,
                   backgroundColor: `${bmpColor}15`,
@@ -62,7 +62,7 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
               >
                 {BMP_CATEGORY_LABELS[checkpoint.bmpType]}
               </span>
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
+              <span className="text-[11px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
                 {checkpoint.stationLabel ?? checkpoint.zone ?? '—'}
               </span>
               <div className="flex items-center gap-1 ml-auto">
@@ -72,7 +72,7 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
                     priorityColors[checkpoint.priority]
                   )}
                 />
-                <span className="text-[10px] text-muted-foreground capitalize">
+                <span className="text-[11px] text-muted-foreground capitalize">
                   {checkpoint.priority}
                 </span>
               </div>
@@ -80,20 +80,20 @@ export function CheckpointCard({ checkpoint, index }: CheckpointCardProps) {
 
             {/* Drone image placeholder */}
             {!isApp && (
-              <div className="relative aspect-video rounded-md bg-background/50 border border-border flex items-center justify-center overflow-hidden">
+              <div className="relative aspect-video rounded-md bg-muted border border-border flex items-center justify-center overflow-hidden">
                 <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
                   <Camera className="h-6 w-6 opacity-40" />
-                  <span className="text-[10px] uppercase tracking-wider opacity-60">
-                    Drone Image
+                  <span className="text-[11px] opacity-60">
+                    Drone image
                   </span>
                 </div>
               </div>
             )}
 
             {/* Last inspection */}
-            <div className={cn('flex items-center justify-between text-xs text-muted-foreground', isApp && 'text-[10px]')}>
+            <div className={cn('flex items-center justify-between text-xs text-muted-foreground', isApp && 'text-[11px]')}>
               <span>Last inspection</span>
-              <span className="font-medium text-foreground/70">
+              <span className="font-data font-medium text-foreground">
                 {formatRelativeTime(checkpoint.lastInspectionDate)}
               </span>
             </div>

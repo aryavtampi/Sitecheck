@@ -191,7 +191,7 @@ export function FlightReplay({ mission }: FlightReplayProps) {
   return (
     <div className="space-y-4">
       {/* Map */}
-      <div className="h-[400px] w-full rounded-lg border border-white/5 overflow-hidden">
+      <div className="h-[400px] w-full rounded-lg border border-border overflow-hidden">
         <MissionMap
           mission={mission}
           currentWaypointIndex={currentWaypointIndex}
@@ -227,7 +227,7 @@ export function FlightReplay({ mission }: FlightReplayProps) {
             </Button>
 
             {/* Progress bar */}
-            <div className="relative min-w-0 flex-1 basis-32 h-2 rounded-full bg-white/5 cursor-pointer"
+            <div className="relative min-w-0 flex-1 basis-32 h-2 rounded-full bg-muted cursor-pointer"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const pct = (e.clientX - rect.left) / rect.width;
@@ -246,14 +246,14 @@ export function FlightReplay({ mission }: FlightReplayProps) {
               }}
             >
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-amber-500"
+                className="absolute inset-y-0 left-0 rounded-full bg-primary"
                 style={{ width: `${playbackProgress * 100}%` }}
               />
               {/* Waypoint markers on bar */}
               {waypointProgresses.map((p, i) => (
                 <div
                   key={i}
-                  className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-white/30"
+                  className="absolute top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-muted-foreground/40"
                   style={{ left: `${p * 100}%` }}
                 />
               ))}
@@ -267,7 +267,7 @@ export function FlightReplay({ mission }: FlightReplayProps) {
                   variant={playbackSpeed === s ? 'default' : 'ghost'}
                   size="xs"
                   onClick={() => setPlaybackSpeed(s)}
-                  className="font-mono text-[10px] h-6 px-2"
+                  className="font-data text-[11px] h-6 px-2"
                 >
                   {s}x
                 </Button>
@@ -281,24 +281,27 @@ export function FlightReplay({ mission }: FlightReplayProps) {
           </div>
 
           {/* Current waypoint info */}
-          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/5 pt-3 text-xs">
+          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3 text-xs">
             <span className="text-muted-foreground">
-              Waypoint {currentWaypointIndex + 1} of {mission.waypoints.length}
+              Waypoint{' '}
+              <span className="font-data">
+                {currentWaypointIndex + 1} of {mission.waypoints.length}
+              </span>
             </span>
             {currentCp && (
               <>
-                <span className="font-mono text-foreground">{currentCp.id}</span>
+                <span className="font-data text-foreground">{currentCp.id}</span>
                 <span className="text-foreground truncate">{currentCp.name}</span>
                 <StatusBadge status={currentCp.status} />
               </>
             )}
             {hasActualTrack && totalSeconds != null && (
-              <span className="font-mono text-pink-300/80">
+              <span className="font-data text-muted-foreground">
                 {actualSamples.length} samples · {totalSeconds}s total
               </span>
             )}
             {currentAnalysis && (
-              <span className="ml-auto font-mono text-muted-foreground">
+              <span className="ml-auto font-data text-muted-foreground">
                 Claude · {currentAnalysis.confidence}% confidence
               </span>
             )}

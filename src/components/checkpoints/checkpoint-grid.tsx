@@ -22,23 +22,23 @@ export function CheckpointGrid() {
       <div className={cn('flex items-center gap-3 text-sm', isApp && 'text-xs gap-2')}>
         <span className="text-muted-foreground">
           Showing{' '}
-          <span className="font-medium text-foreground">{filteredCheckpoints.length}</span>{' '}
+          <span className="font-data font-medium text-foreground">{filteredCheckpoints.length}</span>{' '}
           of{' '}
-          <span className="font-medium text-foreground">{checkpoints.length}</span>{' '}
+          <span className="font-data font-medium text-foreground">{checkpoints.length}</span>{' '}
           checkpoints
         </span>
         <div className="h-3.5 w-px bg-border" />
         <div className="flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
+            <span className="h-2 w-2 rounded-full bg-status-compliant" />
             <span className="text-muted-foreground">{compliantCount} compliant</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="h-2 w-2 rounded-full bg-status-deficient" />
             <span className="text-muted-foreground">{deficientCount} deficient</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-purple-500" />
+            <span className="h-2 w-2 rounded-full bg-status-review" />
             <span className="text-muted-foreground">{reviewCount} needs review</span>
           </span>
         </div>

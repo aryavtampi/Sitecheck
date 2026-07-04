@@ -85,23 +85,23 @@ export function MissionScopeSelector({ selected, onSelect }: MissionScopeSelecto
             onClick={() => onSelect(scope)}
             className={cn(
               'flex flex-col items-start gap-2 rounded-lg border p-4 text-left transition-colors',
-              'bg-surface hover:bg-white/5',
+              'bg-surface hover:bg-muted',
               isSelected
-                ? 'border-blue-500 ring-2 ring-blue-500/30'
+                ? 'border-primary ring-2 ring-ring/30'
                 : 'border-border'
             )}
           >
             <Icon
               className={cn(
                 'h-5 w-5',
-                isSelected ? 'text-blue-500' : 'text-muted-foreground'
+                isSelected ? 'text-primary' : 'text-muted-foreground'
               )}
             />
             <div>
               <p
                 className={cn(
                   'text-sm font-medium',
-                  isSelected ? 'text-blue-500' : 'text-foreground'
+                  isSelected ? 'text-primary' : 'text-foreground'
                 )}
               >
                 {MISSION_SCOPE_LABELS[scope]}

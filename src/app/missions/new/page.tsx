@@ -234,7 +234,7 @@ export default function NewMissionPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <SectionHeader
-            title="New Mission"
+            title="New mission"
             description="Configure and generate a drone inspection mission"
           />
         </div>
@@ -251,7 +251,7 @@ export default function NewMissionPage() {
                   <div
                     className={cn(
                       'h-px w-6',
-                      isDone ? 'bg-blue-500' : 'bg-border'
+                      isDone ? 'bg-primary' : 'bg-border'
                     )}
                   />
                 )}
@@ -260,9 +260,9 @@ export default function NewMissionPage() {
                     className={cn(
                       'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
                       isActive
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-primary text-primary-foreground'
                         : isDone
-                          ? 'bg-blue-500/20 text-blue-400'
+                          ? 'bg-accent text-accent-foreground'
                           : 'bg-surface border border-border text-muted-foreground'
                     )}
                   >
@@ -290,7 +290,7 @@ export default function NewMissionPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-1">
-                    Mission Scope
+                    Mission scope
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Choose which checkpoints to include in this mission
@@ -300,12 +300,12 @@ export default function NewMissionPage() {
 
                 {/* Segment picker — shown when scope is 'segment' */}
                 {scope === 'segment' && project?.segments && project.segments.length > 0 && (
-                  <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4 space-y-3">
+                  <div className="rounded-lg border border-border bg-muted p-4 space-y-3">
                     <div>
-                      <h4 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                        Select Corridor Segments
+                      <h4 className="text-xs font-medium text-foreground">
+                        Select corridor segments
                       </h4>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
                         Only checkpoints within the selected segments will be included.
                       </p>
                     </div>
@@ -326,12 +326,12 @@ export default function NewMissionPage() {
                             className={cn(
                               'rounded-lg border px-3 py-2 text-left transition-colors',
                               isSelected
-                                ? 'border-cyan-500 bg-cyan-500/15 text-cyan-300'
+                                ? 'border-primary bg-accent text-accent-foreground'
                                 : 'border-border bg-surface text-muted-foreground hover:text-foreground'
                             )}
                           >
                             <p className="text-xs font-medium">{seg.name}</p>
-                            <p className="text-[10px] opacity-70">
+                            <p className="font-data text-[11px] opacity-70">
                               STA {Math.floor(seg.startStation / 100)}+{String(seg.startStation % 100).padStart(2, '0')} — STA {Math.floor(seg.endStation / 100)}+{String(seg.endStation % 100).padStart(2, '0')}
                             </p>
                           </button>
@@ -339,7 +339,7 @@ export default function NewMissionPage() {
                       })}
                     </div>
                     {selectedSegments.size > 0 && (
-                      <p className="text-[10px] text-cyan-400/60">
+                      <p className="text-[11px] text-muted-foreground">
                         {checkpoints.filter((c) => c.linearRef?.segmentId && selectedSegments.has(c.linearRef.segmentId)).length} checkpoints in selected segments
                       </p>
                     )}
@@ -363,7 +363,7 @@ export default function NewMissionPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-1">
-                    Select Checkpoints
+                    Select checkpoints
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     {scope === 'reinspection'
@@ -416,7 +416,7 @@ export default function NewMissionPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-1">
-                    Mission Configuration
+                    Mission configuration
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     {selectedIds.size} checkpoint{selectedIds.size !== 1 ? 's' : ''}{' '}
@@ -435,27 +435,27 @@ export default function NewMissionPage() {
                 />
 
                 {error && (
-                  <p className="text-xs text-red-400">{error}</p>
+                  <p className="text-xs text-status-deficient">{error}</p>
                 )}
 
                 {/* Server-side violations from a failed Generate attempt */}
                 {violations.length > 0 && (
-                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 space-y-2">
-                    <p className="text-xs font-semibold text-red-300 uppercase tracking-wider">
-                      Server rejected mission ({violations.length})
+                  <div className="rounded-lg border border-status-deficient/20 bg-status-deficient-bg p-3 space-y-2">
+                    <p className="text-xs font-medium text-status-deficient">
+                      Mission rejected ({violations.length} airspace violation{violations.length !== 1 ? 's' : ''})
                     </p>
                     <ul className="space-y-1.5">
                       {violations.map((v, i) => (
-                        <li key={i} className="text-[11px] text-red-200">
+                        <li key={i} className="text-[11px] text-status-deficient">
                           {v.waypointNumber !== undefined && (
-                            <span className="font-mono mr-1">WP{v.waypointNumber}:</span>
+                            <span className="font-data mr-1">WP{v.waypointNumber}:</span>
                           )}
                           {v.zoneName ? <span className="font-medium">{v.zoneName} — </span> : null}
                           {v.message}
                         </li>
                       ))}
                     </ul>
-                    <p className="text-[10px] text-red-300/70">
+                    <p className="text-[11px] text-muted-foreground">
                       Adjust your checkpoint selection to avoid these areas, then regenerate.
                     </p>
                   </div>
@@ -490,7 +490,7 @@ export default function NewMissionPage() {
                     ) : (
                       <>
                         <Rocket className="h-4 w-4" />
-                        Generate Mission
+                        Generate mission
                       </>
                     )}
                   </Button>

@@ -72,21 +72,21 @@ function formatTimestamp(iso?: string): string | null {
 }
 
 function getConfidenceColor(confidence: number): string {
-  if (confidence >= 90) return 'text-green-500';
-  if (confidence >= 75) return 'text-amber-500';
-  return 'text-red-500';
+  if (confidence >= 90) return 'text-status-compliant';
+  if (confidence >= 75) return 'text-status-warning';
+  return 'text-status-deficient';
 }
 
 function getConfidenceIndicatorClass(confidence: number): string {
-  if (confidence >= 90) return '[&_[data-slot=progress-indicator]]:bg-green-500';
-  if (confidence >= 75) return '[&_[data-slot=progress-indicator]]:bg-amber-500';
-  return '[&_[data-slot=progress-indicator]]:bg-red-500';
+  if (confidence >= 90) return '[&_[data-slot=progress-indicator]]:bg-status-compliant';
+  if (confidence >= 75) return '[&_[data-slot=progress-indicator]]:bg-status-warning';
+  return '[&_[data-slot=progress-indicator]]:bg-status-deficient';
 }
 
 const STATUS_OPTIONS: { value: CheckpointStatus; label: string; color: string }[] = [
-  { value: 'compliant', label: 'Compliant', color: 'text-green-400' },
-  { value: 'deficient', label: 'Deficient', color: 'text-red-400' },
-  { value: 'needs-review', label: 'Needs Review', color: 'text-purple-400' },
+  { value: 'compliant', label: 'Compliant', color: 'text-status-compliant' },
+  { value: 'deficient', label: 'Deficient', color: 'text-status-deficient' },
+  { value: 'needs-review', label: 'Needs review', color: 'text-status-review' },
 ];
 
 export function CheckpointReviewCard({
@@ -135,20 +135,20 @@ export function CheckpointReviewCard({
   return (
     <Card className={cn(
       'border-border bg-surface transition-all',
-      currentDecision === 'accept' && 'border-green-500/20',
-      currentDecision === 'override' && 'border-amber-500/20',
+      currentDecision === 'accept' && 'border-status-compliant/30',
+      currentDecision === 'override' && 'border-status-warning/30',
     )}>
       <CardContent className="pt-4 space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-[11px] text-muted-foreground">
+            <span className="font-data text-[11px] text-muted-foreground">
               WP #{waypoint.number}
             </span>
             <span className="text-xs font-medium text-foreground truncate">
               {checkpoint?.name ?? waypoint.checkpointId}
             </span>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {bmpLabel}
             </span>
           </div>
@@ -171,8 +171,8 @@ export function CheckpointReviewCard({
             type="button"
             onClick={() => photoUrl && setPhotoZoomed(true)}
             className={cn(
-              'w-12 h-12 rounded border border-border bg-background/50 flex-shrink-0 overflow-hidden',
-              photoUrl && 'hover:border-amber-500/50 cursor-zoom-in transition-colors'
+              'w-12 h-12 rounded border border-border bg-muted flex-shrink-0 overflow-hidden',
+              photoUrl && 'hover:border-primary/40 cursor-zoom-in transition-colors'
             )}
             title={photoUrl ? 'Click to enlarge' : 'No photo captured'}
           >
@@ -194,20 +194,20 @@ export function CheckpointReviewCard({
               <div className="flex items-center gap-2">
                 <span className={cn(
                   'text-xs font-medium capitalize',
-                  displayAnalysis.status === 'compliant' ? 'text-green-400' :
-                  displayAnalysis.status === 'deficient' ? 'text-red-400' :
-                  'text-purple-400'
+                  displayAnalysis.status === 'compliant' ? 'text-status-compliant' :
+                  displayAnalysis.status === 'deficient' ? 'text-status-deficient' :
+                  'text-status-review'
                 )}>
                   {displayAnalysis.status}
                 </span>
                 <span className={cn(
-                  'font-mono text-[11px] font-semibold',
+                  'font-data text-[11px] font-semibold',
                   getConfidenceColor(displayAnalysis.confidence)
                 )}>
                   {displayAnalysis.confidence}%
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground truncate">
+              <p className="text-[11px] text-muted-foreground truncate">
                 {displayAnalysis.summary}
               </p>
             </div>
@@ -215,10 +215,10 @@ export function CheckpointReviewCard({
 
           {/* Decision badge */}
           <span className={cn(
-            'flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold',
-            currentDecision === 'accept' && 'bg-green-500/10 text-green-400',
-            currentDecision === 'override' && 'bg-amber-500/10 text-amber-400',
-            currentDecision === 'pending' && 'bg-gray-500/10 text-gray-400',
+            'flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium',
+            currentDecision === 'accept' && 'bg-status-compliant-bg text-status-compliant',
+            currentDecision === 'override' && 'bg-status-warning-bg text-status-warning',
+            currentDecision === 'pending' && 'bg-muted text-muted-foreground',
           )}>
             {QSP_DECISION_LABELS[currentDecision]}
           </span>
@@ -232,7 +232,7 @@ export function CheckpointReviewCard({
               <button
                 type="button"
                 onClick={() => setPhotoZoomed(true)}
-                className="block w-full rounded-md border border-border overflow-hidden bg-background/50 hover:border-amber-500/50 transition-colors"
+                className="block w-full rounded-md border border-border overflow-hidden bg-muted hover:border-primary/40 transition-colors"
                 title="Click to enlarge"
               >
                 <div
@@ -248,18 +248,18 @@ export function CheckpointReviewCard({
             {/* AI Summary */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  AI Analysis
+                <h4 className="text-xs font-medium text-muted-foreground">
+                  Analysis
                 </h4>
                 {(analyzedBy || analyzedAt) && (
-                  <span className="text-[9px] font-mono text-muted-foreground">
+                  <span className="text-[11px] font-data text-muted-foreground">
                     {analyzedBy ? `${analyzedBy}` : ''}
                     {analyzedBy && analyzedAt ? ' · ' : ''}
                     {analyzedAt ?? ''}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-foreground/90 leading-relaxed">
+              <p className="text-xs text-foreground leading-relaxed">
                 {displayAnalysis.summary}
               </p>
             </div>
@@ -267,11 +267,11 @@ export function CheckpointReviewCard({
             {/* Confidence */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   Confidence
                 </span>
                 <span className={cn(
-                  'font-mono text-xs font-bold',
+                  'font-data text-xs font-semibold',
                   getConfidenceColor(displayAnalysis.confidence)
                 )}>
                   {displayAnalysis.confidence}%
@@ -286,12 +286,12 @@ export function CheckpointReviewCard({
             {/* Details */}
             {displayAnalysis.details.length > 0 && (
               <div>
-                <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">
+                <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
                   Details
                 </h4>
                 <ul className="space-y-1">
                   {displayAnalysis.details.map((detail, i) => (
-                    <li key={i} className="text-[11px] text-foreground/80 flex items-start gap-1.5">
+                    <li key={i} className="text-[11px] text-foreground flex items-start gap-1.5">
                       <span className="text-muted-foreground mt-0.5">•</span>
                       <span>{detail}</span>
                     </li>
@@ -301,11 +301,11 @@ export function CheckpointReviewCard({
             )}
 
             {/* CGP Reference */}
-            <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-2.5">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-amber-500 mb-1">
-                CGP Reference
+            <div className="rounded-md border border-border bg-muted p-2.5">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
+                CGP reference
               </p>
-              <p className="text-[11px] text-foreground/80">
+              <p className="text-[11px] text-foreground">
                 {displayAnalysis.cgpReference}
               </p>
             </div>
@@ -313,13 +313,13 @@ export function CheckpointReviewCard({
             {/* Recommendations */}
             {displayAnalysis.recommendations && displayAnalysis.recommendations.length > 0 && (
               <div>
-                <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">
+                <h4 className="text-xs font-medium text-muted-foreground mb-1.5">
                   Recommendations
                 </h4>
                 <ul className="space-y-1">
                   {displayAnalysis.recommendations.map((rec, i) => (
-                    <li key={i} className="text-[11px] text-foreground/80 flex items-start gap-1.5">
-                      <span className="text-amber-500 mt-0.5">•</span>
+                    <li key={i} className="text-[11px] text-foreground flex items-start gap-1.5">
+                      <span className="text-muted-foreground mt-0.5">•</span>
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -331,7 +331,7 @@ export function CheckpointReviewCard({
             {onReanalyze && (
               <div className="border-t border-border pt-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <span className="text-xs font-medium text-muted-foreground">
                     Claude vision
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -339,7 +339,7 @@ export function CheckpointReviewCard({
                       size="xs"
                       variant="ghost"
                       onClick={() => setShowHintField((v) => !v)}
-                      className="text-[10px] h-6"
+                      className="text-[11px] h-6"
                     >
                       {showHintField ? 'Hide hint' : 'Add hint'}
                     </Button>
@@ -350,7 +350,7 @@ export function CheckpointReviewCard({
                       onClick={async () => {
                         await onReanalyze(showHintField ? reanalyzeHint : undefined);
                       }}
-                      className="gap-1 text-[10px] h-6"
+                      className="gap-1 text-[11px] h-6"
                     >
                       {analyzing ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -367,12 +367,12 @@ export function CheckpointReviewCard({
                     value={reanalyzeHint}
                     onChange={(e) => setReanalyzeHint(e.target.value)}
                     placeholder="Optional hint for Claude (e.g. 'check for sediment buildup')"
-                    className="mt-2 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="mt-2 w-full rounded-md border border-input bg-surface px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   />
                 )}
                 {!photoUrl && (
-                  <p className="mt-1 text-[10px] text-muted-foreground italic">
-                    No captured photo for this waypoint yet — Re-analyze
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    No captured photo for this waypoint yet — re-analyze
                     requires a photo.
                   </p>
                 )}
@@ -381,8 +381,8 @@ export function CheckpointReviewCard({
 
             {/* QSP Decision Buttons */}
             <div className="border-t border-border pt-3">
-              <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">
-                QSP Decision
+              <h4 className="text-xs font-medium text-muted-foreground mb-2">
+                QSP decision
               </h4>
               <div className="flex items-center gap-2">
                 <Button
@@ -391,8 +391,8 @@ export function CheckpointReviewCard({
                   className={cn(
                     'gap-1.5 text-xs',
                     currentDecision === 'accept'
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'border-green-500/30 text-green-400 hover:bg-green-500/10'
+                      ? 'bg-status-compliant hover:bg-status-compliant/90 text-white'
+                      : 'border-status-compliant/30 text-status-compliant hover:bg-status-compliant-bg'
                   )}
                   onClick={() => handleDecision('accept')}
                 >
@@ -405,8 +405,8 @@ export function CheckpointReviewCard({
                   className={cn(
                     'gap-1.5 text-xs',
                     currentDecision === 'override'
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                      : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                      ? 'bg-status-warning hover:bg-status-warning/90 text-white'
+                      : 'border-status-warning/30 text-status-warning hover:bg-status-warning-bg'
                   )}
                   onClick={() => handleDecision('override')}
                 >
@@ -419,7 +419,7 @@ export function CheckpointReviewCard({
                   className={cn(
                     'gap-1.5 text-xs',
                     currentDecision === 'pending'
-                      ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                      ? 'bg-secondary-foreground hover:bg-secondary-foreground/90 text-white'
                       : ''
                   )}
                   onClick={() => handleDecision('pending')}
@@ -431,10 +431,10 @@ export function CheckpointReviewCard({
 
               {/* Override form */}
               {currentDecision === 'override' && (
-                <div className="mt-3 space-y-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-3">
+                <div className="mt-3 space-y-2 rounded-md border border-status-warning/20 bg-status-warning-bg p-3">
                   <div>
-                    <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      Override Status
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Override status
                     </label>
                     <div className="flex items-center gap-2 mt-1">
                       {STATUS_OPTIONS.map((opt) => (
@@ -447,8 +447,8 @@ export function CheckpointReviewCard({
                           className={cn(
                             'rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all border',
                             overrideStatus === opt.value
-                              ? `${opt.color} border-current bg-current/10`
-                              : 'text-muted-foreground border-border hover:border-muted-foreground'
+                              ? `${opt.color} border-current bg-surface`
+                              : 'text-muted-foreground border-border hover:border-input'
                           )}
                         >
                           {opt.label}
@@ -457,11 +457,11 @@ export function CheckpointReviewCard({
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Notes
                     </label>
                     <textarea
-                      className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none"
+                      className="mt-1 w-full rounded-md border border-input bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                       rows={2}
                       placeholder="Override justification..."
                       value={overrideNotes}

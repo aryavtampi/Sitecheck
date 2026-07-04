@@ -236,21 +236,21 @@ export function MissionMap({
         <GeofenceLayer geofence={geofence} />
         <NoFlyZonesLayer zones={noFlyZones} />
 
-        {/* Full planned flight path - dashed amber */}
+        {/* Full planned flight path - dashed route blue */}
         <Source id="planned-path" type="geojson" data={plannedPathGeoJSON}>
           <Layer
             id="planned-path-line"
             type="line"
             paint={{
-              'line-color': '#F59E0B',
+              'line-color': '#38BDF8',
               'line-width': 2,
-              'line-opacity': 0.3,
+              'line-opacity': 0.35,
               'line-dasharray': [4, 4],
             }}
           />
         </Source>
 
-        {/* Completed flight path - solid amber (planned-path slice driven
+        {/* Completed flight path - solid route blue (planned-path slice driven
             by playbackProgress, kept for back-compat with missions that have
             no persisted actual track yet) */}
         <Source id="completed-path" type="geojson" data={completedPathGeoJSON}>
@@ -258,7 +258,7 @@ export function MissionMap({
             id="completed-path-line"
             type="line"
             paint={{
-              'line-color': '#F59E0B',
+              'line-color': '#38BDF8',
               'line-width': 2.5,
               'line-opacity': hasActualTrack ? 0.25 : 0.8,
             }}
@@ -326,30 +326,18 @@ export function MissionMap({
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
               >
-                {/* Pulsing ring for current waypoint */}
-                {isCurrent && (
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
-                    style={{
-                      width: 20,
-                      height: 20,
-                      backgroundColor: color,
-                      opacity: 0.4,
-                    }}
-                  />
-                )}
-
-                {/* Waypoint circle */}
+                {/* Waypoint circle — white outline marks the active waypoint */}
                 <div
-                  className="rounded-full border-2 border-black/40"
+                  className="rounded-full"
                   style={{
                     width: isCurrent ? 14 : 10,
                     height: isCurrent ? 14 : 10,
                     backgroundColor: color,
+                    border: isCurrent
+                      ? '2px solid #FFFFFF'
+                      : '2px solid rgba(0,0,0,0.4)',
                     transition: 'width 150ms, height 150ms',
-                    boxShadow: isCurrent
-                      ? `0 0 6px ${color}80`
-                      : '0 1px 2px rgba(0,0,0,0.4)',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
                   }}
                 />
               </div>
@@ -365,26 +353,18 @@ export function MissionMap({
             anchor="center"
           >
             <div className="relative">
-              {/* Shadow / glow */}
-              <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
-                style={{
-                  width: 28,
-                  height: 28,
-                  backgroundColor: 'rgba(245, 158, 11, 0.3)',
-                }}
-              />
               {/* Drone body */}
               <div
-                className="flex items-center justify-center rounded-full border-2 border-amber-300"
+                className="flex items-center justify-center rounded-full"
                 style={{
                   width: 20,
                   height: 20,
-                  backgroundColor: '#F59E0B',
-                  boxShadow: '0 0 12px rgba(245, 158, 11, 0.5)',
+                  backgroundColor: '#38BDF8',
+                  border: '2px solid #FFFFFF',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
                 }}
               >
-                <span className="text-[8px] font-bold text-black leading-none">
+                <span className="text-[11px] font-bold text-white leading-none">
                   &#9650;
                 </span>
               </div>
@@ -394,11 +374,11 @@ export function MissionMap({
       </Map>
 
       {/* Bottom-left label */}
-      <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[9px] text-white/70 font-mono pointer-events-none z-10">
+      <div className="absolute bottom-2 left-2 rounded-md border border-border bg-surface/95 px-2 py-1 text-[11px] font-data text-muted-foreground pointer-events-none z-10">
         {mission.waypoints.length} waypoints &middot; {mission.flightPath.length} path points
         {hasActualTrack && (
           <>
-            {' '}&middot; <span className="text-pink-300">{actualSamples.length} samples</span>
+            {' '}&middot; <span className="text-foreground">{actualSamples.length} samples</span>
           </>
         )}
       </div>
@@ -407,10 +387,10 @@ export function MissionMap({
       <button
         onClick={() => setFollowDrone(!followDrone)}
         className={cn(
-          'absolute bottom-10 right-2 z-10 flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-medium transition-colors border',
+          'absolute bottom-10 right-2 z-10 flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition-colors border',
           followDrone
-            ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-            : 'bg-black/60 border-white/10 text-white/60 hover:text-white/80 hover:bg-black/80'
+            ? 'bg-accent border-primary/30 text-primary'
+            : 'bg-surface/95 border-border text-muted-foreground hover:text-foreground hover:bg-surface'
         )}
         title={followDrone ? 'Disable follow drone' : 'Follow drone position'}
       >
@@ -419,7 +399,7 @@ export function MissionMap({
       </button>
 
       {/* Compass */}
-      <div className="absolute bottom-2 right-2 text-[9px] font-mono text-white/50 pointer-events-none z-10">
+      <div className="absolute bottom-2 right-2 rounded-md border border-border bg-surface/95 px-1.5 py-0.5 text-[11px] font-data text-muted-foreground pointer-events-none z-10">
         N ↑
       </div>
     </div>

@@ -23,8 +23,8 @@ export function CountdownTimer({ deadline }: CountdownTimerProps) {
   if (countdown.expired) {
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="destructive" className="animate-pulse-red px-3 py-1 text-sm font-bold">
-          EXPIRED
+        <Badge variant="destructive" className="px-3 py-1 text-sm font-medium">
+          Expired
         </Badge>
       </div>
     );
@@ -41,19 +41,19 @@ export function CountdownTimer({ deadline }: CountdownTimerProps) {
       className={cn(
         'inline-flex items-center gap-1 rounded-lg border px-4 py-2',
         isUrgent
-          ? 'border-red-500/30 bg-red-500/5 animate-pulse-red'
+          ? 'border-status-deficient/30 bg-status-deficient-bg'
           : isWarning
-            ? 'border-amber-500/30 bg-amber-500/5'
+            ? 'border-status-warning/30 bg-status-warning-bg'
             : 'border-border bg-surface'
       )}
     >
       <span
         className={cn(
-          'font-mono text-2xl font-bold tracking-wider',
+          'font-data text-2xl font-semibold',
           isUrgent
-            ? 'text-red-500'
+            ? 'text-status-deficient'
             : isWarning
-              ? 'text-amber-500'
+              ? 'text-status-warning'
               : 'text-foreground'
         )}
       >
@@ -65,11 +65,11 @@ export function CountdownTimer({ deadline }: CountdownTimerProps) {
       </span>
       <span
         className={cn(
-          'ml-2 text-xs uppercase tracking-wider',
+          'ml-2 text-xs',
           isUrgent
-            ? 'text-red-500/70'
+            ? 'text-status-deficient/70'
             : isWarning
-              ? 'text-amber-500/70'
+              ? 'text-status-warning/70'
               : 'text-muted-foreground'
         )}
       >

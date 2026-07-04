@@ -232,7 +232,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
           {mission.status === 'planned' && (
             <Button
               size="sm"
-              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+              className="gap-1.5"
               onClick={() => executeAction('start')}
               disabled={loading !== null}
             >
@@ -241,7 +241,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
               ) : (
                 <Play className="h-3.5 w-3.5" />
               )}
-              Launch Mission
+              Start mission
             </Button>
           )}
 
@@ -270,7 +270,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10"
+              className="gap-1.5 border-status-deficient/30 text-status-deficient hover:bg-status-deficient-bg"
               onClick={() => executeAction('stop')}
               disabled={loading !== null}
             >
@@ -287,7 +287,8 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
           {(isActive || isPaused) && (
             <Button
               size="sm"
-              className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
+              variant="outline"
+              className="gap-1.5"
               onClick={() => executeAction('return-home')}
               disabled={loading !== null}
             >
@@ -296,7 +297,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
               ) : (
                 <Home className="h-3.5 w-3.5" />
               )}
-              Return Home
+              Return home
             </Button>
           )}
 
@@ -304,17 +305,17 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
           {canComplete && (
             <Button
               size="sm"
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="gap-1.5"
               onClick={handleCompleteMission}
               disabled={completing || loading !== null}
-              title="Mark this mission complete and trigger Claude analysis on captured photos"
+              title="Mark this mission complete and analyze captured photos"
             >
               {completing ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <CheckCircle2 className="h-3.5 w-3.5" />
               )}
-              Complete Mission
+              Complete mission
             </Button>
           )}
 
@@ -323,7 +324,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10"
+              className="gap-1.5 border-status-deficient/30 text-status-deficient hover:bg-status-deficient-bg"
               onClick={() => executeAction('emergency-hold')}
               disabled={loading !== null}
             >
@@ -332,7 +333,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
               ) : (
                 <AlertOctagon className="h-3.5 w-3.5" />
               )}
-              Emergency Hold
+              Emergency hold
             </Button>
           )}
 
@@ -341,7 +342,7 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+              className="gap-1.5 border-status-warning/30 text-status-warning hover:bg-status-warning-bg"
               onClick={() => executeAction('manual-takeover')}
               disabled={loading !== null}
             >
@@ -350,16 +351,18 @@ export function FlightControlPanel({ mission }: FlightControlPanelProps) {
               ) : (
                 <Gamepad2 className="h-3.5 w-3.5" />
               )}
-              Manual Control
+              Manual control
             </Button>
           )}
         </div>
 
         {/* Resume from breakpoint info */}
         {isPaused && mission.lastCompletedWaypoint != null && mission.lastCompletedWaypoint > 0 && (
-          <p className="text-[10px] text-muted-foreground">
-            Will resume from waypoint {mission.lastCompletedWaypoint + 1} of{' '}
-            {mission.waypoints.length}
+          <p className="text-[11px] text-muted-foreground">
+            Will resume from waypoint{' '}
+            <span className="font-data">
+              {mission.lastCompletedWaypoint + 1} of {mission.waypoints.length}
+            </span>
           </p>
         )}
       </CardContent>

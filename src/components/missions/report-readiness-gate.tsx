@@ -82,10 +82,10 @@ export function ReportReadinessGate({
       {/* Progress */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Review Progress
+          <span className="text-xs font-medium text-muted-foreground">
+            Review progress
           </span>
-          <span className={cn('text-xs font-semibold', colors.text)}>
+          <span className={cn('font-data text-xs font-semibold', colors.text)}>
             {reviewedCount} / {totalCount}
           </span>
         </div>
@@ -94,10 +94,10 @@ export function ReportReadinessGate({
           className={cn(
             'w-full h-1.5',
             readiness === 'ready'
-              ? '[&_[data-slot=progress-indicator]]:bg-green-500'
+              ? '[&_[data-slot=progress-indicator]]:bg-status-compliant'
               : readiness === 'partially-reviewed'
-                ? '[&_[data-slot=progress-indicator]]:bg-amber-500'
-                : '[&_[data-slot=progress-indicator]]:bg-gray-500'
+                ? '[&_[data-slot=progress-indicator]]:bg-status-warning'
+                : '[&_[data-slot=progress-indicator]]:bg-muted-foreground/40'
           )}
         />
       </div>
@@ -105,8 +105,8 @@ export function ReportReadinessGate({
       {/* Block 4 — Analyze-all helper. Surfaces only when at least one
           captured waypoint is missing its AI analysis row. */}
       {capturedWithoutAnalysis.length > 0 && (
-        <div className="rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-2 flex items-center justify-between gap-2">
-          <p className="text-[10px] text-amber-200/90 leading-tight">
+        <div className="rounded-md border border-status-warning/20 bg-status-warning-bg px-2.5 py-2 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-status-warning leading-tight">
             {capturedWithoutAnalysis.length} captured waypoint
             {capturedWithoutAnalysis.length === 1 ? '' : 's'} not yet analyzed
             by Claude.
@@ -116,7 +116,7 @@ export function ReportReadinessGate({
             variant="outline"
             disabled={analyzeAllRunning}
             onClick={handleAnalyzeAll}
-            className="gap-1 text-[10px] h-6 border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+            className="gap-1 text-[11px] h-6 border-status-warning/30 text-status-warning hover:bg-status-warning/10"
           >
             {analyzeAllRunning ? (
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -131,7 +131,7 @@ export function ReportReadinessGate({
       {/* Status + Action */}
       <div className="flex items-center justify-between">
         <span className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold',
+          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium',
           colors.bg, colors.text, colors.border,
         )}>
           {REPORT_READINESS_LABELS[readiness]}
@@ -153,7 +153,7 @@ export function ReportReadinessGate({
           ) : (
             <FileBarChart className="h-3.5 w-3.5" />
           )}
-          Generate Report
+          Generate report
         </Button>
       </div>
     </div>

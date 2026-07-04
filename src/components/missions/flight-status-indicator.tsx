@@ -39,14 +39,14 @@ export function FlightStatusIndicator({
       {/* Mission status */}
       <Badge
         variant="outline"
-        className={`${statusColors.bg} ${statusColors.text} ${statusColors.border} text-[10px]`}
+        className={`${statusColors.bg} ${statusColors.text} ${statusColors.border} text-[11px] font-medium`}
       >
         <Radio className="mr-1 h-3 w-3" />
         {statusLabel}
       </Badge>
 
       {/* Waypoint progress */}
-      <Badge variant="secondary" className="text-[10px] gap-1 bg-muted text-muted-foreground">
+      <Badge variant="secondary" className="text-[11px] gap-1 bg-muted font-data text-muted-foreground">
         <MapPin className="h-3 w-3" />
         {currentWaypointIndex + 1} / {totalWaypoints}
       </Badge>
@@ -54,12 +54,12 @@ export function FlightStatusIndicator({
       {/* Battery */}
       <Badge
         variant="secondary"
-        className={`text-[10px] gap-1 bg-muted ${
+        className={`text-[11px] gap-1 bg-muted font-data ${
           estimatedBattery > 30
-            ? 'text-green-400'
+            ? 'text-status-compliant'
             : estimatedBattery > 15
-              ? 'text-amber-400'
-              : 'text-red-400'
+              ? 'text-status-warning'
+              : 'text-status-deficient'
         }`}
       >
         <Battery className="h-3 w-3" />
@@ -67,15 +67,15 @@ export function FlightStatusIndicator({
       </Badge>
 
       {/* Elapsed time */}
-      <Badge variant="secondary" className="text-[10px] gap-1 bg-muted text-muted-foreground">
+      <Badge variant="secondary" className="text-[11px] gap-1 bg-muted font-data text-muted-foreground">
         <Clock className="h-3 w-3" />
         {elapsedStr}
       </Badge>
 
       {/* Manual override indicator */}
       {mission.manualOverrideActive && (
-        <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse">
-          MANUAL
+        <Badge variant="outline" className="text-[11px] bg-status-warning-bg text-status-warning border-status-warning/20 font-medium">
+          Manual
         </Badge>
       )}
     </div>

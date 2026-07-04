@@ -164,14 +164,15 @@ export function ManualOverrideBar({
   const isActionLoading = loading !== null;
 
   return (
-    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+    <div className="rounded-lg border border-status-warning/30 bg-status-warning-bg p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-amber-400 animate-pulse" />
+        <AlertTriangle className="h-4 w-4 text-status-warning" />
         <div>
-          <p className="text-xs font-semibold text-amber-300">MANUAL OVERRIDE ACTIVE</p>
-          <p className="text-[10px] text-amber-400/70">
-            Drone is under manual RC control. Mission route is paused at WP #{currentWaypointNumber}.
+          <p className="text-xs font-semibold text-status-warning">Manual override active</p>
+          <p className="text-[11px] text-muted-foreground">
+            Drone is under manual RC control. Mission route is paused at WP{' '}
+            <span className="font-data">#{currentWaypointNumber}</span>.
           </p>
         </div>
       </div>
@@ -183,8 +184,8 @@ export function ManualOverrideBar({
           size="sm"
           variant="outline"
           className={cn(
-            'gap-1.5 border-amber-500/30 text-amber-300 hover:bg-amber-500/20',
-            expandedAction === 'reposition' && 'bg-amber-500/20 ring-1 ring-amber-500/30'
+            'gap-1.5 border-status-warning/30 text-status-warning hover:bg-status-warning/10',
+            expandedAction === 'reposition' && 'bg-status-warning/10 ring-1 ring-status-warning/30'
           )}
           onClick={() => toggleAction('reposition')}
           disabled={isActionLoading || disabled}
@@ -198,21 +199,21 @@ export function ManualOverrideBar({
           size="sm"
           variant="outline"
           className={cn(
-            'gap-1.5 border-amber-500/30 text-amber-300 hover:bg-amber-500/20',
-            expandedAction === 'hover-longer' && 'bg-amber-500/20 ring-1 ring-amber-500/30'
+            'gap-1.5 border-status-warning/30 text-status-warning hover:bg-status-warning/10',
+            expandedAction === 'hover-longer' && 'bg-status-warning/10 ring-1 ring-status-warning/30'
           )}
           onClick={() => toggleAction('hover-longer')}
           disabled={isActionLoading || disabled}
         >
           <Clock className="h-3.5 w-3.5" />
-          Hover Longer
+          Hover longer
         </Button>
 
         {/* Retake Photo */}
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+          className="gap-1.5 border-status-warning/30 text-status-warning hover:bg-status-warning/10"
           onClick={handleRetakePhoto}
           disabled={isActionLoading || disabled}
         >
@@ -221,7 +222,7 @@ export function ManualOverrideBar({
           ) : (
             <Camera className="h-3.5 w-3.5" />
           )}
-          Retake Photo
+          Retake photo
         </Button>
 
         {/* Adjust Camera */}
@@ -229,33 +230,32 @@ export function ManualOverrideBar({
           size="sm"
           variant="outline"
           className={cn(
-            'gap-1.5 border-amber-500/30 text-amber-300 hover:bg-amber-500/20',
-            expandedAction === 'adjust-camera-angle' && 'bg-amber-500/20 ring-1 ring-amber-500/30'
+            'gap-1.5 border-status-warning/30 text-status-warning hover:bg-status-warning/10',
+            expandedAction === 'adjust-camera-angle' && 'bg-status-warning/10 ring-1 ring-status-warning/30'
           )}
           onClick={() => toggleAction('adjust-camera-angle')}
           disabled={isActionLoading || disabled}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
-          Adjust Camera
+          Adjust camera
         </Button>
 
         {/* Resume Mission — prominent */}
         <Button
           size="sm"
-          variant="outline"
-          className="gap-1.5 border-amber-500/30 text-amber-200 bg-amber-500/20 hover:bg-amber-500/30 hover:text-amber-100 font-semibold"
+          className="gap-1.5 font-medium"
           onClick={onResumeMission}
           disabled={isActionLoading || disabled}
         >
-          Resume Mission <ArrowRight className="h-3.5 w-3.5" />
+          Resume mission <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       {/* Expanded panels */}
       {expandedAction === 'reposition' && (
-        <div className="rounded-md border border-amber-500/20 bg-black/30 p-3 space-y-2">
-          <p className="text-[10px] font-medium text-amber-300 uppercase tracking-wider">
-            Reposition — Small supervised adjustment
+        <div className="rounded-md border border-status-warning/20 bg-surface p-3 space-y-2">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Reposition — small supervised adjustment
           </p>
           <div className="flex items-center gap-3">
             {/* Distance selector */}
@@ -265,9 +265,9 @@ export function ManualOverrideBar({
                   key={dist}
                   onClick={() => setRepositionDist(dist)}
                   className={cn(
-                    'rounded px-2 py-0.5 text-[10px] font-mono transition-all border',
+                    'rounded px-2 py-0.5 text-[11px] font-data transition-all border',
                     repositionDist === dist
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      ? 'bg-accent text-accent-foreground border-primary/30'
                       : 'text-muted-foreground border-border hover:text-foreground'
                   )}
                 >
@@ -282,7 +282,7 @@ export function ManualOverrideBar({
               <button
                 onClick={() => handleReposition('N')}
                 disabled={isActionLoading}
-                className="rounded bg-amber-500/20 p-1 hover:bg-amber-500/30 text-amber-300 disabled:opacity-50"
+                className="rounded border border-border bg-muted p-1 text-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
                 <ArrowUp className="h-3.5 w-3.5" />
               </button>
@@ -290,23 +290,23 @@ export function ManualOverrideBar({
               <button
                 onClick={() => handleReposition('W')}
                 disabled={isActionLoading}
-                className="rounded bg-amber-500/20 p-1 hover:bg-amber-500/30 text-amber-300 disabled:opacity-50"
+                className="rounded border border-border bg-muted p-1 text-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
                 <ArrowLeftIcon className="h-3.5 w-3.5" />
               </button>
               {loading === 'reposition' ? (
                 <div className="flex items-center justify-center p-1">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                 </div>
               )}
               <button
                 onClick={() => handleReposition('E')}
                 disabled={isActionLoading}
-                className="rounded bg-amber-500/20 p-1 hover:bg-amber-500/30 text-amber-300 disabled:opacity-50"
+                className="rounded border border-border bg-muted p-1 text-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
                 <ArrowRightIcon className="h-3.5 w-3.5" />
               </button>
@@ -314,7 +314,7 @@ export function ManualOverrideBar({
               <button
                 onClick={() => handleReposition('S')}
                 disabled={isActionLoading}
-                className="rounded bg-amber-500/20 p-1 hover:bg-amber-500/30 text-amber-300 disabled:opacity-50"
+                className="rounded border border-border bg-muted p-1 text-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
                 <ArrowDown className="h-3.5 w-3.5" />
               </button>
@@ -325,8 +325,8 @@ export function ManualOverrideBar({
       )}
 
       {expandedAction === 'hover-longer' && (
-        <div className="rounded-md border border-amber-500/20 bg-black/30 p-3 space-y-2">
-          <p className="text-[10px] font-medium text-amber-300 uppercase tracking-wider">
+        <div className="rounded-md border border-status-warning/20 bg-surface p-3 space-y-2">
+          <p className="text-[11px] font-medium text-muted-foreground">
             Extend hover at current position
           </p>
           <div className="flex items-center gap-2">
@@ -335,7 +335,7 @@ export function ManualOverrideBar({
                 key={sec}
                 size="sm"
                 variant="outline"
-                className="border-amber-500/30 text-amber-300 hover:bg-amber-500/20 font-mono text-xs"
+                className="font-data text-xs"
                 onClick={() => handleHoverLonger(sec)}
                 disabled={isActionLoading}
               >
@@ -350,8 +350,8 @@ export function ManualOverrideBar({
       )}
 
       {expandedAction === 'adjust-camera-angle' && (
-        <div className="rounded-md border border-amber-500/20 bg-black/30 p-3 space-y-2">
-          <p className="text-[10px] font-medium text-amber-300 uppercase tracking-wider">
+        <div className="rounded-md border border-status-warning/20 bg-surface p-3 space-y-2">
+          <p className="text-[11px] font-medium text-muted-foreground">
             Gimbal pitch angle
           </p>
           <div className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export function ManualOverrideBar({
                 key={angle}
                 size="sm"
                 variant="outline"
-                className="border-amber-500/30 text-amber-300 hover:bg-amber-500/20 font-mono text-xs"
+                className="font-data text-xs"
                 onClick={() => handleAdjustCamera(angle)}
                 disabled={isActionLoading}
               >
@@ -371,7 +371,7 @@ export function ManualOverrideBar({
               </Button>
             ))}
           </div>
-          <p className="text-[9px] text-amber-400/50">
+          <p className="text-[11px] text-muted-foreground">
             -90° = nadir (straight down) · -30° = oblique forward
           </p>
         </div>

@@ -61,7 +61,7 @@ export function WaypointEditor({
         </span>
         <Badge
           variant="secondary"
-          className="h-5 px-1.5 text-[10px] bg-blue-500/10 text-blue-400"
+          className="h-5 px-1.5 font-data text-[11px] text-muted-foreground"
         >
           {waypoints.filter((w) => w.enabled !== false).length} / {waypoints.length} active
         </Badge>
@@ -84,7 +84,7 @@ export function WaypointEditor({
                 key={wp.number}
                 className={cn(
                   'transition-colors',
-                  isSelected && 'border-l-2 border-l-blue-500 bg-blue-500/5',
+                  isSelected && 'border-l-2 border-l-primary bg-accent/50',
                   isDisabled && 'opacity-50'
                 )}
               >
@@ -107,7 +107,7 @@ export function WaypointEditor({
 
                   {/* Number badge */}
                   <div
-                    className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold text-white"
+                    className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full text-[11px] font-semibold text-white"
                     style={{ backgroundColor: color }}
                   >
                     {wp.number}
@@ -119,7 +119,7 @@ export function WaypointEditor({
                       {checkpoint?.name ?? `Waypoint ${wp.number}`}
                     </p>
                     {checkpoint && (
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-[11px] text-muted-foreground truncate">
                         {checkpoint.bmpType.replace(/-/g, ' ')}
                       </p>
                     )}
@@ -166,7 +166,7 @@ export function WaypointEditor({
                     {isDisabled ? (
                       <EyeOff className="h-3 w-3 text-muted-foreground" />
                     ) : (
-                      <Eye className="h-3 w-3 text-blue-400" />
+                      <Eye className="h-3 w-3 text-primary" />
                     )}
                   </Button>
                 </div>

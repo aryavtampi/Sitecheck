@@ -30,7 +30,7 @@ export function MissionCard({ mission }: MissionCardProps) {
       <CardContent className="space-y-4 pt-4">
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="font-heading text-base font-semibold text-foreground">
+            <h3 className="text-base font-semibold tracking-tight text-foreground">
               {mission.name}
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -42,7 +42,7 @@ export function MissionCard({ mission }: MissionCardProps) {
               {statusLabel}
             </Badge>
             {mission.scope && mission.scope !== 'full' && (
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {MISSION_SCOPE_LABELS[mission.scope]}
               </span>
             )}
@@ -50,46 +50,46 @@ export function MissionCard({ mission }: MissionCardProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg bg-white/5 p-3 text-center">
-            <Clock className="mx-auto h-4 w-4 text-amber-500" />
-            <p className="mt-1 font-heading text-lg font-bold text-foreground">
+          <div className="rounded-lg bg-muted p-3 text-center">
+            <Clock className="mx-auto h-4 w-4 text-muted-foreground" />
+            <p className="mt-1 font-data text-lg font-semibold text-foreground">
               {mission.flightTimeMinutes}
             </p>
-            <p className="text-[10px] text-muted-foreground">min flight</p>
+            <p className="text-[11px] text-muted-foreground">min flight</p>
           </div>
-          <div className="rounded-lg bg-white/5 p-3 text-center">
-            <Plane className="mx-auto h-4 w-4 text-blue-400" />
-            <p className="mt-1 font-heading text-lg font-bold text-foreground">
+          <div className="rounded-lg bg-muted p-3 text-center">
+            <Plane className="mx-auto h-4 w-4 text-muted-foreground" />
+            <p className="mt-1 font-data text-lg font-semibold text-foreground">
               {mission.altitude}
             </p>
-            <p className="text-[10px] text-muted-foreground">ft altitude</p>
+            <p className="text-[11px] text-muted-foreground">ft altitude</p>
           </div>
-          <div className="rounded-lg bg-white/5 p-3 text-center">
-            <Camera className="mx-auto h-4 w-4 text-green-400" />
-            <p className="mt-1 font-heading text-lg font-bold text-foreground">
+          <div className="rounded-lg bg-muted p-3 text-center">
+            <Camera className="mx-auto h-4 w-4 text-muted-foreground" />
+            <p className="mt-1 font-data text-lg font-semibold text-foreground">
               {capturedCount}/{mission.waypoints.length}
             </p>
-            <p className="text-[10px] text-muted-foreground">captured</p>
+            <p className="text-[11px] text-muted-foreground">captured</p>
           </div>
-          <div className="rounded-lg bg-white/5 p-3 text-center">
-            <Battery className="mx-auto h-4 w-4 text-cyan-400" />
-            <p className="mt-1 font-heading text-lg font-bold text-foreground">
+          <div className="rounded-lg bg-muted p-3 text-center">
+            <Battery className="mx-auto h-4 w-4 text-muted-foreground" />
+            <p className="mt-1 font-data text-lg font-semibold text-foreground">
               {mission.batteryStart}→{mission.batteryEnd}%
             </p>
-            <p className="text-[10px] text-muted-foreground">battery</p>
+            <p className="text-[11px] text-muted-foreground">battery</p>
           </div>
         </div>
 
         {weather ? (
-          <div className="flex items-center gap-3 border-t border-white/5 pt-3 text-xs text-muted-foreground">
-            <span>{weatherIcon} {weather.temperature}°F</span>
+          <div className="flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+            <span>{weatherIcon} <span className="font-data">{weather.temperature}°F</span></span>
             <span>
-              <Wind className="inline h-3 w-3" /> {weather.windSpeedMph} mph
+              <Wind className="inline h-3 w-3" /> <span className="font-data">{weather.windSpeedMph} mph</span>
             </span>
-            <span>Humidity {weather.humidity}%</span>
+            <span>Humidity <span className="font-data">{weather.humidity}%</span></span>
           </div>
         ) : (
-          <div className="flex items-center gap-3 border-t border-white/5 pt-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
             <Thermometer className="inline h-3 w-3" />
             <span>No flight-time weather snapshot</span>
           </div>

@@ -39,9 +39,9 @@ interface MissionDeviationPanelProps {
 }
 
 const SEVERITY_CLASS: Record<'good' | 'warn' | 'bad', string> = {
-  good: 'text-green-400',
-  warn: 'text-amber-400',
-  bad: 'text-red-400',
+  good: 'text-status-compliant',
+  warn: 'text-status-warning',
+  bad: 'text-status-deficient',
 };
 
 function formatDuration(totalSeconds: number): string {
@@ -88,11 +88,11 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
     <Card className="border-border bg-surface">
       <CardContent className="pt-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-foreground">
-            Flight Quality
+          <p className="text-sm font-semibold tracking-tight text-foreground">
+            Flight quality
           </p>
-          <span className="inline-flex items-center gap-1 rounded-full bg-pink-500/10 px-2 py-0.5 text-[10px] font-medium text-pink-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-pink-400" />
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
             Replay
           </span>
         </div>
@@ -102,11 +102,11 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Clock className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Total time
               </span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
+            <p className="font-data text-sm font-semibold text-foreground">
               {formatDuration(stats.totalFlightSeconds)}
             </p>
           </div>
@@ -115,18 +115,18 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Compass className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Max deviation
               </span>
             </div>
             <p
               className={cn(
-                'font-mono text-sm font-semibold',
+                'font-data text-sm font-semibold',
                 SEVERITY_CLASS[horizSeverity]
               )}
             >
               {stats.maxDeviationFeet}
-              <span className="text-[10px] font-normal text-muted-foreground">
+              <span className="text-[11px] font-normal text-muted-foreground">
                 {' '}
                 ft
               </span>
@@ -137,18 +137,18 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Mountain className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Max altitude Δ
               </span>
             </div>
             <p
               className={cn(
-                'font-mono text-sm font-semibold',
+                'font-data text-sm font-semibold',
                 SEVERITY_CLASS[altSeverity]
               )}
             >
               {stats.maxAltitudeDeviationFeet}
-              <span className="text-[10px] font-normal text-muted-foreground">
+              <span className="text-[11px] font-normal text-muted-foreground">
                 {' '}
                 ft
               </span>
@@ -159,13 +159,13 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Captured
               </span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
+            <p className="font-data text-sm font-semibold text-foreground">
               {stats.capturedWaypointCount}
-              <span className="text-[10px] font-normal text-muted-foreground">
+              <span className="text-[11px] font-normal text-muted-foreground">
                 {' '}
                 / {stats.plannedWaypointCount}
               </span>
@@ -176,13 +176,13 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Gauge className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Mean speed
               </span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
+            <p className="font-data text-sm font-semibold text-foreground">
               {stats.meanGroundSpeedMph}
-              <span className="text-[10px] font-normal text-muted-foreground">
+              <span className="text-[11px] font-normal text-muted-foreground">
                 {' '}
                 mph
               </span>
@@ -193,20 +193,20 @@ export function MissionDeviationPanel({ mission }: MissionDeviationPanelProps) {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Sigma className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Samples
               </span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
+            <p className="font-data text-sm font-semibold text-foreground">
               {stats.sampleCount}
             </p>
           </div>
         </div>
 
-        <p className="mt-2 text-[10px] text-muted-foreground">
-          Deviation thresholds: <span className="text-green-400">≤ 30 ft</span>{' '}
-          · <span className="text-amber-400">30–100 ft</span> ·{' '}
-          <span className="text-red-400">&gt; 100 ft</span>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Deviation thresholds: <span className="font-data text-status-compliant">≤ 30 ft</span>{' '}
+          · <span className="font-data text-status-warning">30–100 ft</span> ·{' '}
+          <span className="font-data text-status-deficient">&gt; 100 ft</span>
         </p>
       </CardContent>
     </Card>

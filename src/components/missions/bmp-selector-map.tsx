@@ -96,15 +96,14 @@ export function BmpSelectorMap({
                 onMouseEnter={() => onMarkerEnter(cp.id)}
                 onMouseLeave={onMarkerLeave}
               >
-                {/* Selection ring */}
+                {/* Selection ring — white outline for visibility on imagery */}
                 {isSelected && (
                   <div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
                     style={{
                       width: dotSize + 8,
                       height: dotSize + 8,
-                      border: '2px solid #3B82F6',
-                      boxShadow: '0 0 6px rgba(59, 130, 246, 0.5)',
+                      border: '2px solid #FFFFFF',
                     }}
                   />
                 )}
@@ -117,17 +116,15 @@ export function BmpSelectorMap({
                     height: dotSize,
                     backgroundColor: color,
                     transition: 'width 150ms, height 150ms',
-                    boxShadow: isSelected
-                      ? `0 0 8px ${color}80`
-                      : '0 1px 2px rgba(0,0,0,0.4)',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
                   }}
                 />
 
                 {/* Tooltip on hover */}
                 {isHovered && (
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-[10px] text-white font-medium pointer-events-none z-10">
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded border border-border bg-popover px-2 py-1 text-[11px] text-popover-foreground font-medium shadow-sm pointer-events-none z-10">
                     {cp.name}
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-black/80" />
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-white" />
                   </div>
                 )}
               </div>

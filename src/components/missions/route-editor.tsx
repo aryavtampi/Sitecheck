@@ -195,16 +195,16 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
 
       {/* Block 3 — Live airspace warning */}
       {!validation.valid && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 flex items-start gap-2">
-          <ShieldAlert className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-status-deficient/20 bg-status-deficient-bg p-3 flex items-start gap-2">
+          <ShieldAlert className="h-4 w-4 text-status-deficient flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-red-300">
+            <p className="text-xs font-semibold text-status-deficient">
               {validation.violations.length} airspace violation
               {validation.violations.length === 1 ? '' : 's'} on this route
             </p>
-            <p className="text-[11px] text-red-200/80 mt-0.5">
+            <p className="text-[11px] text-foreground mt-0.5">
               Waypoint{violatingWaypointNumbers.length === 1 ? '' : 's'}{' '}
-              <span className="font-mono">{violatingWaypointNumbers.join(', ')}</span>{' '}
+              <span className="font-data">{violatingWaypointNumbers.join(', ')}</span>{' '}
               violate the operating boundary or an active no-fly zone. Drag them out
               of the red areas before saving.
             </p>
@@ -222,7 +222,7 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
           onClick={handleReset}
         >
           <RotateCcw className="h-3.5 w-3.5" />
-          Reset to Original
+          Reset to original
         </Button>
 
         <Button
@@ -244,7 +244,7 @@ export function RouteEditor({ mission, onSave }: RouteEditorProps) {
           ) : (
             <>
               <Save className="h-3.5 w-3.5" />
-              Save Route
+              Save route
             </>
           )}
         </Button>

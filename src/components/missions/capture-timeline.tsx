@@ -34,7 +34,7 @@ export function CaptureTimeline({
   return (
     <Card className="border-border bg-surface">
       <CardContent className="pt-4">
-        <p className="text-xs font-medium text-foreground mb-3">Capture Timeline</p>
+        <p className="text-xs font-medium text-foreground mb-3">Capture timeline</p>
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {waypoints.map((wp, idx) => {
@@ -49,14 +49,14 @@ export function CaptureTimeline({
                 onClick={() => onSelectWaypoint(idx)}
                 className={cn(
                   'relative flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-amber-500/50',
+                  'focus:outline-none focus:ring-2 focus:ring-ring/50',
                   isCurrent
-                    ? 'border-amber-500 ring-2 ring-amber-500/30 animate-pulse'
+                    ? 'border-primary ring-2 ring-primary/30'
                     : hasCapture
                       ? isDeficientWp
-                        ? 'border-red-500/50'
-                        : 'border-green-500/50'
-                      : 'border-border hover:border-muted-foreground/50'
+                        ? 'border-status-deficient/50'
+                        : 'border-status-compliant/50'
+                      : 'border-border hover:border-input'
                 )}
               >
                 {/* Background: photo thumbnail or placeholder */}
@@ -66,16 +66,16 @@ export function CaptureTimeline({
                     style={{ backgroundImage: `url(${wp.photo})` }}
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+                  <div className="absolute inset-0 flex items-center justify-center bg-muted">
                     <Camera className={cn(
                       'h-4 w-4',
-                      isCurrent ? 'text-amber-400' : 'text-muted-foreground/50'
+                      isCurrent ? 'text-primary' : 'text-muted-foreground/50'
                     )} />
                   </div>
                 )}
 
                 {/* Waypoint number badge */}
-                <span className="absolute top-0.5 left-0.5 rounded bg-black/60 px-1 text-[9px] font-mono text-white">
+                <span className="absolute top-0.5 left-0.5 rounded bg-black/60 px-1 text-[11px] font-data text-white">
                   {wp.number}
                 </span>
 
@@ -83,7 +83,7 @@ export function CaptureTimeline({
                 {hasCapture && (
                   <span className={cn(
                     'absolute bottom-0.5 right-0.5 rounded-full p-0.5',
-                    isDeficientWp ? 'bg-red-500' : 'bg-green-500'
+                    isDeficientWp ? 'bg-status-deficient' : 'bg-status-compliant'
                   )}>
                     {isDeficientWp ? (
                       <X className="h-2 w-2 text-white" />
@@ -99,11 +99,14 @@ export function CaptureTimeline({
 
         {/* Summary */}
         <div className="flex items-center justify-between mt-2">
-          <p className="text-[10px] text-muted-foreground">
-            {waypoints.filter((wp) => COMPLETED_STATUSES.has(wp.captureStatus)).length} of{' '}
-            {waypoints.length} captured
+          <p className="text-[11px] text-muted-foreground">
+            <span className="font-data">
+              {waypoints.filter((wp) => COMPLETED_STATUSES.has(wp.captureStatus)).length} of{' '}
+              {waypoints.length}
+            </span>{' '}
+            captured
           </p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] font-data text-muted-foreground">
             WP #{waypoints[currentWaypointIndex]?.number ?? '—'}
           </p>
         </div>

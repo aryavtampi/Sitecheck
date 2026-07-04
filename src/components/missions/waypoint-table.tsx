@@ -39,7 +39,7 @@ export function WaypointTable({
       <div className="overflow-x-auto">
       <table className="w-full min-w-[640px] text-xs">
         <thead className="sticky top-0 bg-surface z-10">
-          <tr className="border-b border-white/5">
+          <tr className="border-b border-border">
             <th className="px-3 py-2 text-left font-medium text-muted-foreground">#</th>
             <th className="px-3 py-2 text-left font-medium text-muted-foreground">BMP</th>
             <th className="px-3 py-2 text-left font-medium text-muted-foreground">Name</th>
@@ -60,12 +60,12 @@ export function WaypointTable({
                 key={wp.number}
                 onClick={() => onSelectWaypoint(i)}
                 className={cn(
-                  'cursor-pointer border-b border-white/5 transition-colors hover:bg-white/5',
-                  isCurrent && 'bg-amber-500/10 hover:bg-amber-500/15'
+                  'cursor-pointer border-b border-border transition-colors hover:bg-muted/50',
+                  isCurrent && 'bg-accent/60 hover:bg-accent'
                 )}
               >
-                <td className="px-3 py-2 font-mono text-muted-foreground">{wp.number}</td>
-                <td className="px-3 py-2 font-mono text-foreground">{wp.checkpointId}</td>
+                <td className="px-3 py-2 font-data text-muted-foreground">{wp.number}</td>
+                <td className="px-3 py-2 font-data text-foreground">{wp.checkpointId}</td>
                 <td className="px-3 py-2 text-foreground max-w-[180px] truncate">
                   {cp?.name || '—'}
                 </td>
@@ -83,7 +83,7 @@ export function WaypointTable({
                   ) : (
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${WAYPOINT_OUTCOME_COLORS[wp.captureStatus]} border-current/20`}
+                      className={`text-[11px] font-medium ${WAYPOINT_OUTCOME_COLORS[wp.captureStatus]} border-current/20`}
                     >
                       {WAYPOINT_OUTCOME_LABELS[wp.captureStatus]}
                     </Badge>
@@ -93,12 +93,12 @@ export function WaypointTable({
                   {analysis ? (
                     <span
                       className={cn(
-                        'font-mono font-medium',
+                        'font-data font-medium',
                         analysis.confidence >= 90
-                          ? 'text-green-500'
+                          ? 'text-status-compliant'
                           : analysis.confidence >= 75
-                            ? 'text-amber-500'
-                            : 'text-red-500'
+                            ? 'text-status-warning'
+                            : 'text-status-deficient'
                       )}
                     >
                       {analysis.confidence}%

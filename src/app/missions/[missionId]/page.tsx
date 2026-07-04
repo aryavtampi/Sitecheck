@@ -164,7 +164,7 @@ export default function MissionDetailPage({
         <p className="text-sm text-muted-foreground">Mission not found</p>
         <Link href="/missions" className="mt-4">
           <Button variant="outline" size="sm">
-            Back to Missions
+            Back to missions
           </Button>
         </Link>
       </div>
@@ -200,7 +200,7 @@ export default function MissionDetailPage({
   const description = isPlanned
     ? 'Edit route, waypoints, and per-waypoint settings before flight'
     : isActive
-      ? 'Mission Control — live flight monitoring and supervision'
+      ? 'Live flight monitoring and supervision'
       : 'Review checkpoint findings and generate compliance report';
 
   return (

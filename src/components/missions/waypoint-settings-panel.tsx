@@ -23,7 +23,7 @@ export function WaypointSettingsPanel({ waypoint, onUpdate }: WaypointSettingsPa
       {/* Altitude Override */}
       <div className="space-y-1">
         <label className="text-[11px] font-medium text-muted-foreground">
-          Altitude Override (ft)
+          Altitude override (ft)
         </label>
         <Input
           type="number"
@@ -37,14 +37,14 @@ export function WaypointSettingsPanel({ waypoint, onUpdate }: WaypointSettingsPa
               altitudeOverride: e.target.value ? Number(e.target.value) : undefined,
             })
           }
-          className="h-7 text-xs bg-background border-border"
+          className="h-7 text-xs bg-surface border-input"
         />
       </div>
 
       {/* Hover Time */}
       <div className="space-y-1">
         <label className="text-[11px] font-medium text-muted-foreground">
-          Hover Time (sec)
+          Hover time (sec)
         </label>
         <Input
           type="number"
@@ -57,20 +57,20 @@ export function WaypointSettingsPanel({ waypoint, onUpdate }: WaypointSettingsPa
               hoverTimeSeconds: Number(e.target.value) || 10,
             })
           }
-          className="h-7 text-xs bg-background border-border"
+          className="h-7 text-xs bg-surface border-input"
         />
       </div>
 
       {/* Capture Mode */}
       <div className="space-y-1">
         <label className="text-[11px] font-medium text-muted-foreground">
-          Capture Mode
+          Capture mode
         </label>
         <Select
           value={waypoint.captureMode ?? 'auto'}
           onValueChange={(val) => onUpdate({ captureMode: val as CaptureMode })}
         >
-          <SelectTrigger className="h-7 text-xs bg-background border-border">
+          <SelectTrigger className="h-7 text-xs bg-surface border-input">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -86,14 +86,14 @@ export function WaypointSettingsPanel({ waypoint, onUpdate }: WaypointSettingsPa
       {/* Operator Notes */}
       <div className="space-y-1">
         <label className="text-[11px] font-medium text-muted-foreground">
-          Operator Notes
+          Operator notes
         </label>
         <Textarea
           rows={2}
           placeholder="Add notes for this waypoint..."
           value={waypoint.operatorNotes ?? ''}
           onChange={(e) => onUpdate({ operatorNotes: e.target.value })}
-          className="text-xs bg-background border-border resize-none"
+          className="text-xs bg-surface border-input resize-none"
         />
       </div>
     </div>

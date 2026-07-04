@@ -29,7 +29,7 @@ const BMP_TYPE_FILTERS: Array<{ value: BMPCategory | 'all'; label: string }> = [
   { value: 'tracking-control', label: 'Tracking' },
   { value: 'wind-erosion', label: 'Wind' },
   { value: 'materials-management', label: 'Materials' },
-  { value: 'non-storm-water', label: 'Non-Storm' },
+  { value: 'non-storm-water', label: 'Non-storm' },
 ];
 
 export function BmpSelector({
@@ -56,7 +56,7 @@ export function BmpSelector({
       <div className="flex items-center justify-between">
         <Badge
           variant="secondary"
-          className="bg-blue-500/10 text-blue-400 border-blue-500/20"
+          className="border-primary/20 bg-accent font-medium text-accent-foreground"
         >
           {selectedIds.size} selected
         </Badge>
@@ -68,7 +68,7 @@ export function BmpSelector({
             className="h-7 text-xs text-muted-foreground hover:text-foreground"
             onClick={onSelectAll}
           >
-            Select All
+            Select all
           </Button>
           <Button
             type="button"
@@ -77,7 +77,7 @@ export function BmpSelector({
             className="h-7 text-xs text-muted-foreground hover:text-foreground"
             onClick={onDeselectAll}
           >
-            Deselect All
+            Deselect all
           </Button>
         </div>
       </div>
@@ -105,8 +105,8 @@ export function BmpSelector({
               className={cn(
                 'rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors border',
                 isActive
-                  ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                  : 'bg-surface text-muted-foreground border-border hover:text-foreground hover:border-foreground/20'
+                  ? 'bg-accent text-accent-foreground border-primary/30'
+                  : 'bg-surface text-muted-foreground border-border hover:text-foreground hover:border-input'
               )}
             >
               {label}
@@ -132,15 +132,15 @@ export function BmpSelector({
                 onClick={() => onToggle(cp.id)}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors w-full',
-                  'hover:bg-white/5',
+                  'hover:bg-muted',
                   isSelected
-                    ? 'bg-blue-500/5 border border-blue-500/20'
+                    ? 'bg-accent/60 border border-primary/20'
                     : 'border border-transparent'
                 )}
               >
                 {/* Checkbox indicator */}
                 {isSelected ? (
-                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-primary" />
                 ) : (
                   <Circle className="h-4 w-4 flex-shrink-0 text-muted-foreground/50" />
                 )}
@@ -158,7 +158,7 @@ export function BmpSelector({
                 {/* BMP type badge */}
                 <Badge
                   variant="outline"
-                  className="text-[10px] px-1.5 py-0 h-5 border-border"
+                  className="text-[11px] px-1.5 py-0 h-5 border-border"
                   style={{ color: BMP_CATEGORY_COLORS[cp.bmpType] }}
                 >
                   {BMP_CATEGORY_LABELS[cp.bmpType]}
@@ -172,7 +172,7 @@ export function BmpSelector({
                 />
 
                 {/* Zone */}
-                <span className="text-[10px] text-muted-foreground capitalize w-10 text-right flex-shrink-0">
+                <span className="text-[11px] text-muted-foreground capitalize w-10 text-right flex-shrink-0">
                   {cp.zone}
                 </span>
               </button>

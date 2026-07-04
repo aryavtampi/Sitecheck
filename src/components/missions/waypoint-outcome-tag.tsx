@@ -84,7 +84,7 @@ export function WaypointOutcomeTag({
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 text-[10px] text-muted-foreground"
+            className="h-5 text-[11px] text-muted-foreground"
             onClick={() => setShowPicker(false)}
           >
             Cancel
@@ -94,7 +94,7 @@ export function WaypointOutcomeTag({
         <div className="flex items-center gap-1">
           <Badge
             variant="outline"
-            className={`text-[10px] ${outcomeColors} border-current/20 cursor-default`}
+            className={`text-[11px] font-medium ${outcomeColors} border-current/20 cursor-default`}
           >
             {WAYPOINT_OUTCOME_LABELS[currentOutcome]}
           </Badge>

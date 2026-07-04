@@ -31,20 +31,20 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
       {/* Mission Name */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground">
-          Mission Name
+          Mission name
         </label>
         <Input
           value={config.name}
           onChange={(e) => onChange({ ...config, name: e.target.value })}
           placeholder="e.g. Weekly routine — east sector"
-          className="bg-background border-border"
+          className="bg-surface border-input"
         />
       </div>
 
       {/* Inspection Type */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground">
-          Inspection Type
+          Inspection type
         </label>
         <Select
           value={config.inspectionType}
@@ -52,7 +52,7 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
             onChange({ ...config, inspectionType: val as InspectionType })
           }
         >
-          <SelectTrigger className="w-full bg-background border-border">
+          <SelectTrigger className="w-full bg-surface border-input">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -82,7 +82,7 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
             min={30}
             max={400}
             step={10}
-            className="bg-background border-border"
+            className="bg-surface border-input"
           />
           <span className="shrink-0 text-sm text-muted-foreground">
             ft AGL
@@ -93,7 +93,7 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
       {/* End-of-Mission Action */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground">
-          End-of-Mission Action
+          End-of-mission action
         </label>
         <Select
           value={config.endOfMissionAction}
@@ -101,7 +101,7 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
             onChange({ ...config, endOfMissionAction: val as EndOfMissionAction })
           }
         >
-          <SelectTrigger className="w-full bg-background border-border">
+          <SelectTrigger className="w-full bg-surface border-input">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +127,7 @@ export function MissionConfigForm({ config, onChange }: MissionConfigFormProps) 
           onChange={(e) => onChange({ ...config, notes: e.target.value })}
           placeholder="Add any notes for this mission..."
           rows={3}
-          className="bg-background border-border"
+          className="bg-surface border-input"
         />
       </div>
     </div>

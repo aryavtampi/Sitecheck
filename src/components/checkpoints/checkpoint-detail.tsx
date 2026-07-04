@@ -20,7 +20,6 @@ import type { Deficiency } from '@/types/deficiency';
 import {
   BMP_CATEGORY_LABELS,
   BMP_CATEGORY_COLORS,
-  STATUS_COLORS,
 } from '@/lib/constants';
 import { checkpoints as staticCheckpoints } from '@/data/checkpoints';
 import { aiAnalyses as staticAnalyses } from '@/data/ai-analyses';
@@ -35,9 +34,9 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const priorityColors: Record<string, string> = {
-  high: 'bg-red-500',
-  medium: 'bg-amber-500',
-  low: 'bg-green-500',
+  high: 'bg-status-deficient',
+  medium: 'bg-status-warning',
+  low: 'bg-status-compliant',
 };
 
 export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
@@ -90,7 +89,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
   }, [checkpointId]);
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" /></div>;
+    return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   }
 
   if (error || !checkpoint) {
@@ -99,8 +98,8 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         <AlertTriangle className="h-10 w-10 text-muted-foreground mb-4" />
         <h2 className="text-lg font-medium text-foreground mb-2">Checkpoint not found</h2>
         <p className="text-sm text-muted-foreground mb-6">No checkpoint exists with ID &quot;{checkpointId}&quot;.</p>
-        <Link href="/checkpoints" className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-foreground/80 transition-colors">
-          <ArrowLeft className="h-4 w-4" />Back to Checkpoints
+        <Link href="/checkpoints" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+          <ArrowLeft className="h-4 w-4" />Back to checkpoints
         </Link>
       </div>
     );
@@ -121,20 +120,20 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Checkpoints
+        Back to checkpoints
       </Link>
 
       {/* Header row */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-data text-xs text-muted-foreground">
           {checkpoint.id}
         </span>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
           {checkpoint.name}
         </h1>
         <StatusBadge status={checkpoint.status} />
         <span
-          className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded"
+          className="text-[11px] font-medium px-1.5 py-0.5 rounded"
           style={{
             color: bmpColor,
             backgroundColor: `${bmpColor}15`,
@@ -142,7 +141,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         >
           {BMP_CATEGORY_LABELS[checkpoint.bmpType]}
         </span>
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
+        <span className="text-[11px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
           {checkpoint.stationLabel ?? checkpoint.zone ?? '—'}
         </span>
         <div className="flex items-center gap-1">
@@ -152,7 +151,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
               priorityColors[checkpoint.priority]
             )}
           />
-          <span className="text-[10px] text-muted-foreground capitalize">
+          <span className="text-[11px] text-muted-foreground capitalize">
             {checkpoint.priority}
           </span>
         </div>
@@ -163,11 +162,11 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         {/* Left column (2/3) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Drone image placeholder */}
-          <div className="relative aspect-video rounded-lg bg-background/50 border border-border flex items-center justify-center overflow-hidden">
+          <div className="relative aspect-video rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden">
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Camera className="h-10 w-10 opacity-40" />
-              <span className="text-xs uppercase tracking-wider opacity-60">
-                Drone Image
+              <span className="text-xs opacity-60">
+                Drone image
               </span>
             </div>
           </div>
@@ -177,7 +176,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
             <TabsList>
               <TabsTrigger value="ai-analysis">
                 <Brain className="h-3.5 w-3.5" />
-                AI Analysis
+                Analysis
               </TabsTrigger>
               <TabsTrigger value="deficiencies">
                 <AlertTriangle className="h-3.5 w-3.5" />
@@ -196,7 +195,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Brain className="h-8 w-8 text-muted-foreground/40 mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    No AI analysis available for this checkpoint.
+                    No analysis available for this checkpoint.
                   </p>
                 </div>
               )}
@@ -237,18 +236,18 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
         <div className="lg:col-span-1">
           <Card className="border-border bg-surface">
             <CardContent className="space-y-4 pt-4">
-              <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Checkpoint Info
+              <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                Checkpoint details
               </h3>
 
               {/* CGP Section */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  CGP Section
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  CGP section
                 </p>
                 <div className="flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm text-foreground">
+                  <span className="font-data text-sm text-foreground">
                     {checkpoint.cgpSection}
                   </span>
                 </div>
@@ -256,12 +255,12 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
 
               {/* Install Date */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Install Date
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Install date
                 </p>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm text-foreground">
+                  <span className="font-data text-sm text-foreground">
                     {formatDateTime(checkpoint.installDate)}
                   </span>
                 </div>
@@ -269,12 +268,12 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
 
               {/* Last Inspected */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  Last Inspected
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Last inspected
                 </p>
                 <div className="flex items-center gap-2">
                   <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm text-foreground">
+                  <span className="font-data text-sm text-foreground">
                     {formatDateTime(checkpoint.lastInspectionDate)}
                   </span>
                 </div>
@@ -282,7 +281,7 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
 
               {/* Zone */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
                   {checkpoint.stationLabel ? 'Station' : 'Zone'}
                 </p>
                 <Badge variant="outline" className="capitalize">
@@ -292,12 +291,12 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
 
               {/* Location */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
                   Location
                 </p>
                 <div className="flex items-start gap-2">
                   <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <div className="text-sm text-foreground font-mono">
+                  <div className="text-sm text-foreground font-data">
                     <div>{formatCoordinate(checkpoint.location.lat, 'lat')}</div>
                     <div>{formatCoordinate(checkpoint.location.lng, 'lng')}</div>
                   </div>
@@ -306,12 +305,12 @@ export function CheckpointDetail({ checkpointId }: { checkpointId: string }) {
 
               {/* SWPPP Page */}
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-                  SWPPP Page
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  SWPPP page
                 </p>
                 <div className="flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm text-foreground">
+                  <span className="font-data text-sm text-foreground">
                     Page {checkpoint.swpppPage}
                   </span>
                 </div>

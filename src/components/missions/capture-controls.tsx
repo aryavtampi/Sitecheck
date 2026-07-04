@@ -154,9 +154,9 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-foreground">
-              Waypoint #{currentWp.number} — Capture
+              Waypoint <span className="font-data">#{currentWp.number}</span> — capture
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               {isAutoCapture ? 'Auto capture active' : `Mode: ${currentWp.captureMode}`}
             </p>
           </div>
@@ -174,7 +174,7 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
               ) : (
                 <Camera className="h-3.5 w-3.5" />
               )}
-              Capture Now
+              Capture now
             </Button>
 
             {/* Capability-gated buttons — hidden if unsupported */}
@@ -193,7 +193,7 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
 
         {/* Last capture indicator */}
         {lastCaptureUrl && (
-          <div className="flex items-center gap-2 text-[10px] text-green-400">
+          <div className="flex items-center gap-2 text-[11px] text-status-compliant">
             <ImageIcon className="h-3 w-3" />
             <span>Image captured successfully</span>
           </div>
@@ -201,8 +201,8 @@ export function CaptureControls({ mission, onOutcomeChanged }: CaptureControlsPr
 
         {/* Inline outcome tagging */}
         <div className="border-t border-border pt-2">
-          <p className="text-[10px] font-medium text-muted-foreground mb-1.5">
-            Tag Outcome
+          <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+            Tag outcome
           </p>
           <OutcomeTagBar
             currentOutcome={currentWp.captureStatus}

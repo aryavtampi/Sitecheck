@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useProjectStore } from '@/stores/project-store';
-import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS, STATUS_COLORS } from '@/lib/constants';
+import { BMP_CATEGORY_LABELS, BMP_CATEGORY_COLORS } from '@/lib/constants';
 import { BMPCategory, CheckpointStatus, Zone } from '@/types/checkpoint';
 import { cn } from '@/lib/utils';
 import { useAppMode } from '@/hooks/use-app-mode';
@@ -14,8 +14,18 @@ const statuses: { value: CheckpointStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'compliant', label: 'Compliant' },
   { value: 'deficient', label: 'Deficient' },
-  { value: 'needs-review', label: 'Needs Review' },
+  { value: 'needs-review', label: 'Needs review' },
 ];
+
+const statusActiveClasses: Record<CheckpointStatus, string> = {
+  compliant: 'border-status-compliant/30 bg-status-compliant-bg text-status-compliant',
+  deficient: 'border-status-deficient/30 bg-status-deficient-bg text-status-deficient',
+  'needs-review': 'border-status-review/30 bg-status-review-bg text-status-review',
+};
+
+const pillInactiveClasses =
+  'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-input';
+const pillSelectedClasses = 'border-primary/30 bg-accent text-accent-foreground';
 
 const bmpTypes: { value: BMPCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'All BMPs' },
@@ -59,7 +69,7 @@ export function CheckpointFilters() {
             placeholder="Search checkpoints..."
             value={filters.search}
             onChange={(e) => setFilter('search', e.target.value)}
-            className="pl-8 bg-surface border-border"
+            className="pl-8 bg-surface border-input"
           />
         </div>
 
@@ -67,25 +77,19 @@ export function CheckpointFilters() {
         <div className="flex items-center gap-1.5">
           {statuses.map((s) => {
             const isActive = filters.status === s.value;
-            const color = s.value !== 'all' ? STATUS_COLORS[s.value] : undefined;
             return (
               <button
                 key={s.value}
                 onClick={() => setFilter('status', s.value)}
                 className={cn(
-                  'rounded-full px-3 py-1 text-xs font-medium transition-all border',
-                  isApp && 'text-[10px] px-2 py-0.5',
-                  isActive && color
-                    ? 'text-white border-transparent'
-                    : isActive
-                      ? 'bg-foreground/10 text-foreground border-foreground/20'
-                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                  'rounded-full px-3 py-1 text-xs font-medium transition-colors border',
+                  isApp && 'text-[11px] px-2 py-0.5',
+                  isActive
+                    ? s.value === 'all'
+                      ? pillSelectedClasses
+                      : statusActiveClasses[s.value]
+                    : pillInactiveClasses
                 )}
-                style={
-                  isActive && color
-                    ? { backgroundColor: `${color}20`, color: color, borderColor: `${color}40` }
-                    : undefined
-                }
               >
                 {s.label}
               </button>
@@ -97,18 +101,16 @@ export function CheckpointFilters() {
         <div className="h-4 w-px bg-border" />
         {isLinear ? (
           <div className="flex items-center gap-1.5">
-            {[{ value: 'all' as const, label: 'All Segments' }, ...segments.map((s) => ({ value: s.id, label: s.name }))].map((seg) => {
+            {[{ value: 'all' as const, label: 'All segments' }, ...segments.map((s) => ({ value: s.id, label: s.name }))].map((seg) => {
               const isActive = filters.segment === seg.value;
               return (
                 <button
                   key={seg.value}
                   onClick={() => setFilter('segment', seg.value)}
                   className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-all border whitespace-nowrap',
-                    isApp && 'text-[10px] px-2 py-0.5',
-                    isActive
-                      ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
-                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                    'rounded-full px-3 py-1 text-xs font-medium transition-colors border whitespace-nowrap',
+                    isApp && 'text-[11px] px-2 py-0.5',
+                    isActive ? pillSelectedClasses : pillInactiveClasses
                   )}
                 >
                   {seg.label}
@@ -125,11 +127,9 @@ export function CheckpointFilters() {
                   key={z.value}
                   onClick={() => setFilter('zone', z.value)}
                   className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-all border',
-                    isApp && 'text-[10px] px-2 py-0.5',
-                    isActive
-                      ? 'bg-amber-500/15 text-amber-500 border-amber-500/30'
-                      : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                    'rounded-full px-3 py-1 text-xs font-medium transition-colors border',
+                    isApp && 'text-[11px] px-2 py-0.5',
+                    isActive ? pillSelectedClasses : pillInactiveClasses
                   )}
                 >
                   {z.label}
@@ -163,13 +163,13 @@ export function CheckpointFilters() {
               key={b.value}
               onClick={() => setFilter('bmpType', b.value)}
               className={cn(
-                'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all border whitespace-nowrap',
-                isApp && 'text-[10px] px-2 py-0.5',
+                'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors border whitespace-nowrap',
+                isApp && 'text-[11px] px-2 py-0.5',
                 isActive && color
                   ? 'border-transparent'
                   : isActive
-                    ? 'bg-foreground/10 text-foreground border-foreground/20'
-                    : 'bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-foreground/30'
+                    ? pillSelectedClasses
+                    : pillInactiveClasses
               )}
               style={
                 isActive && color

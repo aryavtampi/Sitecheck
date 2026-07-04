@@ -126,11 +126,11 @@ export function MissionAirspaceCheck({
   // Valid — green confirmation
   if (result.valid) {
     return (
-      <div className="rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-2.5 flex items-center gap-2">
-        <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+      <div className="rounded-lg border border-status-compliant/30 bg-status-compliant-bg px-3 py-2.5 flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4 text-status-compliant flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-green-300">Airspace clear</p>
-          <p className="text-[10px] text-green-300/70">
+          <p className="text-xs font-medium text-status-compliant">Airspace clear</p>
+          <p className="text-[11px] text-muted-foreground">
             All {selectedCheckpoints.length} checkpoint
             {selectedCheckpoints.length === 1 ? '' : 's'} are within the operating
             boundary
@@ -175,11 +175,11 @@ export function MissionAirspaceCheck({
   }
 
   return (
-    <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 space-y-2">
+    <div className="rounded-lg border border-status-deficient/30 bg-status-deficient-bg p-3 space-y-2">
       <div className="flex items-center gap-2">
-        <ShieldAlert className="h-4 w-4 text-red-400 flex-shrink-0" />
-        <p className="text-xs font-semibold text-red-300 uppercase tracking-wider">
-          Airspace Violations ({result.violations.length})
+        <ShieldAlert className="h-4 w-4 text-status-deficient flex-shrink-0" />
+        <p className="text-xs font-semibold text-status-deficient">
+          Airspace violations ({result.violations.length})
         </p>
       </div>
 
@@ -191,17 +191,17 @@ export function MissionAirspaceCheck({
             <li
               key={i}
               className={cn(
-                'rounded border border-red-500/20 bg-red-500/5 px-2.5 py-1.5',
-                'text-[11px] text-red-200'
+                'rounded border border-status-deficient/20 bg-surface px-2.5 py-1.5',
+                'text-[11px] text-foreground'
               )}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <AlertTriangle className="h-3 w-3 text-red-400" />
+                <AlertTriangle className="h-3 w-3 text-status-deficient" />
                 <span className="font-medium">{g.zoneName}</span>
-                <span className="text-red-300/60 text-[10px]">· {kindLabel}</span>
+                <span className="text-muted-foreground text-[11px]">· {kindLabel}</span>
               </div>
               {wps.length > 0 && (
-                <p className="text-[10px] text-red-200/80 font-mono">
+                <p className="text-[11px] text-muted-foreground font-data">
                   Waypoint{wps.length === 1 ? '' : 's'}: {wps.join(', ')}
                 </p>
               )}
@@ -210,7 +210,7 @@ export function MissionAirspaceCheck({
         })}
       </ul>
 
-      <p className="text-[10px] text-red-300/70">
+      <p className="text-[11px] text-muted-foreground">
         Adjust your checkpoint selection to clear these violations, or update the
         no-fly zones from the airspace settings.
       </p>

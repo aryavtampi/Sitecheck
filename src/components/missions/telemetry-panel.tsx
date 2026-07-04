@@ -21,15 +21,15 @@ function compassCardinal(deg: number): string {
 }
 
 function batteryColor(pct: number): string {
-  if (pct > 30) return 'text-green-400';
-  if (pct > 15) return 'text-amber-400';
-  return 'text-red-400';
+  if (pct > 30) return 'text-status-compliant';
+  if (pct > 15) return 'text-status-warning';
+  return 'text-status-deficient';
 }
 
 function signalColor(pct: number): string {
-  if (pct > 70) return 'text-green-400';
-  if (pct > 40) return 'text-amber-400';
-  return 'text-red-400';
+  if (pct > 70) return 'text-status-compliant';
+  if (pct > 40) return 'text-status-warning';
+  return 'text-status-deficient';
 }
 
 export function TelemetryPanel() {
@@ -56,16 +56,16 @@ export function TelemetryPanel() {
       <CardContent className="pt-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-foreground">Telemetry</p>
+          <p className="text-sm font-semibold tracking-tight text-foreground">Telemetry</p>
           {stale ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-400 animate-pulse">
+            <span className="inline-flex items-center gap-1 rounded-full border border-status-deficient/20 bg-status-deficient-bg px-2 py-0.5 text-[11px] font-medium text-status-deficient">
               <AlertTriangle className="h-3 w-3" />
-              SIGNAL LOST
+              Signal lost
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-              LIVE
+            <span className="inline-flex items-center gap-1 rounded-full border border-status-compliant/20 bg-status-compliant-bg px-2 py-0.5 text-[11px] font-medium text-status-compliant">
+              <span className="h-1.5 w-1.5 rounded-full bg-status-compliant" />
+              Live
             </span>
           )}
         </div>
@@ -76,12 +76,12 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <MapPin className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Position</span>
+              <span className="text-[11px] text-muted-foreground">Position</span>
             </div>
-            <p className="font-mono text-[11px] text-foreground leading-tight">
+            <p className="font-data text-[11px] text-foreground leading-tight">
               {telemetry.lat.toFixed(6)}
             </p>
-            <p className="font-mono text-[11px] text-foreground leading-tight">
+            <p className="font-data text-[11px] text-foreground leading-tight">
               {telemetry.lng.toFixed(6)}
             </p>
           </div>
@@ -90,10 +90,10 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Mountain className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Altitude</span>
+              <span className="text-[11px] text-muted-foreground">Altitude</span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
-              {telemetry.altitudeFeet} <span className="text-[10px] font-normal text-muted-foreground">ft AGL</span>
+            <p className="font-data text-sm font-semibold text-foreground">
+              {telemetry.altitudeFeet} <span className="text-[11px] font-normal text-muted-foreground">ft AGL</span>
             </p>
           </div>
 
@@ -101,10 +101,10 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Gauge className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Speed</span>
+              <span className="text-[11px] text-muted-foreground">Speed</span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
-              {telemetry.speedMph} <span className="text-[10px] font-normal text-muted-foreground">mph</span>
+            <p className="font-data text-sm font-semibold text-foreground">
+              {telemetry.speedMph} <span className="text-[11px] font-normal text-muted-foreground">mph</span>
             </p>
           </div>
 
@@ -112,10 +112,10 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Compass className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Heading</span>
+              <span className="text-[11px] text-muted-foreground">Heading</span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
-              {telemetry.headingDeg}° <span className="text-[10px] font-normal text-muted-foreground">{compassCardinal(telemetry.headingDeg)}</span>
+            <p className="font-data text-sm font-semibold text-foreground">
+              {telemetry.headingDeg}° <span className="text-[11px] font-normal text-muted-foreground">{compassCardinal(telemetry.headingDeg)}</span>
             </p>
           </div>
 
@@ -123,9 +123,9 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Battery className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Battery</span>
+              <span className="text-[11px] text-muted-foreground">Battery</span>
             </div>
-            <p className={cn('font-mono text-sm font-semibold', batteryColor(telemetry.batteryPercent))}>
+            <p className={cn('font-data text-sm font-semibold', batteryColor(telemetry.batteryPercent))}>
               {telemetry.batteryPercent}%
             </p>
           </div>
@@ -134,9 +134,9 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2">
             <div className="flex items-center gap-1 mb-1">
               <Wifi className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">Signal</span>
+              <span className="text-[11px] text-muted-foreground">Signal</span>
             </div>
-            <p className={cn('font-mono text-sm font-semibold', signalColor(telemetry.signalStrengthPercent))}>
+            <p className={cn('font-data text-sm font-semibold', signalColor(telemetry.signalStrengthPercent))}>
               {telemetry.signalStrengthPercent}%
             </p>
           </div>
@@ -145,10 +145,10 @@ export function TelemetryPanel() {
           <div className="rounded-md border border-border bg-background/50 p-2 sm:col-span-2">
             <div className="flex items-center gap-1 mb-1">
               <Satellite className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">GPS Satellites</span>
+              <span className="text-[11px] text-muted-foreground">GPS satellites</span>
             </div>
-            <p className="font-mono text-sm font-semibold text-foreground">
-              {telemetry.gpsSatellites} <span className="text-[10px] font-normal text-muted-foreground">locked</span>
+            <p className="font-data text-sm font-semibold text-foreground">
+              {telemetry.gpsSatellites} <span className="text-[11px] font-normal text-muted-foreground">locked</span>
             </p>
           </div>
         </div>

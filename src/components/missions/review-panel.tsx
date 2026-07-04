@@ -41,7 +41,7 @@ type FilterTab = 'all' | 'needs-review' | 'deficient' | 'reviewed';
 
 const FILTER_TABS: { value: FilterTab; label: string }[] = [
   { value: 'all', label: 'All' },
-  { value: 'needs-review', label: 'Needs Review' },
+  { value: 'needs-review', label: 'Needs review' },
   { value: 'deficient', label: 'Deficient' },
   { value: 'reviewed', label: 'Reviewed' },
 ];
@@ -183,11 +183,11 @@ export function ReviewPanel({ mission }: ReviewPanelProps) {
     <Card className="border-border bg-surface">
       <CardContent className="pt-4 space-y-4">
         <div>
-          <p className="text-xs font-medium text-foreground mb-1">
-            Checkpoint Review
+          <p className="text-sm font-semibold tracking-tight text-foreground mb-1">
+            Checkpoint review
           </p>
-          <p className="text-[10px] text-muted-foreground">
-            Review AI findings and approve or override before generating report.
+          <p className="text-xs text-muted-foreground">
+            Review analysis findings and approve or override before generating the report.
           </p>
         </div>
 
@@ -207,13 +207,13 @@ export function ReviewPanel({ mission }: ReviewPanelProps) {
               className={cn(
                 'rounded-md px-2.5 py-1 text-[11px] font-medium transition-all',
                 activeTab === tab.value
-                  ? 'bg-amber-500/10 text-amber-400'
+                  ? 'bg-accent text-accent-foreground'
                   : 'text-muted-foreground hover:text-foreground hover:bg-surface-elevated'
               )}
             >
               {tab.label}
               {tab.value === 'needs-review' && (
-                <span className="ml-1 text-[9px] opacity-60">
+                <span className="ml-1 font-data text-[11px] opacity-70">
                   (
                   {
                     enabledWaypoints.filter((wp) => {

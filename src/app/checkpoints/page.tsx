@@ -14,8 +14,8 @@ export default function CheckpointsPage() {
     <PageTransition>
     <div className={cn('flex flex-col gap-6 p-6', isApp && 'gap-3 p-3')}>
       <SectionHeader
-        title="Checkpoint Inspector"
-        description="AI-powered BMP monitoring across 34 control points"
+        title="Checkpoints"
+        description="BMP monitoring across 34 control points"
       />
       <CheckpointFilters />
       <CheckpointGrid />

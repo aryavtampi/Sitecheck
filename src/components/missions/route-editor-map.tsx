@@ -118,7 +118,7 @@ export function RouteEditorMap({
             id="flight-path-line"
             type="line"
             paint={{
-              'line-color': '#3B82F6',
+              'line-color': '#38BDF8',
               'line-width': 2,
               'line-dasharray': [2, 2],
             }}
@@ -154,73 +154,45 @@ export function RouteEditorMap({
                 onMouseEnter={() => setHoveredWp(wp.number)}
                 onMouseLeave={() => setHoveredWp(null)}
               >
-                {/* Selected pulsing ring */}
-                {isSelected && (
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
-                    style={{
-                      width: 28,
-                      height: 28,
-                      backgroundColor: 'rgba(59, 130, 246, 0.3)',
-                    }}
-                  />
-                )}
-
-                {/* Selection ring (static) */}
+                {/* Selection ring — white outline for visibility on imagery */}
                 {isSelected && (
                   <div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
                     style={{
                       width: 26,
                       height: 26,
-                      border: '2px solid #3B82F6',
-                      boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)',
+                      border: '2px solid #FFFFFF',
                     }}
                   />
                 )}
 
                 {/* Block 3 — Airspace violation ring */}
                 {isViolating && (
-                  <>
-                    <div
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping pointer-events-none"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        backgroundColor: 'rgba(239, 68, 68, 0.35)',
-                      }}
-                    />
-                    <div
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
-                      style={{
-                        width: 30,
-                        height: 30,
-                        border: '2px solid #ef4444',
-                        boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)',
-                      }}
-                    />
-                  </>
+                  <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      border: '2px solid #EF4444',
+                    }}
+                  />
                 )}
 
                 {/* Marker circle */}
                 <div
                   className={cn(
-                    'flex items-center justify-center rounded-full border-2 text-[9px] font-bold text-white',
+                    'flex items-center justify-center rounded-full border-2 text-[11px] font-bold text-white',
                     isDisabled
                       ? 'border-dashed border-gray-500'
                       : isViolating
-                        ? 'border-red-300'
+                        ? 'border-[#EF4444]'
                         : 'border-black/40'
                   )}
                   style={{
                     width: 18,
                     height: 18,
                     backgroundColor: isDisabled ? '#6B7280' : color,
-                    boxShadow: isSelected
-                      ? `0 0 10px ${color}80`
-                      : isViolating
-                        ? '0 0 10px rgba(239, 68, 68, 0.8)'
-                        : '0 1px 3px rgba(0,0,0,0.4)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
                   }}
                 >
                   {wp.number}
@@ -228,10 +200,10 @@ export function RouteEditorMap({
 
                 {/* Tooltip on hover */}
                 {isHovered && (
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-[10px] text-white font-medium pointer-events-none z-10">
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap rounded border border-border bg-popover px-2 py-1 text-[11px] text-popover-foreground font-medium shadow-sm pointer-events-none z-10">
                     {checkpoint?.name ?? `Waypoint ${wp.number}`}
                     {isDisabled && ' (disabled)'}
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-black/80" />
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-white" />
                   </div>
                 )}
               </div>
