@@ -2,17 +2,18 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, FileSearch, Brain, Shield, BarChart3, Sparkles, Plane, AlertCircle } from 'lucide-react';
+import { CheckCircle, FileSearch, Brain, Shield, Plane, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import type { ProcessingStep } from '@/stores/swppp-store';
 
 const STEP_CONFIG: Record<string, { label: string; icon: typeof FileSearch; progress: number }> = {
   uploading: { label: 'Uploading SWPPP document...', icon: FileSearch, progress: 10 },
-  extracting: { label: 'Extracting BMP locations with AI...', icon: Brain, progress: 35 },
+  extracting: { label: 'Extracting BMP locations...', icon: Brain, progress: 35 },
   'cross-referencing': { label: 'Cross-referencing CGP requirements...', icon: Shield, progress: 70 },
   'generating-mission': { label: 'Generating drone flight path...', icon: Plane, progress: 85 },
-  complete: { label: 'Analysis Complete', icon: CheckCircle, progress: 100 },
-  error: { label: 'Analysis Error', icon: AlertCircle, progress: 0 },
+  complete: { label: 'Analysis complete', icon: CheckCircle, progress: 100 },
+  error: { label: 'Analysis error', icon: AlertCircle, progress: 0 },
 };
 
 interface ConfidenceIndicatorProps {
@@ -30,32 +31,20 @@ export function ConfidenceIndicator({ processingStep, checkpointCount, error }: 
   const progress = useMemo(() => config.progress, [config.progress]);
 
   return (
-    <Card className="border-0 bg-[#141414] ring-1 ring-white/5">
+    <Card className="border-border bg-surface">
       <CardContent>
         <div className="space-y-4">
           {/* Progress bar */}
-          <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/5">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
             <motion.div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{
-                background: isComplete
-                  ? 'linear-gradient(90deg, #22C55E, #16A34A)'
-                  : isError
-                    ? 'linear-gradient(90deg, #EF4444, #DC2626)'
-                    : 'linear-gradient(90deg, #F59E0B, #D97706)',
-              }}
+              className={cn(
+                'absolute inset-y-0 left-0 rounded-full',
+                isComplete ? 'bg-status-compliant' : isError ? 'bg-status-deficient' : 'bg-primary'
+              )}
               initial={{ width: '0%' }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             />
-            {!isComplete && !isError && (
-              <motion.div
-                className="absolute inset-y-0 left-0 rounded-full bg-white/20"
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{ filter: 'blur(4px)' }}
-              />
-            )}
           </div>
 
           {/* Status text */}
@@ -69,12 +58,12 @@ export function ConfidenceIndicator({ processingStep, checkpointCount, error }: 
                   exit={{ opacity: 0, y: -8 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-status-compliant-bg">
+                    <CheckCircle className="h-5 w-5 text-status-compliant" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-green-500">
-                      Analysis Complete
+                    <p className="text-sm font-medium text-status-compliant">
+                      Analysis complete
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {checkpointCount} BMPs extracted from document
@@ -89,15 +78,15 @@ export function ConfidenceIndicator({ processingStep, checkpointCount, error }: 
                   exit={{ opacity: 0, y: -8 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/10">
-                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-status-deficient-bg">
+                    <AlertCircle className="h-5 w-5 text-status-deficient" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-500">
-                      Analysis Failed
+                    <p className="text-sm font-medium text-status-deficient">
+                      Analysis failed
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {error || 'An error occurred during analysis'}
+                      {error || 'The document could not be analyzed. Try uploading it again.'}
                     </p>
                   </div>
                 </motion.div>
@@ -110,13 +99,8 @@ export function ConfidenceIndicator({ processingStep, checkpointCount, error }: 
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10">
-                    <motion.div
-                      animate={{ rotate: [0, 360] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    >
-                      <StepIcon className="h-5 w-5 text-amber-500" />
-                    </motion.div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent">
+                    <StepIcon className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">
@@ -130,7 +114,7 @@ export function ConfidenceIndicator({ processingStep, checkpointCount, error }: 
               )}
             </AnimatePresence>
 
-            <span className="text-sm tabular-nums text-muted-foreground">
+            <span className="font-data text-sm text-muted-foreground">
               {Math.round(progress)}%
             </span>
           </div>

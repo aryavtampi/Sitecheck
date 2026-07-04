@@ -67,14 +67,14 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
   return (
     <div className="flex h-full flex-col">
       {/* Header bar */}
-      <div className="border-b border-white/5 bg-[#141414] px-3 py-2">
+      <div className="border-b border-border bg-surface px-3 py-2">
         <div className="flex items-center gap-2">
-          <MapPin className="h-3.5 w-3.5 text-amber-500" />
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium text-foreground">
-            {project?.projectType === 'linear' ? 'Corridor Map' : 'Site Map'}
+            {project?.projectType === 'linear' ? 'Corridor map' : 'Site map'}
           </span>
         </div>
-        <p className="mt-0.5 text-[10px] text-muted-foreground">
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
           Click a pin to select a checkpoint
         </p>
       </div>
@@ -116,37 +116,22 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
                       onMouseEnter={onMouseEnter}
                       onMouseLeave={onMouseLeave}
                     >
-                      {/* Pulsing ring for selected */}
-                      {isSelected && (
-                        <div
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
-                          style={{
-                            width: 24,
-                            height: 24,
-                            backgroundColor: color,
-                            opacity: 0.4,
-                          }}
-                        />
-                      )}
-
-                      {/* Marker circle */}
+                      {/* Marker circle — white outline marks selection on imagery */}
                       <div
-                        className="rounded-full border-2 border-black/40"
+                        className={isSelected ? 'rounded-full border-2 border-white' : 'rounded-full border-2 border-black/40'}
                         style={{
                           width: isSelected ? 16 : 10,
                           height: isSelected ? 16 : 10,
                           backgroundColor: color,
                           transition: 'width 150ms, height 150ms',
-                          boxShadow: isSelected
-                            ? `0 0 8px ${color}80`
-                            : '0 1px 3px rgba(0,0,0,0.4)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
                         }}
                       />
 
                       {/* Tooltip for selected */}
                       {isSelected && (
-                        <div className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-[#1C1C1C] px-2 py-1 text-[10px] text-foreground shadow-lg border border-white/10 z-50">
-                          {cp.id}: {cp.name}
+                        <div className="absolute left-1/2 top-full z-50 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-popover px-2 py-1 text-[11px] text-popover-foreground shadow-md">
+                          <span className="font-data">{cp.id}</span>: {cp.name}
                         </div>
                       )}
                     </div>
@@ -173,37 +158,22 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
                       onMouseEnter={onMouseEnter}
                       onMouseLeave={onMouseLeave}
                     >
-                      {/* Pulsing ring for selected */}
-                      {isSelected && (
-                        <div
-                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
-                          style={{
-                            width: 24,
-                            height: 24,
-                            backgroundColor: color,
-                            opacity: 0.4,
-                          }}
-                        />
-                      )}
-
-                      {/* Marker circle */}
+                      {/* Marker circle — white outline marks selection on imagery */}
                       <div
-                        className="rounded-full border-2 border-black/40"
+                        className={isSelected ? 'rounded-full border-2 border-white' : 'rounded-full border-2 border-black/40'}
                         style={{
                           width: isSelected ? 16 : 10,
                           height: isSelected ? 16 : 10,
                           backgroundColor: color,
                           transition: 'width 150ms, height 150ms',
-                          boxShadow: isSelected
-                            ? `0 0 8px ${color}80`
-                            : '0 1px 3px rgba(0,0,0,0.4)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
                         }}
                       />
 
                       {/* Tooltip for selected */}
                       {isSelected && (
-                        <div className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-[#1C1C1C] px-2 py-1 text-[10px] text-foreground shadow-lg border border-white/10 z-50">
-                          {cp.id}: {cp.name}
+                        <div className="absolute left-1/2 top-full z-50 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-popover px-2 py-1 text-[11px] text-popover-foreground shadow-md">
+                          <span className="font-data">{cp.id}</span>: {cp.name}
                         </div>
                       )}
                     </div>
@@ -213,7 +183,7 @@ export function CheckpointMapPanel({ selectedCheckpointId, onSelect, extractedCh
         </Map>
 
         {/* Compass indicator */}
-        <div className="absolute bottom-3 right-3 text-[10px] font-mono text-white/50 pointer-events-none z-10">
+        <div className="pointer-events-none absolute bottom-3 right-3 z-10 rounded border border-border bg-surface/90 px-1.5 py-0.5 font-data text-[11px] text-muted-foreground">
           N ↑
         </div>
       </div>

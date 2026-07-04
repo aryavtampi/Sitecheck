@@ -33,22 +33,22 @@ export const onboardingSteps: OnboardingStepDef[] = [
     id: 'welcome',
     title: 'Welcome to SiteCheck',
     description:
-      'AI-powered construction compliance for drone-assisted inspections. Choose how you want to experience the platform.',
+      'Construction compliance for drone-assisted inspections. Choose how you want to use the platform.',
     icon: Monitor,
-    accentColor: 'text-amber-500',
+    accentColor: 'text-primary',
     interactive: 'view-mode-selector',
     highlights: [
-      'Website mode: Full desktop layout with sidebar navigation',
-      'App mode: Mobile-optimized panel with bottom navigation',
+      'Website mode: full desktop layout with sidebar navigation',
+      'App mode: mobile-optimized panel with bottom navigation',
     ],
   },
   {
     id: 'project-switcher',
-    title: 'Project Switcher',
+    title: 'Project switcher',
     description:
       'Manage multiple construction sites from one dashboard. Click the project name in the top bar to switch between bounded-site and linear pipeline projects.',
     icon: FolderKanban,
-    accentColor: 'text-amber-400',
+    accentColor: 'text-primary',
     highlights: [
       'Bounded-site projects for traditional construction areas',
       'Linear pipeline projects for corridor-based infrastructure',
@@ -57,11 +57,11 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'linear-projects',
-    title: 'Linear Projects',
+    title: 'Linear projects',
     description:
       'Pipelines, transmission lines, and other corridor-based infrastructure get a dedicated experience: centerline visualization, named segments, station-based labeling, and right-of-way (ROW) overlays.',
     icon: Waypoints,
-    accentColor: 'text-emerald-400',
+    accentColor: 'text-primary',
     highlights: [
       'Corridor centerline rendered on every map',
       'Named segments with start/end stations (e.g., STA 0+00 → STA 68+64)',
@@ -71,11 +71,11 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'crossings-permits',
-    title: 'Crossings & Permits',
+    title: 'Crossings and permits',
     description:
       'Track stream, road, utility, railroad, and wetland crossings along your corridor. Monitor permit expiration and stay ahead of regulatory deadlines.',
     icon: ShieldCheck,
-    accentColor: 'text-cyan-400',
+    accentColor: 'text-primary',
     highlights: [
       'Stream HDDs, road bores, utility crossings, rail crossings, and wetland approaches',
       'Per-crossing permit checklists (404, 401, NPDES, encroachment)',
@@ -85,26 +85,26 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'airspace-safety',
-    title: 'Airspace Safety',
+    title: 'Airspace safety',
     description:
       'Every drone mission is checked against your project geofence and any active no-fly zones (airports, schools, critical infrastructure, wildlife areas). SiteCheck refuses to save a mission that flies through restricted airspace.',
     icon: ShieldAlert,
-    accentColor: 'text-red-400',
+    accentColor: 'text-primary',
     highlights: [
       'Operating geofence enforced as a hard boundary on every flight path',
       'Live no-fly zone overlays rendered on every mission map',
       'Wizard panel disables Generate when the planned route violates a zone',
       'Route editor highlights offending waypoints with a red ring as you drag',
-      'No-Fly Zones page (linear projects) for full CRUD on restricted areas',
+      'No-fly zones page (linear projects) for adding, editing, and removing restricted areas',
     ],
   },
   {
     id: 'dashboard',
-    title: 'Command Dashboard',
+    title: 'Dashboard',
     description:
-      'Your real-time command center. View compliance metrics, site or corridor maps, crossings, permits, and activity feeds at a glance.',
+      'View compliance metrics, site or corridor maps, crossings, permits, and activity feeds at a glance.',
     icon: Home,
-    accentColor: 'text-amber-500',
+    accentColor: 'text-primary',
     highlights: [
       'BMP checkpoint counts and compliance rate',
       'Interactive site or corridor overview map with checkpoint and crossing markers',
@@ -114,24 +114,24 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'swppp',
-    title: 'SWPPP Intelligence',
+    title: 'SWPPP',
     description:
-      'Upload your Stormwater Pollution Prevention Plan and let AI extract every BMP checkpoint automatically.',
+      'Upload your Stormwater Pollution Prevention Plan and every BMP checkpoint is extracted automatically.',
     icon: FileText,
-    accentColor: 'text-violet-500',
+    accentColor: 'text-primary',
     highlights: [
       'PDF upload with page-level document viewer',
-      'AI-powered checkpoint extraction with confidence scores',
+      'Automatic checkpoint extraction with confidence scores',
       'Direct mission generation from extracted checkpoints',
     ],
   },
   {
     id: 'missions',
-    title: 'Drone Mission Center',
+    title: 'Drone missions',
     description:
       'Plan, execute, and review drone inspection flights with a guided 3-step wizard. Linear projects automatically generate corridor-following flight paths.',
     icon: Plane,
-    accentColor: 'text-blue-400',
+    accentColor: 'text-primary',
     highlights: [
       'Choose inspection scope: full project, single segment, or station range',
       'AI-generated flight paths with waypoint editing',
@@ -141,26 +141,26 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'mission-replay-ai',
-    title: 'Mission Replay & AI Review',
+    title: 'Mission replay and AI review',
     description:
       'Every flight records a real telemetry track sample-by-sample. After completion, Claude analyzes each captured photo against the CGP, and your QSP accept/override decisions persist across sessions.',
     icon: Sparkles,
-    accentColor: 'text-pink-400',
+    accentColor: 'text-primary',
     highlights: [
       'Animated replay drives off the actual flight track in solid magenta over the dashed planned path',
       'Deviation overlay flags any sample more than 30 ft off the planned route',
       'Claude analyzes every captured photo for CGP compliance with one-click re-analyze',
       'QSP accept/override decisions persist across sessions and refreshes',
-      'Mission auto-completes when the last waypoint is captured (or hit Complete Mission manually)',
+      'Mission auto-completes when the last waypoint is captured (or select Complete mission manually)',
     ],
   },
   {
     id: 'checkpoints',
-    title: 'Checkpoint Inspector',
+    title: 'Checkpoints',
     description:
-      'Filter, browse, and monitor all BMP checkpoints across your project with AI-assisted deficiency analysis.',
+      'Filter, browse, and monitor all BMP checkpoints across your project with automated deficiency analysis.',
     icon: CheckCircle,
-    accentColor: 'text-green-500',
+    accentColor: 'text-primary',
     highlights: [
       'Filter by status, BMP type, zone, or corridor segment',
       'Detailed checkpoint cards with photo evidence',
@@ -169,11 +169,11 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'weather',
-    title: 'Weather & Compliance',
+    title: 'Weather and compliance',
     description:
       'Track weather conditions, precipitation events, and schedule inspections around compliance windows.',
     icon: CloudRain,
-    accentColor: 'text-cyan-400',
+    accentColor: 'text-primary',
     highlights: [
       'Current conditions and 7-day forecast',
       'QPE (Quantitative Precipitation Estimate) tracking',
@@ -182,11 +182,11 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'reports',
-    title: 'Inspection Reports',
+    title: 'Inspection reports',
     description:
       'Generate CGP-compliant inspection reports ready for regulatory submission.',
     icon: FileBarChart,
-    accentColor: 'text-orange-500',
+    accentColor: 'text-primary',
     highlights: [
       'Auto-generated from drone mission data',
       'Editable sections and digital signature blocks',
@@ -195,14 +195,14 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'inspections-workflow',
-    title: 'Inspections & Compliance Workflow',
+    title: 'Inspections and compliance workflow',
     description:
       'Block 5 closes the regulatory loop. Rain events automatically draft post-storm inspections with a 48-hour countdown, every inspection rolls up the AI findings + QSP decisions from Block 4, and a single click renders a CGP-compliant PDF the regulator can read.',
     icon: ClipboardCheck,
-    accentColor: 'text-amber-300',
+    accentColor: 'text-primary',
     highlights: [
       'QPE rain events (≥0.5") auto-create draft inspections with a 48-hour CGP deadline',
-      'Color-tiered banner on the dashboard: emerald → amber → red as the deadline narrows',
+      'Color-tiered banner on the dashboard: green → amber → red as the deadline narrows',
       'Inspection records page lists every draft, in-progress, and submitted inspection',
       'Detail page shows AI findings, QSP decisions, corrective actions, and a real PDF download',
       'Corrective actions track each AI deficiency from open → resolved with proof photos',
@@ -211,11 +211,11 @@ export const onboardingSteps: OnboardingStepDef[] = [
   },
   {
     id: 'ready',
-    title: "You're All Set",
+    title: "You're all set",
     description:
-      'Your SiteCheck workspace is ready. Dive into the dashboard to start managing your project compliance.',
+      'Your SiteCheck workspace is ready. Go to the dashboard to start managing your project compliance.',
     icon: Rocket,
-    accentColor: 'text-amber-500',
+    accentColor: 'text-primary',
     highlights: [],
   },
 ];

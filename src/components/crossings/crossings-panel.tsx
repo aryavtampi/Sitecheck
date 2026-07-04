@@ -7,12 +7,20 @@ import {
   CROSSING_TYPE_LABELS,
   CROSSING_TYPE_ICONS,
   CROSSING_STATUS_LABELS,
-  CROSSING_STATUS_COLORS,
 } from '@/types/crossing';
-import type { Crossing } from '@/types/crossing';
+import type { Crossing, CrossingStatus } from '@/types/crossing';
 import { CrossingForm } from './crossing-form';
 
 const EMPTY_CROSSINGS: Crossing[] = [];
+
+/** Status badge classes on the light theme — status colors reserved for status semantics. */
+const STATUS_BADGE_CLASSES: Record<CrossingStatus, string> = {
+  pending: 'border-border bg-muted text-muted-foreground',
+  approved: 'border-primary/20 bg-accent text-accent-foreground',
+  'in-progress': 'border-status-warning/20 bg-status-warning-bg text-status-warning',
+  completed: 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+  flagged: 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+};
 
 interface CrossingsPanelProps {
   /** When true, render compact list (no header). Useful for embedding inside other panels. */
@@ -63,7 +71,7 @@ export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
       {!compact && (
         <div className="border-b border-border px-4 py-3 flex items-center justify-between">
           <div>
-            <h3 className="font-heading text-sm font-semibold tracking-wide">Crossings</h3>
+            <h3 className="text-sm font-semibold tracking-tight">Crossings</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               {crossings.length} crossing{crossings.length !== 1 ? 's' : ''} along this corridor
             </p>
@@ -74,9 +82,9 @@ export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
               setEditing(null);
               setShowForm(true);
             }}
-            className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300 hover:bg-amber-500/20 transition-colors"
+            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            + Add Crossing
+            Add crossing
           </button>
         </div>
       )}
@@ -97,8 +105,8 @@ export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
           if (segCrossings.length === 0) return null;
           return (
             <div key={seg.id}>
-              <div className="bg-elevated px-4 py-2 sticky top-0 z-10">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="bg-surface-elevated px-4 py-2 sticky top-0 z-10">
+                <p className="text-xs font-medium text-muted-foreground">
                   {seg.name}
                 </p>
               </div>
@@ -118,8 +126,8 @@ export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
 
         {grouped.__unassigned && grouped.__unassigned.length > 0 && (
           <div>
-            <div className="bg-elevated px-4 py-2 sticky top-0 z-10">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <div className="bg-surface-elevated px-4 py-2 sticky top-0 z-10">
+              <p className="text-xs font-medium text-muted-foreground">
                 Unassigned
               </p>
             </div>
@@ -153,19 +161,18 @@ export function CrossingsPanel({ compact = false }: CrossingsPanelProps) {
 }
 
 function CrossingRow({ crossing, onEdit }: { crossing: Crossing; onEdit: () => void }) {
-  const statusColor = CROSSING_STATUS_COLORS[crossing.status];
   return (
     <button
       type="button"
       onClick={onEdit}
-      className="w-full text-left px-4 py-3 hover:bg-elevated/50 transition-colors flex items-start gap-3"
+      className="w-full text-left px-4 py-3 hover:bg-muted transition-colors flex items-start gap-3"
     >
       <span className="text-lg leading-none mt-0.5">{CROSSING_TYPE_ICONS[crossing.crossingType]}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-medium truncate">{crossing.name}</p>
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none border ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-none border ${STATUS_BADGE_CLASSES[crossing.status]}`}
           >
             {CROSSING_STATUS_LABELS[crossing.status]}
           </span>
@@ -175,7 +182,7 @@ function CrossingRow({ crossing, onEdit }: { crossing: Crossing; onEdit: () => v
           {crossing.stationLabel && (
             <>
               <span>·</span>
-              <span className="font-mono">{crossing.stationLabel}</span>
+              <span className="font-data">{crossing.stationLabel}</span>
             </>
           )}
         </div>
@@ -184,7 +191,7 @@ function CrossingRow({ crossing, onEdit }: { crossing: Crossing; onEdit: () => v
             {crossing.permitsRequired.map((p) => (
               <span
                 key={p}
-                className="inline-flex items-center rounded border border-border bg-elevated px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground"
+                className="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground"
               >
                 {p}
               </span>

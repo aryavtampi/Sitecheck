@@ -100,9 +100,9 @@ export default function NoFlyZonesPage() {
       <div className="space-y-6 p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight flex items-center gap-2">
-              <ShieldAlert className="h-6 w-6 text-red-400" />
-              No-Fly Zones
+            <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+              <ShieldAlert className="h-6 w-6 text-muted-foreground" />
+              No-fly zones
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Restricted airspace polygons enforced at mission planning time for the {project.name} corridor.
@@ -111,10 +111,10 @@ export default function NoFlyZonesPage() {
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300 hover:bg-amber-500/20 transition-colors flex items-center gap-1.5"
+            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
-            Add No-Fly Zone
+            Add no-fly zone
           </button>
         </div>
 
@@ -126,12 +126,15 @@ export default function NoFlyZonesPage() {
               <div
                 key={cat}
                 className="rounded-lg border border-border bg-surface p-3"
-                style={{ borderLeft: `3px solid ${color}` }}
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
                   {NOFLY_CATEGORY_LABELS[cat]}
                 </p>
-                <p className="mt-1 text-2xl font-bold" style={{ color }}>
+                <p className="font-data mt-1 text-2xl font-semibold text-foreground">
                   {categoryCounts[cat]}
                 </p>
               </div>
@@ -140,7 +143,7 @@ export default function NoFlyZonesPage() {
         </div>
 
         {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+          <div className="rounded-lg border border-status-deficient/30 bg-status-deficient-bg p-3 text-xs text-status-deficient">
             {error}
           </div>
         )}
@@ -151,8 +154,8 @@ export default function NoFlyZonesPage() {
           </div>
           <div className="rounded-lg border border-border bg-surface overflow-hidden">
             <div className="border-b border-border px-4 py-3">
-              <h3 className="font-heading text-sm font-semibold tracking-wide">
-                Configured Zones
+              <h3 className="text-sm font-semibold tracking-tight">
+                Configured zones
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {zones.length} total · {zones.filter((z) => z.active).length} active
@@ -178,12 +181,12 @@ export default function NoFlyZonesPage() {
                 const color = NOFLY_CATEGORY_COLORS[cat];
                 return (
                   <div key={cat}>
-                    <div className="bg-elevated px-4 py-2 sticky top-0 z-10 flex items-center gap-2">
+                    <div className="bg-surface-elevated px-4 py-2 sticky top-0 z-10 flex items-center gap-2">
                       <span
                         className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: color }}
                       />
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      <p className="text-xs font-medium text-muted-foreground">
                         {NOFLY_CATEGORY_LABELS[cat]}
                       </p>
                     </div>
@@ -246,7 +249,7 @@ function ZoneRow({
             {zone.description}
           </p>
         )}
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground font-mono">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground font-data">
           {typeof zone.floorFeet === 'number' && (
             <span>floor {zone.floorFeet} ft</span>
           )}
@@ -265,8 +268,8 @@ function ZoneRow({
           className={cn(
             'rounded p-1 transition-colors',
             zone.active
-              ? 'text-emerald-400 hover:bg-emerald-500/10'
-              : 'text-muted-foreground hover:bg-elevated'
+              ? 'text-status-compliant hover:bg-status-compliant-bg'
+              : 'text-muted-foreground hover:bg-muted'
           )}
         >
           <Power className="h-3.5 w-3.5" />
@@ -275,7 +278,7 @@ function ZoneRow({
           type="button"
           onClick={onDelete}
           title="Delete zone"
-          className="rounded p-1 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          className="rounded p-1 text-muted-foreground hover:text-status-deficient hover:bg-status-deficient-bg transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -355,15 +358,15 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-lg border border-border bg-[#1C1C1C] p-5 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 shadow-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-heading text-lg font-semibold tracking-wide">
-          Add No-Fly Zone
+        <h2 className="text-lg font-semibold tracking-tight">
+          Add no-fly zone
         </h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Define a restricted polygon. Drone missions touching this zone will be rejected.
@@ -371,7 +374,7 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Name
             </label>
             <input
@@ -380,18 +383,18 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Lincoln Elementary 500 ft buffer"
-              className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as NoFlyZoneCategory)}
-              className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c} value={c}>
@@ -403,7 +406,7 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <label className="text-xs font-medium text-muted-foreground">
                 Floor (ft AGL)
               </label>
               <input
@@ -411,11 +414,11 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
                 value={floorFeet}
                 onChange={(e) => setFloorFeet(e.target.value)}
                 placeholder="0"
-                className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <label className="text-xs font-medium text-muted-foreground">
                 Ceiling (ft AGL)
               </label>
               <input
@@ -423,13 +426,13 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
                 value={ceilingFeet}
                 onChange={(e) => setCeilingFeet(e.target.value)}
                 placeholder="∞"
-                className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Description
             </label>
             <textarea
@@ -437,12 +440,12 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="Why this area is restricted"
-              className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Polygon ([lng, lat] vertices, JSON)
             </label>
             <textarea
@@ -451,15 +454,15 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
               onChange={(e) => setPolygonText(e.target.value)}
               rows={5}
               placeholder='[[-119.78, 36.78], [-119.77, 36.78], [-119.77, 36.79], [-119.78, 36.79]]'
-              className="mt-1 w-full rounded border border-border bg-[#0A0A0A] px-3 py-2 text-xs font-mono focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded border border-input bg-surface px-3 py-2 text-xs font-data focus:border-ring focus:outline-none"
             />
-            <p className="mt-1 text-[10px] text-muted-foreground">
+            <p className="mt-1 text-[11px] text-muted-foreground">
               Minimum 3 vertices. Ring is auto-closed if needed.
             </p>
           </div>
 
           {parseError && (
-            <div className="rounded border border-red-500/30 bg-red-500/10 p-2 text-[11px] text-red-300">
+            <div className="rounded border border-status-deficient/30 bg-status-deficient-bg p-2 text-[11px] text-status-deficient">
               {parseError}
             </div>
           )}
@@ -468,16 +471,16 @@ function NoFlyZoneForm({ projectId, onClose, onCreate }: NoFlyZoneFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-elevated transition-colors"
+              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Creating…' : 'Create Zone'}
+              {submitting ? 'Creating…' : 'Create zone'}
             </button>
           </div>
         </form>

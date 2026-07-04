@@ -1,52 +1,56 @@
 import { BMPCategory } from '@/types/checkpoint';
 
 export const BMP_CATEGORY_LABELS: Record<BMPCategory, string> = {
-  'erosion-control': 'Erosion Control',
-  'sediment-control': 'Sediment Control',
-  'tracking-control': 'Tracking Control',
-  'wind-erosion': 'Wind Erosion',
-  'materials-management': 'Materials Management',
-  'non-storm-water': 'Non-Storm Water',
+  'erosion-control': 'Erosion control',
+  'sediment-control': 'Sediment control',
+  'tracking-control': 'Tracking control',
+  'wind-erosion': 'Wind erosion',
+  'materials-management': 'Materials management',
+  'non-storm-water': 'Non-storm water',
   // Linear infrastructure BMPs
-  'trench-plug': 'Trench Plug',
-  'slope-breaker': 'Slope Breaker',
-  'water-bar': 'Water Bar',
-  'hdd-containment': 'HDD Containment',
-  'stream-crossing-erosion': 'Stream Crossing Erosion',
+  'trench-plug': 'Trench plug',
+  'slope-breaker': 'Slope breaker',
+  'water-bar': 'Water bar',
+  'hdd-containment': 'HDD containment',
+  'stream-crossing-erosion': 'Stream crossing erosion',
 };
 
+// Categorical identity colors for BMP types. Dual-purpose: map marker fills
+// on satellite imagery and text/chip identity colors in lists, so hues are
+// 600/700-weight — dark enough to read on white, saturated enough on imagery.
 export const BMP_CATEGORY_COLORS: Record<BMPCategory, string> = {
-  'erosion-control': '#3B82F6',
-  'sediment-control': '#F59E0B',
-  'tracking-control': '#8B5CF6',
-  'wind-erosion': '#06B6D4',
-  'materials-management': '#EC4899',
-  'non-storm-water': '#10B981',
+  'erosion-control': '#2563EB',
+  'sediment-control': '#A16207',
+  'tracking-control': '#7C3AED',
+  'wind-erosion': '#0E7490',
+  'materials-management': '#BE185D',
+  'non-storm-water': '#047857',
   // Linear infrastructure BMPs
-  'trench-plug': '#EAB308',
-  'slope-breaker': '#14B8A6',
-  'water-bar': '#0EA5E9',
-  'hdd-containment': '#F97316',
-  'stream-crossing-erosion': '#A855F7',
+  'trench-plug': '#92400E',
+  'slope-breaker': '#0F766E',
+  'water-bar': '#0369A1',
+  'hdd-containment': '#C2410C',
+  'stream-crossing-erosion': '#9333EA',
 };
 
+// High-visibility marker fills for satellite imagery (mapbox layer paint).
 export const STATUS_COLORS = {
   compliant: '#22C55E',
   deficient: '#EF4444',
-  'needs-review': '#8B5CF6',
+  'needs-review': '#A78BFA',
 } as const;
 
 export const STATUS_LABELS = {
   compliant: 'Compliant',
   deficient: 'Deficient',
-  'needs-review': 'Needs Review',
+  'needs-review': 'Needs review',
 } as const;
 
 export const INSPECTION_TYPE_LABELS = {
   routine: 'Routine',
-  'pre-storm': 'Pre-Storm',
-  'post-storm': 'Post-Storm',
-  qpe: 'QPE Response',
+  'pre-storm': 'Pre-storm',
+  'post-storm': 'Post-storm',
+  qpe: 'QPE response',
 } as const;
 
 export const WEATHER_ICONS: Record<string, string> = {
@@ -74,46 +78,46 @@ import type {
 } from '@/types/drone';
 
 export const MISSION_SCOPE_LABELS: Record<MissionScope, string> = {
-  full: 'Full Project',
+  full: 'Full project',
   'selected-bmps': 'Selected BMPs',
-  priority: 'Priority Only',
-  deficient: 'Deficient Only',
+  priority: 'Priority only',
+  deficient: 'Deficient only',
   reinspection: 'Reinspection',
-  'ad-hoc': 'Ad Hoc',
-  segment: 'Corridor Segment',
+  'ad-hoc': 'Ad hoc',
+  segment: 'Corridor segment',
 };
 
 export const MISSION_STATUS_LABELS: Record<MissionStatus, string> = {
   planned: 'Planned',
-  'in-progress': 'In Progress',
+  'in-progress': 'In progress',
   paused: 'Paused',
   completed: 'Completed',
   aborted: 'Aborted',
-  'returning-home': 'Returning Home',
+  'returning-home': 'Returning home',
 };
 
 export const MISSION_STATUS_COLORS: Record<MissionStatus, { bg: string; text: string; border: string }> = {
-  planned: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
-  'in-progress': { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
-  paused: { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/20' },
-  completed: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/20' },
-  aborted: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' },
-  'returning-home': { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/20' },
+  planned: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' },
+  'in-progress': { bg: 'bg-accent', text: 'text-accent-foreground', border: 'border-primary/20' },
+  paused: { bg: 'bg-status-warning-bg', text: 'text-status-warning', border: 'border-status-warning/20' },
+  completed: { bg: 'bg-status-compliant-bg', text: 'text-status-compliant', border: 'border-status-compliant/20' },
+  aborted: { bg: 'bg-status-deficient-bg', text: 'text-status-deficient', border: 'border-status-deficient/20' },
+  'returning-home': { bg: 'bg-status-review-bg', text: 'text-status-review', border: 'border-status-review/20' },
 };
 
 export const END_OF_MISSION_LABELS: Record<EndOfMissionAction, string> = {
-  'return-home': 'Return to Home',
-  'hover-final': 'Hover at Final Waypoint',
-  'land-safe-point': 'Land at Safe Point',
-  'wait-for-input': 'Wait for Operator Input',
+  'return-home': 'Return to home',
+  'hover-final': 'Hover at final waypoint',
+  'land-safe-point': 'Land at safe point',
+  'wait-for-input': 'Wait for operator input',
 };
 
 export const CAPTURE_MODE_LABELS: Record<CaptureMode, string> = {
-  auto: 'Auto Capture',
-  'photo-only': 'Photo Only',
-  'video-pass': 'Video Pass',
-  'manual-review': 'Manual Review',
-  'hover-inspect': 'Hover & Inspect',
+  auto: 'Auto capture',
+  'photo-only': 'Photo only',
+  'video-pass': 'Video pass',
+  'manual-review': 'Manual review',
+  'hover-inspect': 'Hover & inspect',
 };
 
 export const WAYPOINT_OUTCOME_LABELS: Record<WaypointOutcome, string> = {
@@ -123,47 +127,47 @@ export const WAYPOINT_OUTCOME_LABELS: Record<WaypointOutcome, string> = {
   skipped: 'Skipped',
   compliant: 'Compliant',
   deficient: 'Deficient',
-  'needs-maintenance': 'Needs Maintenance',
-  'not-visible': 'Not Visible',
+  'needs-maintenance': 'Needs maintenance',
+  'not-visible': 'Not visible',
   blocked: 'Blocked',
   unsafe: 'Unsafe',
-  'ground-follow-up': 'Ground Follow-up',
+  'ground-follow-up': 'Ground follow-up',
 };
 
 export const WAYPOINT_OUTCOME_COLORS: Record<WaypointOutcome, string> = {
-  pending: 'text-gray-400 bg-gray-400/10',
-  captured: 'text-blue-400 bg-blue-400/10',
-  missed: 'text-amber-400 bg-amber-400/10',
-  skipped: 'text-gray-500 bg-gray-500/10',
-  compliant: 'text-green-400 bg-green-400/10',
-  deficient: 'text-red-400 bg-red-400/10',
-  'needs-maintenance': 'text-orange-400 bg-orange-400/10',
-  'not-visible': 'text-purple-400 bg-purple-400/10',
-  blocked: 'text-rose-400 bg-rose-400/10',
-  unsafe: 'text-red-500 bg-red-500/10',
-  'ground-follow-up': 'text-yellow-400 bg-yellow-400/10',
+  pending: 'text-muted-foreground bg-muted',
+  captured: 'text-accent-foreground bg-accent',
+  missed: 'text-status-warning bg-status-warning-bg',
+  skipped: 'text-muted-foreground bg-muted',
+  compliant: 'text-status-compliant bg-status-compliant-bg',
+  deficient: 'text-status-deficient bg-status-deficient-bg',
+  'needs-maintenance': 'text-status-warning bg-status-warning-bg',
+  'not-visible': 'text-status-review bg-status-review-bg',
+  blocked: 'text-status-deficient bg-status-deficient-bg',
+  unsafe: 'text-status-deficient bg-status-deficient-bg',
+  'ground-follow-up': 'text-status-warning bg-status-warning-bg',
 };
 
 // --- Mission Control constants ---
 
 export const MANUAL_OVERRIDE_ACTION_LABELS: Record<ManualOverrideAction, string> = {
   'reposition': 'Reposition',
-  'hover-longer': 'Hover Longer',
-  'retake-photo': 'Retake Photo',
-  'adjust-camera-angle': 'Adjust Camera',
-  'resume-mission': 'Resume Mission',
+  'hover-longer': 'Hover longer',
+  'retake-photo': 'Retake photo',
+  'adjust-camera-angle': 'Adjust camera',
+  'resume-mission': 'Resume mission',
 };
 
 export const REPORT_READINESS_LABELS: Record<ReportReadiness, string> = {
-  'not-ready': 'Not Ready',
-  'partially-reviewed': 'Partially Reviewed',
-  'ready': 'Ready for Report',
+  'not-ready': 'Not ready',
+  'partially-reviewed': 'Partially reviewed',
+  'ready': 'Ready for report',
 };
 
 export const REPORT_READINESS_COLORS: Record<ReportReadiness, { bg: string; text: string; border: string }> = {
-  'not-ready': { bg: 'bg-gray-500/10', text: 'text-gray-400', border: 'border-gray-500/20' },
-  'partially-reviewed': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  'ready': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
+  'not-ready': { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' },
+  'partially-reviewed': { bg: 'bg-status-warning-bg', text: 'text-status-warning', border: 'border-status-warning/20' },
+  'ready': { bg: 'bg-status-compliant-bg', text: 'text-status-compliant', border: 'border-status-compliant/20' },
 };
 
 export const QSP_DECISION_LABELS: Record<QSPReviewDecision, string> = {

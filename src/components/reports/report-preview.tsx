@@ -23,9 +23,9 @@ export function ReportPreview() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[800px]">
-        <div className="rounded-sm border border-black/10 shadow-2xl p-10 text-center" style={{ backgroundColor: '#F5F5F0' }}>
-          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-          <p className="mt-4 text-sm text-neutral-500">Generating report...</p>
+        <div className="rounded-lg border border-border bg-surface p-10 text-center shadow-sm">
+          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Generating report...</p>
         </div>
       </div>
     );
@@ -33,26 +33,23 @@ export function ReportPreview() {
 
   return (
     <div className="mx-auto w-full max-w-[800px]">
-      {/* Paper-on-dark styling */}
-      <div
-        className="rounded-sm border border-black/10 shadow-2xl"
-        style={{ backgroundColor: '#F5F5F0' }}
-      >
-        {/* Report Header */}
-        <div className="border-b border-neutral-300 px-4 py-6 sm:px-10 sm:py-8">
+      {/* Report document */}
+      <div className="rounded-lg border border-border bg-surface shadow-sm">
+        {/* Report header */}
+        <div className="border-b border-border px-4 py-6 sm:px-10 sm:py-8">
           <div className="text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
+            <p className="text-xs font-medium text-muted-foreground">
               California Construction General Permit
             </p>
-            <h1 className="mt-2 text-xl font-bold tracking-wide text-neutral-800">
+            <h1 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
               {reportTitle}
             </h1>
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {projectDisplayName}
             </p>
-            <div className="mx-auto mt-3 h-px w-24 bg-neutral-300" />
-            <p className="mt-2 text-xs text-neutral-400">
-              Report ID: RPT-2026-03-28-001
+            <div className="mx-auto mt-3 h-px w-24 bg-border" />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Report ID: <span className="font-data">RPT-2026-03-28-001</span>
             </p>
           </div>
         </div>
@@ -68,8 +65,8 @@ export function ReportPreview() {
           ))}
         </div>
 
-        {/* Signature Block */}
-        <div className="border-t border-neutral-300 px-4 py-6 sm:px-10 sm:py-8">
+        {/* Signature block */}
+        <div className="border-t border-border px-4 py-6 sm:px-10 sm:py-8">
           <SignatureBlock
             signed={signed}
             signedBy={signedBy}

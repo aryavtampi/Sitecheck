@@ -13,12 +13,12 @@ import type { ProjectType, ProjectSegment, Project } from '@/types/project';
 
 const CorridorDrawMap = dynamic(
   () => import('@/components/projects/corridor-draw-map').then((m) => ({ default: m.CorridorDrawMap })),
-  { ssr: false, loading: () => <div className="h-[450px] animate-pulse rounded-lg bg-elevated" /> }
+  { ssr: false, loading: () => <div className="h-[450px] animate-pulse rounded-lg bg-surface-elevated" /> }
 );
 
 const STEPS = [
   { id: 'type', label: 'Type' },
-  { id: 'basic', label: 'Basic Info' },
+  { id: 'basic', label: 'Basic info' },
   { id: 'corridor', label: 'Corridor' },
   { id: 'segments', label: 'Segments' },
   { id: 'row', label: 'ROW' },
@@ -179,7 +179,7 @@ export default function NewProjectPage() {
   return (
     <div className="mx-auto max-w-4xl p-4 sm:p-6 space-y-6">
       <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">New Project</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">New project</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Set up a new construction project with permits, BMPs, and inspection tracking.
         </p>
@@ -195,10 +195,10 @@ export default function NewProjectPage() {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                   isActive
-                    ? 'bg-amber-500 text-black'
+                    ? 'bg-primary text-primary-foreground'
                     : isComplete
-                      ? 'bg-amber-500/30 text-amber-300'
-                      : 'bg-elevated text-muted-foreground'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {isComplete ? <Check className="h-4 w-4" /> : idx + 1}
@@ -244,7 +244,7 @@ export default function NewProjectPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
               <div className="col-span-2">
@@ -255,16 +255,16 @@ export default function NewProjectPage() {
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">CGP Permit Number</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">CGP permit number</label>
                 <input
                   type="text"
                   value={permitNumber}
                   onChange={(e) => setPermitNumber(e.target.value)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
               <div>
@@ -273,26 +273,26 @@ export default function NewProjectPage() {
                   type="text"
                   value={wdid}
                   onChange={(e) => setWdid(e.target.value)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Risk Level</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Risk level</label>
                 <select
                   value={riskLevel}
                   onChange={(e) => setRiskLevel(Number(e.target.value) as 1 | 2 | 3)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 >
-                  <option value={1}>Risk Level 1</option>
-                  <option value={2}>Risk Level 2</option>
-                  <option value={3}>Risk Level 3</option>
+                  <option value={1}>Risk level 1</option>
+                  <option value={2}>Risk level 2</option>
+                  <option value={3}>Risk level 3</option>
                 </select>
               </div>
             </div>
 
             <div className="border-t border-border pt-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                QSP Information
+              <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                QSP information
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -300,35 +300,35 @@ export default function NewProjectPage() {
                   placeholder="QSP name"
                   value={qspName}
                   onChange={(e) => setQspName(e.target.value)}
-                  className="rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
                 <input
                   type="text"
                   placeholder="License #"
                   value={qspLicense}
                   onChange={(e) => setQspLicense(e.target.value)}
-                  className="rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                  className="rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
                 <input
                   type="text"
                   placeholder="Company"
                   value={qspCompany}
                   onChange={(e) => setQspCompany(e.target.value)}
-                  className="rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
                 <input
                   type="text"
                   placeholder="Phone"
                   value={qspPhone}
                   onChange={(e) => setQspPhone(e.target.value)}
-                  className="rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
                 <input
                   type="text"
                   placeholder="Email"
                   value={qspEmail}
                   onChange={(e) => setQspEmail(e.target.value)}
-                  className="col-span-2 rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                  className="col-span-2 rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
             </div>
@@ -345,18 +345,18 @@ export default function NewProjectPage() {
                 onClick={() => setCorridorTab('draw')}
                 className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
                   corridorTab === 'draw'
-                    ? 'border-amber-500 text-amber-300'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Draw on Map
+                Draw on map
               </button>
               <button
                 type="button"
                 onClick={() => setCorridorTab('upload')}
                 className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
                   corridorTab === 'upload'
-                    ? 'border-amber-500 text-amber-300'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -381,14 +381,14 @@ export default function NewProjectPage() {
                   type="number"
                   value={corridorWidthFeet}
                   onChange={(e) => setCorridorWidthFeet(Number(e.target.value) || 0)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
               </div>
               <div className="flex items-end">
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-mono">{Math.round(corridorLengthFeet).toLocaleString()} ft</span>
+                  <span className="font-data">{Math.round(corridorLengthFeet).toLocaleString()} ft</span>
                   <span className="mx-1">·</span>
-                  <span className="font-mono">{corridorLengthMiles.toFixed(2)} mi</span>
+                  <span className="font-data">{corridorLengthMiles.toFixed(2)} mi</span>
                 </div>
               </div>
             </div>
@@ -408,7 +408,7 @@ export default function NewProjectPage() {
 
         {step?.id === 'row' && (
           <div className="space-y-4">
-            <h2 className="text-base font-semibold">Right-of-Way</h2>
+            <h2 className="text-base font-semibold">Right-of-way</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
@@ -418,7 +418,7 @@ export default function NewProjectPage() {
                   type="number"
                   value={rowWidthFeet}
                   onChange={(e) => setRowWidthFeet(Number(e.target.value) || 0)}
-                  className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                  className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   Auto-derived as parallel offsets from the centerline.
@@ -433,7 +433,7 @@ export default function NewProjectPage() {
                 value={easementDescription}
                 onChange={(e) => setEasementDescription(e.target.value)}
                 rows={3}
-                className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 placeholder="e.g. 100-ft utility easement granted by Madera County (Doc #2018-074521)"
               />
             </div>
@@ -445,14 +445,14 @@ export default function NewProjectPage() {
             <h2 className="text-base font-semibold">Review & submit</h2>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <ReviewItem label="Type" value={projectType === 'linear' ? 'Linear Infrastructure' : 'Bounded Site'} />
+              <ReviewItem label="Type" value={projectType === 'linear' ? 'Linear infrastructure' : 'Bounded site'} />
               <ReviewItem label="Name" value={name || '—'} />
               <ReviewItem label="Address" value={address || '—'} />
               <ReviewItem label="Permit #" value={permitNumber || '—'} mono />
               <ReviewItem label="WDID" value={wdid || '—'} mono />
-              <ReviewItem label="Risk Level" value={`RL-${riskLevel}`} />
+              <ReviewItem label="Risk level" value={`RL-${riskLevel}`} />
               <ReviewItem label="QSP" value={qspName || '—'} />
-              <ReviewItem label="QSP License" value={qspLicense || '—'} mono />
+              <ReviewItem label="QSP license" value={qspLicense || '—'} mono />
 
               {projectType === 'linear' && (
                 <>
@@ -470,7 +470,7 @@ export default function NewProjectPage() {
             </dl>
 
             {error && (
-              <div className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+              <div className="rounded-md border border-status-deficient/20 bg-status-deficient-bg px-3 py-2 text-xs text-status-deficient">
                 {error}
               </div>
             )}
@@ -484,7 +484,7 @@ export default function NewProjectPage() {
           type="button"
           onClick={handleBack}
           disabled={currentStep === 0}
-          className="inline-flex items-center gap-1 rounded-md border border-border bg-elevated px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
         >
           <ChevronLeft className="h-4 w-4" />
           Back
@@ -495,7 +495,7 @@ export default function NewProjectPage() {
             type="button"
             onClick={handleNext}
             disabled={!canProceed()}
-            className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500 px-4 py-2 text-xs font-semibold text-black hover:bg-amber-400 disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
           >
             Next
             <ChevronRight className="h-4 w-4" />
@@ -505,9 +505,9 @@ export default function NewProjectPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting || !name.trim()}
-            className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500 px-4 py-2 text-xs font-semibold text-black hover:bg-amber-400 disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
           >
-            {submitting ? 'Creating…' : 'Create Project'}
+            {submitting ? 'Creating…' : 'Create project'}
           </button>
         )}
       </div>
@@ -517,11 +517,11 @@ export default function NewProjectPage() {
 
 function ReviewItem({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex flex-col rounded border border-border bg-elevated px-3 py-2">
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex flex-col rounded-md border border-border bg-surface-elevated px-3 py-2">
+      <dt className="text-[11px] font-medium text-muted-foreground">
         {label}
       </dt>
-      <dd className={`mt-0.5 text-sm ${mono ? 'font-mono' : ''}`}>{value}</dd>
+      <dd className={`mt-0.5 text-sm text-foreground ${mono ? 'font-data' : ''}`}>{value}</dd>
     </div>
   );
 }

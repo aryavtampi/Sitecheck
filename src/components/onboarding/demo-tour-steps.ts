@@ -36,7 +36,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       "You're inside the real app with a sample construction site pre-loaded. Take this quick tour or close it and explore on your own.",
     targetRoute: '/dashboard',
     icon: Sparkles,
-    accentColor: 'text-amber-500',
+    accentColor: 'text-primary',
     highlights: [
       '34 BMP checkpoints across a 4.2-acre site',
       '3 active deficiencies with live 72-hour countdown timers',
@@ -50,7 +50,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'Drop a Stormwater Pollution Prevention Plan PDF and Claude extracts every BMP, permit, and contact automatically — no more manual data entry.',
     targetRoute: '/swppp',
     icon: FileText,
-    accentColor: 'text-violet-500',
+    accentColor: 'text-primary',
     highlights: [
       'Page-level PDF viewer with confidence scores',
       'AI-extracted BMPs flow straight into mission planning',
@@ -64,7 +64,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'Every Best Management Practice on the site is monitored, geofenced, and tied to a CGP section. Filter by status, zone, or BMP type.',
     targetRoute: '/checkpoints',
     icon: CheckCircle,
-    accentColor: 'text-green-500',
+    accentColor: 'text-primary',
     highlights: [
       'Sediment, erosion, tracking, wind, materials, and non-stormwater BMPs',
       'Status pills surface deficient BMPs in one click',
@@ -78,7 +78,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'Watch a completed inspection flight replay sample-by-sample. The drone hits each waypoint, captures a photo, and Claude analyzes every shot for compliance.',
     targetRoute: '/missions/MISSION-001',
     icon: Plane,
-    accentColor: 'text-blue-400',
+    accentColor: 'text-primary',
     highlights: [
       'Animated flight track over the planned route',
       '34 waypoints captured + AI-reviewed in 42 minutes',
@@ -92,7 +92,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'When the drone catches a problem, Claude writes the finding, cites the CGP section, and starts a 72-hour corrective-action countdown — automatically.',
     targetRoute: '/checkpoints/SC-3',
     icon: ShieldAlert,
-    accentColor: 'text-red-400',
+    accentColor: 'text-primary',
     highlights: [
       'AI rationale with confidence score (88% on this one)',
       'Live countdown to the regulatory deadline',
@@ -106,7 +106,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'A 0.5"+ rain event auto-creates a draft post-storm inspection with a 48-hour CGP deadline. The system schedules the work; you just fly it.',
     targetRoute: '/weather',
     icon: CloudRain,
-    accentColor: 'text-cyan-400',
+    accentColor: 'text-primary',
     highlights: [
       '7-day forecast with QPE rain events highlighted',
       'Auto-drafts a post-storm inspection at the 0.5" threshold',
@@ -120,7 +120,7 @@ export const demoTourSteps: DemoTourStepDef[] = [
       'Every inspection rolls up into a CGP-compliant report — drone evidence, AI findings, QSP decisions, corrective actions, signature block — ready to hand a regulator.',
     targetRoute: '/reports',
     icon: FileBarChart,
-    accentColor: 'text-orange-500',
+    accentColor: 'text-primary',
     highlights: [
       '7-section report auto-populated from mission data',
       'Editable sections + digital signature block',

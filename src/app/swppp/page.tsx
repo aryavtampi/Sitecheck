@@ -73,13 +73,13 @@ export default function SwpppPage() {
     <PageTransition>
       <div className={cn('flex h-full flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
         <SectionHeader
-          title="SWPPP Intelligence"
-          description="Upload your SWPPP document for AI-powered BMP extraction and drone flight path generation"
+          title="SWPPP"
+          description="Upload a SWPPP document to extract BMP locations and generate a drone flight path"
           action={
             !isIdle ? (
               <Button variant="outline" size="sm" onClick={reset}>
                 <RotateCcw className="h-3.5 w-3.5" />
-                Upload New
+                Upload new
               </Button>
             ) : undefined
           }
@@ -154,9 +154,9 @@ export default function SwpppPage() {
                 </TabsContent>
               </Tabs>
             ) : (
-              <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-white/5 bg-white/5 md:grid-cols-2 lg:grid-cols-[1fr_300px_280px]">
+              <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-2 lg:grid-cols-[1fr_300px_280px]">
                 {/* Left: PDF Viewer */}
-                <div className="min-h-[300px] overflow-hidden md:col-span-2 lg:col-span-1">
+                <div className="min-h-[300px] overflow-hidden bg-surface md:col-span-2 lg:col-span-1">
                   <PdfViewerPanel
                     activePage={activePage}
                     onPageChange={setActivePage}
@@ -165,7 +165,7 @@ export default function SwpppPage() {
                 </div>
 
                 {/* Middle: Checkpoint List */}
-                <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
+                <div className="overflow-hidden bg-surface">
                   <CheckpointListPanel
                     selectedCheckpointId={selectedCheckpointId}
                     onSelect={handleSelectCheckpoint}
@@ -174,7 +174,7 @@ export default function SwpppPage() {
                 </div>
 
                 {/* Right: Map */}
-                <div className="overflow-hidden border-t border-white/5 md:border-t-0 md:border-l">
+                <div className="overflow-hidden bg-surface">
                   <CheckpointMapPanel
                     selectedCheckpointId={selectedCheckpointId}
                     onSelect={handleSelectCheckpoint}
@@ -201,7 +201,7 @@ export default function SwpppPage() {
           <div className="flex justify-center pt-4">
             <Button variant="outline" onClick={reset}>
               <RotateCcw className="h-4 w-4" />
-              Try Again
+              Try again
             </Button>
           </div>
         )}

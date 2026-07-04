@@ -62,7 +62,7 @@ export function ExportControls() {
         onClick={handleGeneratePDF}
         disabled={!signed || isGenerating}
         className={cn(
-          'bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 gap-2',
+          'bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 gap-2',
           isApp && 'w-full'
         )}
       >
@@ -82,8 +82,8 @@ export function ExportControls() {
         >
           <FileSpreadsheet className="size-4" />
           Export for SMARTS
-          <Badge className="bg-muted text-muted-foreground text-[9px] px-1.5 py-0 border-0">
-            Coming Soon
+          <Badge className="bg-muted text-muted-foreground text-[11px] px-1.5 py-0 border-0">
+            Coming soon
           </Badge>
         </Button>
       )}
@@ -95,7 +95,7 @@ export function ExportControls() {
       )}
 
       {error && (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-status-deficient">{error}</p>
       )}
     </div>
   );

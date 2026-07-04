@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   headerBand: {
-    backgroundColor: '#0f172a',
-    color: '#f8fafc',
+    backgroundColor: '#20614E',
+    color: '#FFFFFF',
     paddingVertical: 14,
     paddingHorizontal: 16,
     marginBottom: 18,
@@ -84,12 +84,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: 'Helvetica-Bold',
-    color: '#fbbf24',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 9,
-    color: '#cbd5e1',
+    color: '#D5E3DD',
   },
   metaRow: {
     flexDirection: 'row',
@@ -118,9 +118,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitleBar: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#EDF2F0',
     borderLeftWidth: 3,
-    borderLeftColor: '#f59e0b',
+    borderLeftColor: '#20614E',
     paddingHorizontal: 8,
     paddingVertical: 5,
     marginBottom: 6,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
-    color: '#92400e',
+    color: '#20614E',
   },
   sectionBody: {
     paddingHorizontal: 4,

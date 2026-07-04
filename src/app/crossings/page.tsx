@@ -7,13 +7,19 @@ import { CrossingsPanel } from '@/components/crossings/crossings-panel';
 import { useProjectStore } from '@/stores/project-store';
 import { useCrossingsStore } from '@/stores/crossings-store';
 import { PageTransition } from '@/components/shared/page-transition';
-import {
-  CROSSING_STATUS_LABELS,
-  CROSSING_STATUS_COLORS,
-} from '@/types/crossing';
+import { CROSSING_STATUS_LABELS } from '@/types/crossing';
 import type { Crossing, CrossingStatus } from '@/types/crossing';
 
 const EMPTY_CROSSINGS: Crossing[] = [];
+
+/** Value color per status — status colors reserved for status semantics; neutral otherwise. */
+const STATUS_VALUE_CLASSES: Record<CrossingStatus, string> = {
+  pending: 'text-foreground',
+  approved: 'text-foreground',
+  'in-progress': 'text-status-warning',
+  completed: 'text-status-compliant',
+  flagged: 'text-status-deficient',
+};
 
 const SiteOverviewMap = dynamic(
   () =>
@@ -65,7 +71,7 @@ export default function CrossingsPage() {
     <PageTransition>
       <div className="space-y-6 p-4 sm:p-6">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Crossings</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Crossings</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Stream, road, utility, and railroad crossings along the {project.name} corridor.
           </p>
@@ -74,16 +80,15 @@ export default function CrossingsPage() {
         {/* Status summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {(Object.keys(statusCounts) as CrossingStatus[]).map((s) => {
-            const colors = CROSSING_STATUS_COLORS[s];
             return (
               <div
                 key={s}
-                className={`rounded-lg border ${colors.border} ${colors.bg} p-3`}
+                className="rounded-lg border border-border bg-surface p-3"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {CROSSING_STATUS_LABELS[s]}
                 </p>
-                <p className={`mt-1 text-2xl font-bold ${colors.text}`}>
+                <p className={`font-data mt-1 text-2xl font-semibold ${STATUS_VALUE_CLASSES[s]}`}>
                   {statusCounts[s]}
                 </p>
               </div>

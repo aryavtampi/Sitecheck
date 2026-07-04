@@ -3,11 +3,20 @@
 import { useEffect } from 'react';
 import { useProjectStore } from '@/stores/project-store';
 import { usePermitsStore } from '@/stores/permits-store';
-import { PERMIT_STATUS_LABELS, PERMIT_STATUS_COLORS } from '@/types/permit';
+import { PERMIT_STATUS_LABELS } from '@/types/permit';
 import type { PermitStatus, SegmentPermit } from '@/types/permit';
 import { formatDate } from '@/lib/format';
 
 const EMPTY_PERMITS: SegmentPermit[] = [];
+
+/** Status badge classes on the light theme — status colors reserved for status semantics. */
+const STATUS_BADGE_CLASSES: Record<PermitStatus, string> = {
+  active: 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+  expiring: 'border-status-warning/20 bg-status-warning-bg text-status-warning',
+  expired: 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+  pending: 'border-border bg-muted text-muted-foreground',
+  revoked: 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+};
 
 interface PermitStatusPanelProps {
   /** Optional project id override (defaults to current project) */
@@ -51,7 +60,7 @@ export function PermitStatusPanel({ projectId: projectIdOverride }: PermitStatus
   return (
     <div className="rounded-lg border border-border bg-surface overflow-hidden">
       <div className="border-b border-border px-4 py-3">
-        <h3 className="font-heading text-sm font-semibold tracking-wide">Permits</h3>
+        <h3 className="text-sm font-semibold tracking-tight">Permits</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
           {permits.length} permit{permits.length !== 1 ? 's' : ''} tracked
         </p>
@@ -67,20 +76,19 @@ export function PermitStatusPanel({ projectId: projectIdOverride }: PermitStatus
           </div>
         )}
         {sorted.map((permit) => {
-          const colors = PERMIT_STATUS_COLORS[permit.status];
           return (
             <div key={permit.id} className="px-4 py-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold truncate">{permit.permitType}</p>
                   {permit.permitNumber && (
-                    <p className="font-mono text-[11px] text-muted-foreground truncate">
+                    <p className="font-data text-[11px] text-muted-foreground truncate">
                       {permit.permitNumber}
                     </p>
                   )}
                 </div>
                 <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none border ${colors.bg} ${colors.text} ${colors.border} shrink-0`}
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-none border ${STATUS_BADGE_CLASSES[permit.status]} shrink-0`}
                 >
                   {PERMIT_STATUS_LABELS[permit.status]}
                 </span>
@@ -89,7 +97,7 @@ export function PermitStatusPanel({ projectId: projectIdOverride }: PermitStatus
                 <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
                   {permit.agency && <span className="truncate">{permit.agency}</span>}
                   {permit.expirationDate && (
-                    <span className="font-mono shrink-0 ml-2">
+                    <span className="font-data shrink-0 ml-2">
                       Exp: {formatDate(permit.expirationDate)}
                     </span>
                   )}

@@ -58,7 +58,7 @@ export default function SignupPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="w-full max-w-sm space-y-4 rounded-lg border border-border bg-card p-8 text-center">
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Check your email
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -81,11 +81,11 @@ export default function SignupPage() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex w-full max-w-sm flex-col items-center gap-5 text-center">
           <div className="relative">
-            <div className="h-14 w-14 animate-spin rounded-full border-2 border-amber-500/20 border-t-amber-500" />
-            <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-amber-400" />
+            <div className="h-14 w-14 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+            <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-primary" />
           </div>
           <div className="space-y-1">
-            <h2 className="font-heading text-lg font-bold tracking-wide text-amber-400">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               Starting demo session
             </h2>
             <p className="text-xs text-muted-foreground">
@@ -105,17 +105,17 @@ export default function SignupPage() {
           type="button"
           onClick={handleStartDemo}
           disabled={demoLoading}
-          className="group flex w-full items-center gap-4 rounded-xl border-2 border-amber-500/50 bg-gradient-to-r from-amber-500/15 to-amber-500/5 p-5 text-left transition-all hover:border-amber-500 hover:from-amber-500/25 hover:to-amber-500/10 hover:shadow-lg hover:shadow-amber-500/10 disabled:opacity-50"
+          className="group flex w-full items-center gap-4 rounded-xl border border-primary/30 bg-accent/60 p-5 text-left transition-colors hover:border-primary hover:bg-accent disabled:opacity-50"
         >
-          <div className="shrink-0 rounded-lg border border-amber-500/40 bg-amber-500/15 p-3 transition-colors group-hover:bg-amber-500/25">
-            <Sparkles className="h-6 w-6 text-amber-400" />
+          <div className="shrink-0 rounded-lg border border-primary/20 bg-surface p-3 transition-colors group-hover:border-primary/30">
+            <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-heading text-base font-bold tracking-wide text-amber-400">
-                {demoLoading ? 'Starting demo...' : 'Try Live Demo'}
+              <span className="text-base font-semibold tracking-tight text-primary">
+                {demoLoading ? 'Starting demo...' : 'Try the live demo'}
               </span>
-              <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-accent-foreground">
                 No signup
               </span>
             </div>
@@ -127,7 +127,7 @@ export default function SignupPage() {
 
         <div className="space-y-6 rounded-lg border border-border bg-card p-8">
           <div className="space-y-2 text-center">
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               SiteCheck
             </h1>
             <p className="text-sm text-muted-foreground">

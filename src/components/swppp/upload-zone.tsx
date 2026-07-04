@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Upload, FileText, X, AlertCircle, Sparkles } from 'lucide-react';
+import { Upload, FileText, X, FileSearch } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSwpppStore } from '@/stores/swppp-store';
@@ -100,7 +100,7 @@ export function UploadZone() {
   };
 
   return (
-    <Card className="border-0 bg-[#141414] ring-1 ring-white/5">
+    <Card className="border-border bg-surface">
       <CardContent className="p-6">
         <input
           ref={inputRef}
@@ -120,33 +120,33 @@ export function UploadZone() {
             className={cn(
               'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 transition-all',
               isDragOver
-                ? 'border-amber-500 bg-amber-500/5'
-                : 'border-white/10 hover:border-white/20 hover:bg-white/[0.02]'
+                ? 'border-primary bg-accent/50'
+                : 'border-input hover:border-primary/40 hover:bg-muted/50'
             )}
           >
             <div className={cn(
               'flex h-14 w-14 items-center justify-center rounded-full transition-colors',
-              isDragOver ? 'bg-amber-500/10' : 'bg-white/5'
+              isDragOver ? 'bg-accent' : 'bg-muted'
             )}>
-              <Upload className={cn('h-7 w-7', isDragOver ? 'text-amber-500' : 'text-muted-foreground')} />
+              <Upload className={cn('h-7 w-7', isDragOver ? 'text-primary' : 'text-muted-foreground')} />
             </div>
             <p className="mt-4 text-sm font-medium text-foreground">
               {isDragOver ? 'Release to upload' : 'Drop your SWPPP PDF here'}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              or click to browse • PDF up to 20MB
+              or click to browse • PDF up to 20 MB
             </p>
           </div>
         ) : (
           /* File selected */
           <div className="space-y-4">
-            <div className="flex items-center gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <FileText className="h-5 w-5 text-amber-500" />
+            <div className="flex items-center gap-4 rounded-lg border border-border bg-muted/50 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
+                <FileText className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                <p className="font-data text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
               </div>
               <Button variant="ghost" size="icon-sm" onClick={handleRemoveFile} disabled={isAnalyzing}>
                 <X className="h-4 w-4" />
@@ -157,8 +157,8 @@ export function UploadZone() {
               onClick={handleAnalyze}
               disabled={isAnalyzing}
             >
-              <Sparkles className="h-4 w-4" />
-              {isAnalyzing ? 'Analyzing...' : 'Analyze Document with AI'}
+              <FileSearch className="h-4 w-4" />
+              {isAnalyzing ? 'Analyzing...' : 'Analyze document'}
             </Button>
           </div>
         )}

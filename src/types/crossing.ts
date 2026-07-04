@@ -69,7 +69,7 @@ export const CROSSING_TYPE_ICONS: Record<CrossingType, string> = {
 export const CROSSING_STATUS_LABELS: Record<CrossingStatus, string> = {
   pending: 'Pending',
   approved: 'Approved',
-  'in-progress': 'In Progress',
+  'in-progress': 'In progress',
   completed: 'Completed',
   flagged: 'Flagged',
 };
@@ -79,28 +79,28 @@ export const CROSSING_STATUS_COLORS: Record<
   { bg: string; text: string; border: string }
 > = {
   pending: {
-    bg: 'bg-gray-500/10',
-    text: 'text-gray-300',
-    border: 'border-gray-500/30',
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    border: 'border-border',
   },
   approved: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-300',
-    border: 'border-blue-500/30',
+    bg: 'bg-accent',
+    text: 'text-accent-foreground',
+    border: 'border-primary/20',
   },
   'in-progress': {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-300',
-    border: 'border-amber-500/30',
+    bg: 'bg-status-warning-bg',
+    text: 'text-status-warning',
+    border: 'border-status-warning/20',
   },
   completed: {
-    bg: 'bg-green-500/10',
-    text: 'text-green-300',
-    border: 'border-green-500/30',
+    bg: 'bg-status-compliant-bg',
+    text: 'text-status-compliant',
+    border: 'border-status-compliant/20',
   },
   flagged: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-300',
-    border: 'border-red-500/30',
+    bg: 'bg-status-deficient-bg',
+    text: 'text-status-deficient',
+    border: 'border-status-deficient/20',
   },
 };

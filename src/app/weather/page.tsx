@@ -17,8 +17,8 @@ export default function WeatherPage() {
     <PageTransition>
     <div className={cn('flex flex-col gap-4 p-4', isApp && 'gap-3 p-3')}>
       <SectionHeader
-        title="Weather & Compliance Monitor"
-        description="Real-time weather tracking, QPE monitoring, and inspection scheduling"
+        title="Weather"
+        description="Forecast, qualifying precipitation events, and inspection scheduling"
       />
 
       {isApp ? (

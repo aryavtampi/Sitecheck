@@ -18,8 +18,8 @@ export default function ReportsPage() {
         isApp ? 'flex-col gap-2' : 'sm:flex-row sm:items-center sm:justify-between'
       )}>
         <SectionHeader
-          title="Report Generator"
-          description="CGP-compliant inspection report with AI-generated content"
+          title="Reports"
+          description="Review, edit, and certify the CGP inspection report"
         />
         <ExportControls />
       </div>

@@ -59,11 +59,11 @@ export const PERMIT_STATUS_COLORS: Record<
   PermitStatus,
   { bg: string; text: string; border: string }
 > = {
-  active: { bg: 'bg-green-500/10', text: 'text-green-300', border: 'border-green-500/30' },
-  expiring: { bg: 'bg-amber-500/10', text: 'text-amber-300', border: 'border-amber-500/30' },
-  expired: { bg: 'bg-red-500/10', text: 'text-red-300', border: 'border-red-500/30' },
-  pending: { bg: 'bg-gray-500/10', text: 'text-gray-300', border: 'border-gray-500/30' },
-  revoked: { bg: 'bg-rose-500/10', text: 'text-rose-300', border: 'border-rose-500/30' },
+  active: { bg: 'bg-status-compliant-bg', text: 'text-status-compliant', border: 'border-status-compliant/20' },
+  expiring: { bg: 'bg-status-warning-bg', text: 'text-status-warning', border: 'border-status-warning/20' },
+  expired: { bg: 'bg-status-deficient-bg', text: 'text-status-deficient', border: 'border-status-deficient/20' },
+  pending: { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' },
+  revoked: { bg: 'bg-status-deficient-bg', text: 'text-status-deficient', border: 'border-status-deficient/20' },
 };
 
 /**

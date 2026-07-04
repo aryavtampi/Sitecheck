@@ -10,25 +10,11 @@ import { demoTourSteps } from './demo-tour-steps';
 import { cn } from '@/lib/utils';
 
 const accentToBg: Record<string, string> = {
-  'text-amber-500': 'bg-amber-500/10 border-amber-500/30',
-  'text-amber-400': 'bg-amber-400/10 border-amber-400/30',
-  'text-violet-500': 'bg-violet-500/10 border-violet-500/30',
-  'text-blue-400': 'bg-blue-400/10 border-blue-400/30',
-  'text-green-500': 'bg-green-500/10 border-green-500/30',
-  'text-cyan-400': 'bg-cyan-400/10 border-cyan-400/30',
-  'text-orange-500': 'bg-orange-500/10 border-orange-500/30',
-  'text-red-400': 'bg-red-400/10 border-red-400/30',
+  'text-primary': 'bg-accent border-primary/20',
 };
 
 const accentToDot: Record<string, string> = {
-  'text-amber-500': 'bg-amber-500',
-  'text-amber-400': 'bg-amber-400',
-  'text-violet-500': 'bg-violet-500',
-  'text-blue-400': 'bg-blue-400',
-  'text-green-500': 'bg-green-500',
-  'text-cyan-400': 'bg-cyan-400',
-  'text-orange-500': 'bg-orange-500',
-  'text-red-400': 'bg-red-400',
+  'text-primary': 'bg-primary',
 };
 
 /**
@@ -96,7 +82,7 @@ export function DemoTourOverlay() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             onClick={() => setCollapsed(false)}
-            className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-500/40 bg-[#0A0A0A]/95 px-4 py-2 text-xs font-medium text-amber-400 shadow-xl backdrop-blur-md transition-colors hover:bg-amber-500/10"
+            className="pointer-events-auto flex items-center gap-2 rounded-full border border-primary/30 bg-popover px-4 py-2 text-xs font-medium text-primary shadow-lg transition-colors hover:bg-accent"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Resume tour ({currentStep + 1}/{demoTourSteps.length})
@@ -111,7 +97,7 @@ export function DemoTourOverlay() {
             role="dialog"
             aria-label="SiteCheck demo tour"
             className={cn(
-              'pointer-events-auto w-full max-w-[420px] rounded-xl border border-border bg-[#0A0A0A]/95 shadow-2xl backdrop-blur-md',
+              'pointer-events-auto w-full max-w-[420px] rounded-xl border border-border bg-popover shadow-lg',
               'flex flex-col overflow-hidden'
             )}
           >
@@ -120,25 +106,25 @@ export function DemoTourOverlay() {
               <div
                 className={cn(
                   'shrink-0 rounded-lg border p-2',
-                  accentToBg[step.accentColor] ?? accentToBg['text-amber-500']
+                  accentToBg[step.accentColor] ?? accentToBg['text-primary']
                 )}
               >
                 <Icon className={cn('h-5 w-5', step.accentColor)} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-amber-400">
+                  <span className="text-xs font-medium text-muted-foreground">
                     Demo · Step {currentStep + 1} of {demoTourSteps.length}
                   </span>
                 </div>
-                <h3 className="mt-1 font-heading text-base font-semibold tracking-wide text-foreground">
+                <h3 className="mt-1 text-base font-semibold tracking-tight text-foreground">
                   {step.title}
                 </h3>
               </div>
               <button
                 onClick={() => setCollapsed(true)}
                 aria-label="Collapse tour panel"
-                className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -167,7 +153,7 @@ export function DemoTourOverlay() {
                         <div
                           className={cn(
                             'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full',
-                            accentToDot[step.accentColor] ?? 'bg-amber-500'
+                            accentToDot[step.accentColor] ?? 'bg-primary'
                           )}
                         />
                         <span>{h}</span>
@@ -188,9 +174,9 @@ export function DemoTourOverlay() {
                   className={cn(
                     'h-1.5 rounded-full transition-all duration-300',
                     i === currentStep
-                      ? 'w-5 bg-amber-500'
+                      ? 'w-5 bg-primary'
                       : i < currentStep
-                        ? 'w-1.5 bg-amber-500/40'
+                        ? 'w-1.5 bg-primary/40'
                         : 'w-1.5 bg-border'
                   )}
                 />
@@ -198,7 +184,7 @@ export function DemoTourOverlay() {
             </div>
 
             {/* Footer / nav */}
-            <div className="flex items-center justify-between border-t border-border bg-surface/40 px-4 py-3">
+            <div className="flex items-center justify-between border-t border-border bg-muted/50 px-4 py-3">
               <button
                 onClick={endTour}
                 className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -219,7 +205,7 @@ export function DemoTourOverlay() {
                 </button>
                 <button
                   onClick={handleNext}
-                  className="flex items-center gap-1 rounded-md bg-amber-500 px-4 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-amber-400"
+                  className="flex items-center gap-1 rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {isLast ? 'Finish' : 'Next'}
                   {!isLast && <ChevronRight className="h-3.5 w-3.5" />}

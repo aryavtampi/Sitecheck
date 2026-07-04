@@ -2,7 +2,7 @@
 
 export default function CheckpointsLoading() {
   return (
-    <div className="flex flex-col gap-6 p-6 animate-in fade-in duration-300">
+    <div className="flex animate-pulse flex-col gap-6 p-6">
       {/* Header skeleton */}
       <div className="space-y-2">
         <div className="h-8 w-56 rounded-md bg-muted" />

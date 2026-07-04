@@ -121,8 +121,8 @@ export function GeoJsonUpload({ onCenterlineLoaded }: GeoJsonUploadProps) {
         onClick={() => inputRef.current?.click()}
         className={`relative cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
           dragOver
-            ? 'border-amber-500/60 bg-amber-500/5'
-            : 'border-border hover:border-amber-500/40 hover:bg-elevated/50'
+            ? 'border-primary/60 bg-accent'
+            : 'border-border hover:border-primary/30 hover:bg-muted'
         }`}
       >
         <input
@@ -143,9 +143,9 @@ export function GeoJsonUpload({ onCenterlineLoaded }: GeoJsonUploadProps) {
       </div>
 
       {filename && (
-        <div className="flex items-center justify-between rounded-md border border-border bg-elevated px-3 py-2">
+        <div className="flex items-center justify-between rounded-md border border-border bg-surface-elevated px-3 py-2">
           <div className="flex items-center gap-2 min-w-0">
-            <FileText className="h-4 w-4 text-amber-400 shrink-0" />
+            <FileText className="h-4 w-4 text-primary shrink-0" />
             <div className="min-w-0">
               <p className="text-xs font-medium truncate">{filename}</p>
               {vertexCount != null && (
@@ -166,7 +166,7 @@ export function GeoJsonUpload({ onCenterlineLoaded }: GeoJsonUploadProps) {
       )}
 
       {error && (
-        <div className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        <div className="rounded-md border border-status-deficient/20 bg-status-deficient-bg px-3 py-2 text-xs text-status-deficient">
           {error}
         </div>
       )}

@@ -62,14 +62,14 @@ export function SegmentBuilder({ segments, onChange, totalLength }: SegmentBuild
           <button
             type="button"
             onClick={() => autoSplit(2)}
-            className="rounded border border-border bg-elevated px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
             Auto split: 2
           </button>
           <button
             type="button"
             onClick={() => autoSplit(4)}
-            className="rounded border border-border bg-elevated px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+            className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
             Auto split: 4
           </button>
@@ -80,14 +80,14 @@ export function SegmentBuilder({ segments, onChange, totalLength }: SegmentBuild
         {segments.map((seg, idx) => (
           <div
             key={seg.id}
-            className="grid grid-cols-12 gap-2 rounded-md border border-border bg-elevated p-2"
+            className="grid grid-cols-12 gap-2 rounded-md border border-border bg-surface-elevated p-2"
           >
             <input
               type="text"
               value={seg.name}
               onChange={(e) => updateSegment(idx, { name: e.target.value })}
               placeholder="Segment name"
-              className="col-span-5 rounded border border-border bg-surface px-2 py-1.5 text-xs focus:border-amber-500/50 focus:outline-none"
+              className="col-span-5 rounded-md border border-input bg-surface px-2 py-1.5 text-xs focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
             />
             <div className="col-span-3">
               <input
@@ -96,9 +96,9 @@ export function SegmentBuilder({ segments, onChange, totalLength }: SegmentBuild
                 onChange={(e) =>
                   updateSegment(idx, { startStation: Number(e.target.value) || 0 })
                 }
-                className="w-full rounded border border-border bg-surface px-2 py-1.5 text-xs font-mono focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-2 py-1.5 text-xs font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
               />
-              <p className="mt-0.5 text-[9px] text-muted-foreground font-mono">
+              <p className="mt-0.5 text-[11px] text-muted-foreground font-data">
                 {formatStation(seg.startStation)}
               </p>
             </div>
@@ -109,16 +109,16 @@ export function SegmentBuilder({ segments, onChange, totalLength }: SegmentBuild
                 onChange={(e) =>
                   updateSegment(idx, { endStation: Number(e.target.value) || 0 })
                 }
-                className="w-full rounded border border-border bg-surface px-2 py-1.5 text-xs font-mono focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-2 py-1.5 text-xs font-data focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
               />
-              <p className="mt-0.5 text-[9px] text-muted-foreground font-mono">
+              <p className="mt-0.5 text-[11px] text-muted-foreground font-data">
                 {formatStation(seg.endStation)}
               </p>
             </div>
             <button
               type="button"
               onClick={() => removeSegment(idx)}
-              className="col-span-1 flex items-center justify-center rounded border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+              className="col-span-1 flex items-center justify-center rounded-md border border-status-deficient/20 bg-status-deficient-bg text-status-deficient hover:border-status-deficient/40"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -129,10 +129,10 @@ export function SegmentBuilder({ segments, onChange, totalLength }: SegmentBuild
       <button
         type="button"
         onClick={addSegment}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-elevated/50 px-3 py-2 text-xs text-muted-foreground hover:border-amber-500/40 hover:text-amber-300 transition-colors"
+        className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-input bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
       >
         <Plus className="h-3.5 w-3.5" />
-        Add Segment
+        Add segment
       </button>
     </div>
   );

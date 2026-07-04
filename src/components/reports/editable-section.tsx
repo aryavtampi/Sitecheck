@@ -45,18 +45,18 @@ export function EditableSection({ section, onSave }: EditableSectionProps) {
 
   return (
     <div className="group/section mb-6">
-      {/* Section Header */}
+      {/* Section header */}
       <div className="mb-2 flex items-center gap-2">
-        <h3 className="font-heading text-sm font-bold tracking-wide text-zinc-800">
+        <h3 className="text-sm font-semibold tracking-tight text-foreground">
           {section.number}. {section.title}
         </h3>
         {section.edited && (
-          <Badge className="bg-amber-500/15 text-amber-700 text-[10px] px-1.5 py-0 h-4 border-amber-500/30">
+          <Badge className="bg-accent text-accent-foreground text-[11px] px-1.5 py-0 h-4 border-primary/20">
             Edited
           </Badge>
         )}
         {!section.editable && (
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-zinc-200 text-zinc-500 gap-1">
+          <Badge variant="secondary" className="text-[11px] px-1.5 py-0 h-4 bg-muted text-muted-foreground gap-1">
             <Lock className="size-2.5" />
             Protected
           </Badge>
@@ -70,14 +70,14 @@ export function EditableSection({ section, onSave }: EditableSectionProps) {
             ref={textareaRef}
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            className="min-h-[200px] border-amber-500/50 bg-white text-zinc-800 text-[13px] leading-relaxed font-mono focus-visible:border-amber-500 focus-visible:ring-amber-500/30"
+            className="min-h-[200px] border-input bg-surface text-foreground text-[13px] leading-relaxed font-mono focus-visible:border-ring focus-visible:ring-ring/30"
             rows={12}
           />
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               onClick={handleSave}
-              className="bg-amber-500 text-white hover:bg-amber-600 h-7 text-xs gap-1"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-7 text-xs gap-1"
             >
               <Check className="size-3" />
               Save
@@ -86,7 +86,7 @@ export function EditableSection({ section, onSave }: EditableSectionProps) {
               size="sm"
               variant="outline"
               onClick={handleCancel}
-              className="h-7 text-xs gap-1 border-zinc-300 text-zinc-600 hover:bg-zinc-100"
+              className="h-7 text-xs gap-1 border-input text-muted-foreground hover:bg-muted"
             >
               <X className="size-3" />
               Cancel
@@ -96,17 +96,17 @@ export function EditableSection({ section, onSave }: EditableSectionProps) {
       ) : (
         <div
           onClick={handleEdit}
-          className={`relative rounded-md px-3 py-2 text-[13px] leading-relaxed text-zinc-700 whitespace-pre-wrap ${
+          className={`relative rounded-md px-3 py-2 text-[13px] leading-relaxed text-foreground whitespace-pre-wrap ${
             section.editable
-              ? 'cursor-pointer transition-colors hover:bg-amber-50/50 group-hover/section:ring-1 group-hover/section:ring-amber-500/20'
+              ? 'cursor-pointer transition-colors hover:bg-muted group-hover/section:ring-1 group-hover/section:ring-primary/20'
               : 'opacity-80'
           }`}
         >
           {section.content}
 
-          {/* Edit Indicator */}
+          {/* Edit indicator */}
           {section.editable && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-600 opacity-0 transition-opacity group-hover/section:opacity-100">
+            <div className="absolute top-2 right-2 flex items-center gap-1 rounded bg-accent px-1.5 py-0.5 text-[11px] text-accent-foreground opacity-0 transition-opacity group-hover/section:opacity-100">
               <Pencil className="size-2.5" />
               Click to edit
             </div>
@@ -115,7 +115,7 @@ export function EditableSection({ section, onSave }: EditableSectionProps) {
           {/* Lock indicator for non-editable */}
           {!section.editable && (
             <div className="absolute top-2 right-2">
-              <Lock className="size-3 text-zinc-400" />
+              <Lock className="size-3 text-muted-foreground" />
             </div>
           )}
         </div>

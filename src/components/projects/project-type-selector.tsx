@@ -17,14 +17,14 @@ export function ProjectTypeSelector({ value, onChange }: ProjectTypeSelectorProp
   }> = [
     {
       type: 'bounded-site',
-      label: 'Bounded Site',
+      label: 'Bounded site',
       description:
         'A traditional construction site with defined boundaries — commercial, residential, industrial, or land-development.',
       icon: Building2,
     },
     {
       type: 'linear',
-      label: 'Linear Infrastructure',
+      label: 'Linear infrastructure',
       description:
         'A long, narrow corridor — pipeline, transmission line, road, or rail. Uses centerline geometry, segments, and stationing.',
       icon: Waypoints,
@@ -43,14 +43,14 @@ export function ProjectTypeSelector({ value, onChange }: ProjectTypeSelectorProp
             onClick={() => onChange(opt.type)}
             className={`text-left rounded-lg border p-5 transition-all ${
               selected
-                ? 'border-amber-500/60 bg-amber-500/10 ring-2 ring-amber-500/30'
-                : 'border-border bg-surface hover:border-amber-500/30'
+                ? 'border-primary/60 bg-accent ring-2 ring-ring/30'
+                : 'border-border bg-surface hover:border-primary/30'
             }`}
           >
             <div className="flex items-start gap-3">
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded ${
-                  selected ? 'bg-amber-500/20 text-amber-400' : 'bg-elevated text-muted-foreground'
+                  selected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                 }`}
               >
                 <Icon className="h-5 w-5" />

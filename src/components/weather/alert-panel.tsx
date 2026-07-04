@@ -38,11 +38,11 @@ function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] 
       id: 'alert-qpe',
       type: 'storm',
       severity: 'high',
-      title: 'Qualifying Precipitation Event Forecasted',
+      title: 'Qualifying precipitation event forecast',
       description: `${qpeDay.precipitationInches}" expected on ${qpeDay.date}. Pre-storm inspection required within 48 hours. Post-storm inspection required within 24 hours after event.`,
       icon: CloudRain,
       actionHref: '/weather',
-      actionLabel: 'View Forecast',
+      actionLabel: 'View forecast',
     });
   }
 
@@ -53,11 +53,11 @@ function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] 
       id: 'alert-wind',
       type: 'storm',
       severity: 'medium',
-      title: 'High Wind Advisory',
+      title: 'High wind advisory',
       description: `Winds up to ${windyDay.windSpeedMph} mph forecast for ${windyDay.date}. Verify wind erosion BMPs and secure loose materials.`,
       icon: Wind,
       actionHref: '/checkpoints',
-      actionLabel: 'View Checkpoints',
+      actionLabel: 'View checkpoints',
     });
   }
 
@@ -69,11 +69,11 @@ function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] 
       id: `alert-def-${def.id}`,
       type: 'deficiency',
       severity: hoursLeft < 24 ? 'high' : 'medium',
-      title: `Deficiency ${def.id} — Correction Deadline`,
+      title: `Deficiency ${def.id} — correction deadline`,
       description: `${def.cgpViolation}. ${Math.round(hoursLeft)} hours remaining.`,
       icon: AlertTriangle,
       actionHref: `/checkpoints/${def.checkpointId}`,
-      actionLabel: 'View Checkpoint',
+      actionLabel: 'View checkpoint',
     });
   });
 
@@ -84,11 +84,11 @@ function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] 
       id: 'alert-pre-storm',
       type: 'inspection',
       severity: 'low',
-      title: 'Pre-Storm Inspection Recommended',
+      title: 'Pre-storm inspection recommended',
       description: `${lightRainDay.precipitationChance}% precipitation chance on ${lightRainDay.date}. Consider pre-storm BMP verification.`,
       icon: Clock,
       actionHref: '/checkpoints',
-      actionLabel: 'View Checkpoints',
+      actionLabel: 'View checkpoints',
     });
   }
 
@@ -99,9 +99,21 @@ function getAlerts(forecast: WeatherDay[], deficiencies: Deficiency[]): Alert[] 
 }
 
 const severityConfig = {
-  high: { badge: 'bg-red-500/10 text-red-500 border-red-500/20', border: 'border-red-500/30', bg: 'bg-red-500/[0.03]' },
-  medium: { badge: 'bg-amber-500/10 text-amber-500 border-amber-500/20', border: 'border-amber-500/30', bg: 'bg-amber-500/[0.03]' },
-  low: { badge: 'bg-blue-500/10 text-blue-500 border-blue-500/20', border: 'border-blue-500/30', bg: 'bg-blue-500/[0.03]' },
+  high: {
+    badge: 'bg-status-deficient-bg text-status-deficient border-status-deficient/20',
+    border: 'border-status-deficient/30',
+    bg: 'bg-status-deficient-bg/40',
+  },
+  medium: {
+    badge: 'bg-status-warning-bg text-status-warning border-status-warning/20',
+    border: 'border-status-warning/30',
+    bg: 'bg-status-warning-bg/40',
+  },
+  low: {
+    badge: 'bg-muted text-muted-foreground border-border',
+    border: 'border-border',
+    bg: 'bg-muted/40',
+  },
 };
 
 export function AlertPanel() {
@@ -130,8 +142,11 @@ export function AlertPanel() {
     <Card className="border-border bg-surface">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <CardTitle className="text-foreground">Active Alerts</CardTitle>
-          <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px]">
+          <CardTitle className="text-foreground">Active alerts</CardTitle>
+          <Badge
+            variant="outline"
+            className="border-status-deficient/20 bg-status-deficient-bg text-status-deficient text-[11px] font-medium"
+          >
             {alerts.filter((a) => a.severity === 'high').length} urgent
           </Badge>
         </div>
@@ -148,11 +163,11 @@ export function AlertPanel() {
                 className={`rounded-lg border p-4 ${config.border} ${config.bg}`}
               >
                 <div className="flex items-start gap-3">
-                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-foreground/70" />
+                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground">{alert.title}</p>
-                      <Badge variant="outline" className={`${config.badge} text-[9px] uppercase`}>
+                      <Badge variant="outline" className={`${config.badge} text-[11px] font-medium capitalize`}>
                         {alert.severity}
                       </Badge>
                     </div>
@@ -161,7 +176,7 @@ export function AlertPanel() {
                     </p>
                     <Link
                       href={alert.actionHref}
-                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-amber-500 hover:text-amber-400 transition-colors"
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
                     >
                       {alert.actionLabel}
                       <ExternalLink className="h-3 w-3" />

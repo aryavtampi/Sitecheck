@@ -11,23 +11,11 @@ import { onboardingSteps, ONBOARDING_VERSION } from './onboarding-steps';
 import { cn } from '@/lib/utils';
 
 const accentToBg: Record<string, string> = {
-  'text-amber-500': 'bg-amber-500/10',
-  'text-amber-400': 'bg-amber-400/10',
-  'text-violet-500': 'bg-violet-500/10',
-  'text-blue-400': 'bg-blue-400/10',
-  'text-green-500': 'bg-green-500/10',
-  'text-cyan-400': 'bg-cyan-400/10',
-  'text-orange-500': 'bg-orange-500/10',
+  'text-primary': 'bg-accent',
 };
 
 const accentToDot: Record<string, string> = {
-  'text-amber-500': 'bg-amber-500',
-  'text-amber-400': 'bg-amber-400',
-  'text-violet-500': 'bg-violet-500',
-  'text-blue-400': 'bg-blue-400',
-  'text-green-500': 'bg-green-500',
-  'text-cyan-400': 'bg-cyan-400',
-  'text-orange-500': 'bg-orange-500',
+  'text-primary': 'bg-primary',
 };
 
 const slideVariants = {
@@ -109,14 +97,11 @@ export function OnboardingOverlay() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0A0A0A]"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-background"
       role="dialog"
       aria-modal="true"
-      aria-label="SiteCheck Onboarding"
+      aria-label="SiteCheck onboarding"
     >
-      {/* Subtle radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.05)_0%,_transparent_70%)]" />
-
       {/* Skip button — positioned in overlay, outside content container */}
       {!isLastStep && (
         <button
@@ -146,14 +131,14 @@ export function OnboardingOverlay() {
             <div
               className={cn(
                 'mb-6 rounded-2xl border border-border p-5',
-                accentToBg[step.accentColor] ?? 'bg-amber-500/10'
+                accentToBg[step.accentColor] ?? 'bg-accent'
               )}
             >
               <Icon className={cn('h-10 w-10', step.accentColor)} />
             </div>
 
             {/* Title */}
-            <h2 className="font-heading text-3xl font-bold tracking-wide text-foreground">
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">
               {step.title}
             </h2>
 
@@ -170,14 +155,14 @@ export function OnboardingOverlay() {
                   className={cn(
                     'relative flex items-center gap-3 rounded-full px-6 py-3 text-sm font-medium transition-colors',
                     viewMode === 'website'
-                      ? 'text-black'
+                      ? 'text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {viewMode === 'website' && (
                     <motion.div
                       layoutId="onboarding-viewmode-pill"
-                      className="absolute inset-0 rounded-full bg-amber-500"
+                      className="absolute inset-0 rounded-full bg-primary"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                     />
                   )}
@@ -187,7 +172,7 @@ export function OnboardingOverlay() {
                     <div
                       className={cn(
                         'text-xs',
-                        viewMode === 'website' ? 'text-black/70' : 'text-muted-foreground'
+                        viewMode === 'website' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       )}
                     >
                       Desktop sidebar
@@ -199,14 +184,14 @@ export function OnboardingOverlay() {
                   className={cn(
                     'relative flex items-center gap-3 rounded-full px-6 py-3 text-sm font-medium transition-colors',
                     viewMode === 'app'
-                      ? 'text-black'
+                      ? 'text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {viewMode === 'app' && (
                     <motion.div
                       layoutId="onboarding-viewmode-pill"
-                      className="absolute inset-0 rounded-full bg-amber-500"
+                      className="absolute inset-0 rounded-full bg-primary"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                     />
                   )}
@@ -216,7 +201,7 @@ export function OnboardingOverlay() {
                     <div
                       className={cn(
                         'text-xs',
-                        viewMode === 'app' ? 'text-black/70' : 'text-muted-foreground'
+                        viewMode === 'app' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       )}
                     >
                       Mobile panel
@@ -237,7 +222,7 @@ export function OnboardingOverlay() {
                     <div
                       className={cn(
                         'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full',
-                        accentToDot[step.accentColor] ?? 'bg-amber-500'
+                        accentToDot[step.accentColor] ?? 'bg-primary'
                       )}
                     />
                     {h}
@@ -258,9 +243,9 @@ export function OnboardingOverlay() {
               className={cn(
                 'h-2 rounded-full transition-all duration-300',
                 i === currentStep
-                  ? 'w-6 bg-amber-500'
+                  ? 'w-6 bg-primary'
                   : i < currentStep
-                    ? 'w-2 bg-amber-500/40'
+                    ? 'w-2 bg-primary/40'
                     : 'w-2 bg-border'
               )}
             />
@@ -282,9 +267,9 @@ export function OnboardingOverlay() {
           </button>
           <button
             onClick={handleNext}
-            className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-amber-400"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            {isLastStep ? 'Enter Dashboard' : 'Next'}
+            {isLastStep ? 'Go to dashboard' : 'Next'}
             {!isLastStep && <ChevronRight className="h-4 w-4" />}
           </button>
         </div>

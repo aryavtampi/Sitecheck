@@ -62,23 +62,24 @@ export function GenerateMissionButton() {
 
   if (generatedMission) {
     return (
-      <Card className="border-0 bg-green-500/5 ring-1 ring-green-500/20">
+      <Card className="border-status-compliant/20 bg-status-compliant-bg">
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10">
-              <Plane className="h-5 w-5 text-green-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-status-compliant/10">
+              <Plane className="h-5 w-5 text-status-compliant" />
             </div>
             <div>
-              <p className="text-sm font-medium text-green-500">Mission Generated</p>
+              <p className="text-sm font-medium text-status-compliant">Mission generated</p>
               <p className="text-xs text-muted-foreground">
-                {generatedMission.waypoints.length} waypoints • {generatedMission.flightTimeMinutes} min flight time
+                <span className="font-data">{generatedMission.waypoints.length}</span> waypoints •{' '}
+                <span className="font-data">{generatedMission.flightTimeMinutes}</span> min flight time
               </p>
             </div>
           </div>
           <Link href={`/missions/${generatedMission.id}`}>
             <Button variant="outline" size="sm">
               <ExternalLink className="h-3.5 w-3.5" />
-              View Mission
+              View mission
             </Button>
           </Link>
         </CardContent>
@@ -87,16 +88,16 @@ export function GenerateMissionButton() {
   }
 
   return (
-    <Card className="border-0 bg-[#141414] ring-1 ring-white/5">
+    <Card className="border-border bg-surface">
       <CardContent className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10">
-              <Plane className="h-5 w-5 text-amber-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent">
+              <Plane className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">
-                {extractedCheckpoints.length} checkpoints extracted
+                <span className="font-data">{extractedCheckpoints.length}</span> checkpoints extracted
               </p>
               <p className="text-xs text-muted-foreground">
                 Generate an optimized drone flight path
@@ -105,7 +106,7 @@ export function GenerateMissionButton() {
           </div>
           <div className="flex items-center gap-2">
             {error && violations.length === 0 && (
-              <p className="text-xs text-red-400">{error}</p>
+              <p className="text-xs text-status-deficient">{error}</p>
             )}
             <Button onClick={handleGenerate} disabled={isGenerating}>
               {isGenerating ? (
@@ -113,21 +114,21 @@ export function GenerateMissionButton() {
               ) : (
                 <Plane className="h-4 w-4" />
               )}
-              {isGenerating ? 'Generating...' : 'Generate Drone Mission'}
+              {isGenerating ? 'Generating...' : 'Generate mission'}
             </Button>
           </div>
         </div>
 
         {violations.length > 0 && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 space-y-2">
-            <p className="text-xs font-semibold text-red-300 uppercase tracking-wider">
-              Airspace Violations ({violations.length})
+          <div className="space-y-2 rounded-lg border border-status-deficient/20 bg-status-deficient-bg p-3">
+            <p className="text-xs font-medium text-status-deficient">
+              Airspace violations ({violations.length})
             </p>
             <ul className="space-y-1.5">
               {violations.map((v, i) => (
-                <li key={i} className="text-[11px] text-red-200">
+                <li key={i} className="text-[11px] text-foreground">
                   {v.waypointNumber !== undefined && (
-                    <span className="font-mono mr-1">WP{v.waypointNumber}:</span>
+                    <span className="font-data mr-1">WP{v.waypointNumber}:</span>
                   )}
                   {v.zoneName ? <span className="font-medium">{v.zoneName} — </span> : null}
                   {v.message}

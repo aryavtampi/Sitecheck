@@ -412,7 +412,7 @@ export function PdfViewerPanel({
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-white/5 bg-[#141414] px-3 py-2">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-3 py-2">
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -424,7 +424,7 @@ export function PdfViewerPanel({
           </Button>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Input
-              className="h-6 w-10 border-white/10 bg-white/5 px-1 text-center text-xs"
+              className="font-data h-6 w-10 px-1 text-center text-xs"
               value={activePage}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
@@ -447,27 +447,27 @@ export function PdfViewerPanel({
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <ZoomIn className="h-3.5 w-3.5" />
-          <span>100%</span>
+          <span className="font-data">100%</span>
         </div>
       </div>
 
       {/* Document area */}
-      <div className="flex-1 overflow-auto bg-[#1C1C1C] p-6">
+      <div className="flex-1 overflow-auto bg-muted p-6">
         <div className="mx-auto max-w-[640px]">
           {/* Paper */}
           <div
-            className="min-h-[800px] rounded-sm border border-black/20 p-10 shadow-2xl"
+            className="min-h-[800px] rounded-sm border border-border p-10 shadow-sm"
             style={{ backgroundColor: '#F5F5F0' }}
           >
             {/* Page header decoration */}
             <div className="mb-6 flex items-center justify-between border-b border-neutral-300 pb-3">
               <div className="flex items-center gap-2">
                 <PageIcon className="h-4 w-4 text-neutral-500" />
-                <span className="text-[10px] font-medium tracking-widest text-neutral-500 uppercase">
+                <span className="text-[11px] font-medium text-neutral-500">
                   SWPPP v3.1
                 </span>
               </div>
-              <span className="text-[10px] text-neutral-400">
+              <span className="font-data text-[11px] text-neutral-400">
                 Page {activePage} of {TOTAL_PAGES}
               </span>
             </div>
@@ -501,9 +501,9 @@ export function PdfViewerPanel({
 
             {/* Highlight band for selected checkpoint */}
             {isHighlighted && (
-              <div className="mb-4 rounded border border-amber-300 bg-amber-100/60 px-3 py-2">
-                <p className="text-[11px] font-medium text-amber-700">
-                  AI-Identified BMP: {selectedCheckpoint?.id} - {selectedCheckpoint?.name}
+              <div className="mb-4 rounded border border-primary/30 bg-accent px-3 py-2">
+                <p className="text-[11px] font-medium text-accent-foreground">
+                  Identified BMP: {selectedCheckpoint?.id} — {selectedCheckpoint?.name}
                 </p>
               </div>
             )}
@@ -526,7 +526,7 @@ export function PdfViewerPanel({
 
             {/* Page footer */}
             <div className="mt-12 border-t border-neutral-300 pt-3">
-              <div className="flex items-center justify-between text-[9px] text-neutral-400">
+              <div className="flex items-center justify-between text-[11px] text-neutral-400">
                 <span>Riverside Mixed-Use Development - SWPPP v3.1</span>
                 <span>Confidential</span>
               </div>

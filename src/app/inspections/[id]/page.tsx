@@ -71,21 +71,21 @@ interface CorrectiveActionRow {
 function statusToBadge(status: string | undefined) {
   switch (status) {
     case 'submitted':
-      return 'bg-emerald-900/40 text-emerald-200 border-emerald-700';
+      return 'bg-status-compliant-bg text-status-compliant border-status-compliant/20';
     case 'in-progress':
-      return 'bg-amber-900/40 text-amber-200 border-amber-700';
+      return 'bg-status-warning-bg text-status-warning border-status-warning/20';
     case 'archived':
-      return 'bg-slate-800/40 text-slate-300 border-slate-700';
+      return 'bg-muted text-muted-foreground border-border';
     default:
-      return 'bg-slate-800/40 text-slate-200 border-slate-600';
+      return 'bg-muted text-muted-foreground border-border';
   }
 }
 
 function complianceTone(pct: number | undefined) {
-  if (pct == null) return 'text-slate-300';
-  if (pct >= 90) return 'text-emerald-300';
-  if (pct >= 75) return 'text-amber-300';
-  return 'text-red-300';
+  if (pct == null) return 'text-muted-foreground';
+  if (pct >= 90) return 'text-status-compliant';
+  if (pct >= 75) return 'text-status-warning';
+  return 'text-status-deficient';
 }
 
 export default function InspectionDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -137,7 +137,7 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
     return (
       <PageTransition>
         <div className="p-6">
-          <Link href="/inspections" className="text-sm text-amber-400 hover:underline">
+          <Link href="/inspections" className="text-sm text-primary hover:underline">
             ← Back to inspections
           </Link>
           <p className="mt-4 text-muted-foreground">Inspection not found.</p>
@@ -170,30 +170,30 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
       <div className="flex flex-col gap-4 p-6">
         <Link
           href="/inspections"
-          className="inline-flex items-center gap-1 text-sm text-amber-400 hover:underline"
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to inspections
         </Link>
 
         {/* Header card */}
-        <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-lg border border-border bg-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 {inspection.trigger === 'rain-event' || inspection.trigger === 'qpe' || inspection.trigger === 'post-storm' ? (
-                  <CloudRain className="h-5 w-5 text-blue-400" />
+                  <CloudRain className="h-5 w-5 text-muted-foreground" />
                 ) : (
-                  <ClipboardCheck className="h-5 w-5 text-amber-400" />
+                  <ClipboardCheck className="h-5 w-5 text-muted-foreground" />
                 )}
-                <h1 className="font-heading text-xl font-bold text-slate-100">
+                <h1 className="text-xl font-semibold tracking-tight text-foreground">
                   Inspection — {format(new Date(inspection.date), 'MMMM d, yyyy')}
                 </h1>
-                <Badge className={cn('border text-[10px] uppercase', statusToBadge(inspection.status))}>
+                <Badge className={cn('border text-[11px] font-medium capitalize', statusToBadge(inspection.status))}>
                   {inspection.status ?? 'draft'}
                 </Badge>
                 {inspection.trigger && inspection.trigger !== 'manual' && (
-                  <Badge className="border border-blue-700 bg-blue-900/40 text-[10px] uppercase text-blue-200">
+                  <Badge className="border border-border bg-muted text-[11px] font-medium capitalize text-muted-foreground">
                     {inspection.trigger}
                   </Badge>
                 )}
@@ -202,13 +202,13 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
                 {inspection.type} · Inspector: {inspection.inspector || 'Unassigned'}
               </div>
               {inspection.dueBy && !isSubmitted && (
-                <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-amber-700 bg-amber-900/30 px-2 py-1 text-xs text-amber-200">
+                <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-status-warning/30 bg-status-warning-bg px-2 py-1 text-xs text-status-warning">
                   <Clock className="h-3 w-3" />
                   Due {formatDistanceToNowStrict(new Date(inspection.dueBy), { addSuffix: true })}
                 </div>
               )}
               {inspection.submittedAt && (
-                <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-emerald-700 bg-emerald-900/30 px-2 py-1 text-xs text-emerald-200">
+                <div className="mt-2 inline-flex items-center gap-1 rounded-md border border-status-compliant/30 bg-status-compliant-bg px-2 py-1 text-xs text-status-compliant">
                   <CheckCircle2 className="h-3 w-3" />
                   Submitted {format(new Date(inspection.submittedAt), 'MMM d, h:mm a')}
                 </div>
@@ -216,17 +216,17 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
             </div>
 
             <div className="flex flex-col items-end gap-2">
-              <div className={cn('text-4xl font-bold', complianceTone(compliance))}>
+              <div className={cn('font-data text-4xl font-semibold', complianceTone(compliance))}>
                 {compliance}
                 <span className="text-xl text-muted-foreground">%</span>
               </div>
-              <div className="text-[10px] uppercase text-muted-foreground">Overall Compliance</div>
+              <div className="text-[11px] text-muted-foreground">Overall compliance</div>
               <div className="flex gap-2">
                 <a
                   href={`/api/inspections/${id}/pdf`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-amber-600 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-500/20"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-input bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
                 >
                   <FileDown className="h-3.5 w-3.5" />
                   Download PDF
@@ -234,7 +234,7 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
                 <Button
                   onClick={handleSubmit}
                   disabled={isSubmitted || submitting}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                   size="sm"
                 >
                   {submitting ? (
@@ -251,22 +251,22 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
 
         {/* Compliance breakdown */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="flex items-center justify-between text-xs uppercase text-muted-foreground">
-              <span>AI Overall Compliance</span>
-              <span>(Claude Vision)</span>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <span>Analysis compliance</span>
+              <span>Automated</span>
             </div>
-            <div className={cn('mt-1 text-3xl font-bold', complianceTone(inspection.aiOverallCompliance))}>
+            <div className={cn('font-data mt-1 text-3xl font-semibold', complianceTone(inspection.aiOverallCompliance))}>
               {inspection.aiOverallCompliance ?? '—'}
               {inspection.aiOverallCompliance != null && <span className="text-base text-muted-foreground">%</span>}
             </div>
           </div>
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="flex items-center justify-between text-xs uppercase text-muted-foreground">
-              <span>QSP Overall Compliance</span>
-              <span>(After Override)</span>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <span>QSP compliance</span>
+              <span>After review</span>
             </div>
-            <div className={cn('mt-1 text-3xl font-bold', complianceTone(inspection.qspOverallCompliance))}>
+            <div className={cn('font-data mt-1 text-3xl font-semibold', complianceTone(inspection.qspOverallCompliance))}>
               {inspection.qspOverallCompliance ?? '—'}
               {inspection.qspOverallCompliance != null && <span className="text-base text-muted-foreground">%</span>}
             </div>
@@ -274,11 +274,11 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         {/* QSP narrative */}
-        <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-lg border border-border bg-surface p-4">
           <div className="flex items-center justify-between">
-            <div className="text-xs uppercase text-muted-foreground">QSP Narrative</div>
+            <div className="text-xs font-medium text-muted-foreground">QSP narrative</div>
             {isSubmitted && (
-              <span className="text-[10px] text-muted-foreground">Read-only — inspection submitted</span>
+              <span className="text-[11px] text-muted-foreground">Read-only — inspection submitted</span>
             )}
           </div>
           <textarea
@@ -288,22 +288,22 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
             placeholder="Add inspection notes, observations, weather context, or follow-up items..."
             disabled={isSubmitted}
             rows={4}
-            className="mt-2 w-full rounded-md border border-slate-700 bg-slate-950/60 p-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-500 focus:outline-none disabled:opacity-60"
+            className="mt-2 w-full rounded-md border border-input bg-surface p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none disabled:opacity-60"
           />
         </div>
 
         {/* Linked missions */}
         {inspection.missionIds && inspection.missionIds.length > 0 && (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-xs uppercase text-muted-foreground">
-              Linked Missions ({inspection.missionIds.length})
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="text-xs font-medium text-muted-foreground">
+              Linked missions ({inspection.missionIds.length})
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               {inspection.missionIds.map((missionId) => (
                 <Link
                   key={missionId}
                   href={`/missions/${missionId}`}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-200 hover:border-amber-600 hover:text-amber-200"
+                  className="font-data inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-xs text-foreground hover:border-primary/40 hover:text-primary"
                 >
                   {missionId}
                 </Link>
@@ -314,19 +314,19 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
 
         {/* AI findings */}
         {aiSummary && (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="flex items-center justify-between text-xs uppercase text-muted-foreground">
-              <span>AI Findings (Claude Vision)</span>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <span>Analysis findings</span>
               <span>{aiSummary.total} total</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Badge className="border border-emerald-700 bg-emerald-900/40 text-emerald-200">
+              <Badge className="border border-status-compliant/20 bg-status-compliant-bg font-medium text-status-compliant">
                 {aiSummary.compliant} compliant
               </Badge>
-              <Badge className="border border-red-700 bg-red-900/40 text-red-200">
+              <Badge className="border border-status-deficient/20 bg-status-deficient-bg font-medium text-status-deficient">
                 {aiSummary.deficient} deficient
               </Badge>
-              <Badge className="border border-amber-700 bg-amber-900/40 text-amber-200">
+              <Badge className="border border-status-review/20 bg-status-review-bg font-medium text-status-review">
                 {aiSummary.review} needs review
               </Badge>
             </div>
@@ -334,26 +334,26 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
               {aiAnalyses.map((a) => (
                 <div
                   key={a.id}
-                  className="rounded-md border border-slate-800 bg-slate-950/40 p-2 text-xs"
+                  className="rounded-md border border-border bg-muted/50 p-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-200">
+                    <span className="font-semibold text-foreground">
                       Waypoint {a.waypointNumber}
                     </span>
                     <Badge
                       className={cn(
-                        'border text-[9px] uppercase',
-                        a.status === 'compliant' && 'border-emerald-700 bg-emerald-900/40 text-emerald-200',
-                        a.status === 'deficient' && 'border-red-700 bg-red-900/40 text-red-200',
-                        a.status === 'needs-review' && 'border-amber-700 bg-amber-900/40 text-amber-200'
+                        'border text-[11px] font-medium capitalize',
+                        a.status === 'compliant' && 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+                        a.status === 'deficient' && 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+                        a.status === 'needs-review' && 'border-status-review/20 bg-status-review-bg text-status-review'
                       )}
                     >
                       {a.status} · {a.confidence}%
                     </Badge>
                   </div>
-                  <p className="mt-1 text-slate-300">{a.summary}</p>
+                  <p className="mt-1 text-muted-foreground">{a.summary}</p>
                   {a.cgpReference && (
-                    <div className="mt-1 text-[10px] text-muted-foreground">
+                    <div className="mt-1 text-[11px] text-muted-foreground">
                       CGP: {a.cgpReference}
                     </div>
                   )}
@@ -365,36 +365,36 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
 
         {/* QSP decisions */}
         {qspReviews.length > 0 && (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="text-xs uppercase text-muted-foreground">QSP Decisions</div>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="text-xs font-medium text-muted-foreground">QSP decisions</div>
             <div className="mt-3 space-y-2">
               {qspReviews.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-md border border-slate-800 bg-slate-950/40 p-2 text-xs"
+                  className="rounded-md border border-border bg-muted/50 p-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-200">
+                    <span className="font-semibold text-foreground">
                       Waypoint {r.waypointNumber}
                     </span>
                     <Badge
                       className={cn(
-                        'border text-[9px] uppercase',
-                        r.decision === 'accept' && 'border-emerald-700 bg-emerald-900/40 text-emerald-200',
-                        r.decision === 'override' && 'border-amber-700 bg-amber-900/40 text-amber-200',
-                        r.decision === 'pending' && 'border-slate-700 bg-slate-800/40 text-slate-300'
+                        'border text-[11px] font-medium capitalize',
+                        r.decision === 'accept' && 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+                        r.decision === 'override' && 'border-status-warning/20 bg-status-warning-bg text-status-warning',
+                        r.decision === 'pending' && 'border-border bg-muted text-muted-foreground'
                       )}
                     >
                       {r.decision}
                     </Badge>
                   </div>
                   {r.overrideStatus && (
-                    <div className="mt-1 text-[10px] text-muted-foreground">
+                    <div className="mt-1 text-[11px] text-muted-foreground">
                       Override status: {r.overrideStatus}
                     </div>
                   )}
                   {r.overrideNotes && (
-                    <p className="mt-1 text-slate-300">{r.overrideNotes}</p>
+                    <p className="mt-1 text-muted-foreground">{r.overrideNotes}</p>
                   )}
                 </div>
               ))}
@@ -404,38 +404,38 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
 
         {/* Corrective actions */}
         {correctiveActions.length > 0 && (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-            <div className="flex items-center justify-between text-xs uppercase text-muted-foreground">
-              <span>Corrective Actions</span>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+              <span>Corrective actions</span>
               <span>{correctiveActions.length} total</span>
             </div>
             <div className="mt-3 space-y-2">
               {correctiveActions.map((ca) => (
                 <div
                   key={ca.id}
-                  className="rounded-md border border-slate-800 bg-slate-950/40 p-2 text-xs"
+                  className="rounded-md border border-border bg-muted/50 p-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-200">
+                    <span className="font-semibold text-foreground">
                       {ca.description}
                     </span>
                     <div className="flex gap-1">
                       <Badge
                         className={cn(
-                          'border text-[9px] uppercase',
-                          ca.severity === 'high' && 'border-red-700 bg-red-900/40 text-red-200',
-                          ca.severity === 'medium' && 'border-amber-700 bg-amber-900/40 text-amber-200',
-                          ca.severity === 'low' && 'border-slate-700 bg-slate-800/40 text-slate-300'
+                          'border text-[11px] font-medium capitalize',
+                          ca.severity === 'high' && 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+                          ca.severity === 'medium' && 'border-status-warning/20 bg-status-warning-bg text-status-warning',
+                          ca.severity === 'low' && 'border-border bg-muted text-muted-foreground'
                         )}
                       >
                         {ca.severity}
                       </Badge>
                       <Badge
                         className={cn(
-                          'border text-[9px] uppercase',
-                          (ca.status === 'resolved' || ca.status === 'verified') && 'border-emerald-700 bg-emerald-900/40 text-emerald-200',
-                          ca.status === 'in-progress' && 'border-amber-700 bg-amber-900/40 text-amber-200',
-                          ca.status === 'open' && 'border-red-700 bg-red-900/40 text-red-200'
+                          'border text-[11px] font-medium capitalize',
+                          (ca.status === 'resolved' || ca.status === 'verified') && 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+                          ca.status === 'in-progress' && 'border-status-warning/20 bg-status-warning-bg text-status-warning',
+                          ca.status === 'open' && 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient'
                         )}
                       >
                         {ca.status}
@@ -443,11 +443,11 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
                     </div>
                   </div>
                   {ca.cgpReference && (
-                    <div className="mt-1 text-[10px] text-muted-foreground">
+                    <div className="mt-1 text-[11px] text-muted-foreground">
                       CGP: {ca.cgpReference}
                     </div>
                   )}
-                  <div className="mt-1 text-[10px] text-muted-foreground">
+                  <div className="mt-1 text-[11px] text-muted-foreground">
                     Due {format(new Date(ca.dueDate), 'MMM d, yyyy')}
                     {ca.resolvedAt && ` · Resolved ${format(new Date(ca.resolvedAt), 'MMM d')}`}
                   </div>
@@ -458,9 +458,9 @@ export default function InspectionDetailPage({ params }: { params: Promise<{ id:
         )}
 
         {!aiSummary && qspReviews.length === 0 && correctiveActions.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-700 bg-slate-900/30 p-6 text-center text-sm text-muted-foreground">
-            <AlertTriangle className="mx-auto mb-2 h-5 w-5 text-amber-400" />
-            No Block 4 mission data, AI findings, or corrective actions linked yet.
+          <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
+            <AlertTriangle className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+            No mission data, analysis findings, or corrective actions linked yet.
             <br />
             Link a completed mission from the missions page to populate the report.
           </div>

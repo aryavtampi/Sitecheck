@@ -89,12 +89,12 @@ export function InspectionScopePicker({ project, value, onChange }: InspectionSc
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-2">
-          Inspection Scope
+          Inspection scope
         </label>
         <div className="grid grid-cols-3 gap-2">
           {(['full', 'segment', 'range'] as const).map((mode) => {
             const selected = value.mode === mode;
-            const label = mode === 'full' ? 'Full Corridor' : mode === 'segment' ? 'Segment' : 'Station Range';
+            const label = mode === 'full' ? 'Full corridor' : mode === 'segment' ? 'Segment' : 'Station range';
             return (
               <button
                 key={mode}
@@ -102,8 +102,8 @@ export function InspectionScopePicker({ project, value, onChange }: InspectionSc
                 onClick={() => setMode(mode)}
                 className={`rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
                   selected
-                    ? 'border-amber-500/60 bg-amber-500/15 text-amber-300'
-                    : 'border-border bg-elevated text-muted-foreground hover:border-amber-500/30'
+                    ? 'border-primary/40 bg-accent text-accent-foreground'
+                    : 'border-border bg-surface text-muted-foreground hover:border-primary/30'
                 }`}
               >
                 {label}
@@ -121,7 +121,7 @@ export function InspectionScopePicker({ project, value, onChange }: InspectionSc
           <select
             value={value.segmentId ?? ''}
             onChange={(e) => handleSegmentChange(e.target.value)}
-            className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+            className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
           >
             <option value="">— Select a segment —</option>
             {segments.map((s) => (
@@ -144,7 +144,7 @@ export function InspectionScopePicker({ project, value, onChange }: InspectionSc
               value={startInput}
               onChange={(e) => handleRangeChange(e.target.value, endInput)}
               placeholder="STA 0+00"
-              className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+              className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none"
             />
           </div>
           <div>
@@ -156,14 +156,14 @@ export function InspectionScopePicker({ project, value, onChange }: InspectionSc
               value={endInput}
               onChange={(e) => handleRangeChange(startInput, e.target.value)}
               placeholder={`STA ${Math.floor(project.corridor.totalLength / 100)}+${(project.corridor.totalLength % 100).toString().padStart(2, '0')}`}
-              className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+              className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none"
             />
           </div>
         </div>
       )}
 
       {error && (
-        <p className="text-[11px] text-red-300">{error}</p>
+        <p className="text-[11px] text-status-deficient">{error}</p>
       )}
     </div>
   );

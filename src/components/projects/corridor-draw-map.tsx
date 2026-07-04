@@ -74,10 +74,14 @@ export function CorridorDrawMap({
     <div className="relative rounded-lg border border-border overflow-hidden">
       <div className="border-b border-border bg-surface px-4 py-2.5 flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium">
-            {centerline.length === 0
-              ? 'Click on the map to add the first centerline vertex'
-              : `${centerline.length} vertices · ${lengthMiles} mi (${Math.round(lengthFeet).toLocaleString()} ft)`}
+          <p className="text-xs font-medium text-foreground">
+            {centerline.length === 0 ? (
+              'Click on the map to add the first centerline vertex'
+            ) : (
+              <span className="font-data">
+                {`${centerline.length} vertices · ${lengthMiles} mi (${Math.round(lengthFeet).toLocaleString()} ft)`}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -85,7 +89,7 @@ export function CorridorDrawMap({
             type="button"
             onClick={handleUndo}
             disabled={centerline.length === 0}
-            className="inline-flex items-center gap-1 rounded border border-border bg-elevated px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
           >
             <Undo2 className="h-3 w-3" />
             Undo
@@ -94,7 +98,7 @@ export function CorridorDrawMap({
             type="button"
             onClick={handleClear}
             disabled={centerline.length === 0}
-            className="inline-flex items-center gap-1 rounded border border-red-500/40 bg-red-500/10 px-2 py-1 text-[11px] text-red-300 hover:bg-red-500/20 disabled:opacity-40"
+            className="inline-flex items-center gap-1 rounded-md border border-status-deficient/20 bg-status-deficient-bg px-2 py-1 text-[11px] font-medium text-status-deficient hover:border-status-deficient/40 disabled:opacity-40"
           >
             <Trash2 className="h-3 w-3" />
             Clear
@@ -118,7 +122,7 @@ export function CorridorDrawMap({
                 id="draw-centerline-line"
                 type="line"
                 paint={{
-                  'line-color': '#fbbf24',
+                  'line-color': '#38BDF8',
                   'line-width': 3,
                   'line-opacity': 0.9,
                 }}
@@ -136,7 +140,7 @@ export function CorridorDrawMap({
               onDragEnd={(e) => handleVertexDrag(idx, e.lngLat.lng, e.lngLat.lat)}
             >
               <div
-                className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-amber-400 bg-black text-[9px] font-bold text-amber-300 cursor-grab active:cursor-grabbing"
+                className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#38BDF8] bg-white font-data text-[11px] font-semibold text-[#1C2321] shadow-sm cursor-grab active:cursor-grabbing"
                 onClick={(e) => e.stopPropagation()}
               >
                 {idx + 1}

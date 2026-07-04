@@ -132,22 +132,22 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-lg border border-border bg-surface shadow-2xl"
+        className="w-full max-w-lg rounded-lg border border-border bg-surface shadow-lg"
       >
         <div className="border-b border-border px-5 py-4">
-          <h3 className="font-heading text-base font-semibold">
-            {crossing ? 'Edit Crossing' : 'New Crossing'}
+          <h3 className="text-base font-semibold tracking-tight">
+            {crossing ? 'Edit crossing' : 'New crossing'}
           </h3>
         </div>
 
         <div className="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
           {error && (
-            <div className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <div className="rounded border border-status-deficient/30 bg-status-deficient-bg px-3 py-2 text-xs text-status-deficient">
               {error}
             </div>
           )}
@@ -159,7 +159,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Cottonwood Creek HDD"
-              className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+              className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
             />
           </div>
 
@@ -169,7 +169,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               <select
                 value={crossingType}
                 onChange={(e) => setCrossingType(e.target.value as CrossingType)}
-                className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
               >
                 {(Object.keys(CROSSING_TYPE_LABELS) as CrossingType[]).map((t) => (
                   <option key={t} value={t}>
@@ -183,7 +183,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as CrossingStatus)}
-                className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
               >
                 {(Object.keys(CROSSING_STATUS_LABELS) as CrossingStatus[]).map((s) => (
                   <option key={s} value={s}>
@@ -200,7 +200,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               <select
                 value={segmentId}
                 onChange={(e) => setSegmentId(e.target.value)}
-                className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none"
               >
                 <option value="">— Unassigned —</option>
                 {segments.map((s) => (
@@ -212,14 +212,14 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">
-                Station {stationFeet != null && <span className="text-amber-400">({formatStation(stationFeet)})</span>}
+                Station {stationFeet != null && <span className="font-data text-foreground">({formatStation(stationFeet)})</span>}
               </label>
               <input
                 type="text"
                 value={stationInput}
                 onChange={(e) => handleStationChange(e.target.value)}
                 placeholder="6864 or STA 68+64"
-                className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm font-mono focus:border-amber-500/50 focus:outline-none"
+                className="w-full rounded border border-input bg-surface px-3 py-2 text-sm font-data focus:border-ring focus:outline-none"
               />
             </div>
           </div>
@@ -230,14 +230,14 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full rounded border border-border bg-elevated px-3 py-2 text-sm focus:border-amber-500/50 focus:outline-none resize-none"
+              className="w-full rounded border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none resize-none"
               placeholder="Construction method, special requirements, agency contacts…"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">
-              Permits Required
+              Permits required
             </label>
             <div className="flex flex-wrap gap-1.5">
               {COMMON_PERMIT_TYPES.map((p) => {
@@ -247,10 +247,10 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
                     key={p}
                     type="button"
                     onClick={() => togglePermit(p)}
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-medium border transition-colors ${
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors ${
                       selected
-                        ? 'border-amber-500/60 bg-amber-500/15 text-amber-300'
-                        : 'border-border bg-elevated text-muted-foreground hover:border-amber-500/30'
+                        ? 'border-primary/40 bg-accent text-accent-foreground'
+                        : 'border-border bg-surface text-muted-foreground hover:border-primary/30'
                     }`}
                   >
                     {p}
@@ -267,7 +267,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               type="button"
               onClick={handleDelete}
               disabled={submitting}
-              className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+              className="rounded-md border border-status-deficient/30 bg-status-deficient-bg px-3 py-1.5 text-xs font-medium text-status-deficient hover:bg-status-deficient/15 transition-colors disabled:opacity-50"
             >
               Delete
             </button>
@@ -279,7 +279,7 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-md border border-border bg-elevated px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-surface transition-colors disabled:opacity-50"
+              className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -287,9 +287,9 @@ export function CrossingForm({ crossing, projectId, segments, onClose }: Crossin
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="rounded-md border border-amber-500/40 bg-amber-500 px-3 py-1.5 text-xs font-semibold text-black hover:bg-amber-400 transition-colors disabled:opacity-50"
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Saving…' : crossing ? 'Save Changes' : 'Create Crossing'}
+              {submitting ? 'Saving…' : crossing ? 'Save changes' : 'Create crossing'}
             </button>
           </div>
         </div>

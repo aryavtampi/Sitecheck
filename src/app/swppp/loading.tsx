@@ -11,9 +11,9 @@ export default function SwpppLoading() {
       {/* Confidence / processing indicator skeleton */}
       <div className="h-12 animate-pulse rounded-lg bg-muted" />
       {/* Three-panel layout skeleton */}
-      <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-white/5 bg-white/5 lg:grid-cols-[1fr_300px_280px]">
+      <div className="grid flex-1 grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-border lg:grid-cols-[1fr_300px_280px]">
         {/* Left: PDF Viewer panel */}
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-3 bg-surface p-4">
           <div className="flex items-center justify-between">
             <div className="h-5 w-32 animate-pulse rounded bg-muted" />
             <div className="flex gap-2">
@@ -24,7 +24,7 @@ export default function SwpppLoading() {
           <div className="flex-1 min-h-[400px] animate-pulse rounded bg-muted" />
         </div>
         {/* Middle: Checkpoint list panel */}
-        <div className="flex flex-col gap-3 border-l border-white/5 p-4">
+        <div className="flex flex-col gap-3 bg-surface p-4">
           <div className="h-5 w-28 animate-pulse rounded bg-muted" />
           <div className="h-9 animate-pulse rounded bg-muted" />
           <div className="space-y-2 flex-1">
@@ -40,7 +40,7 @@ export default function SwpppLoading() {
           </div>
         </div>
         {/* Right: Map panel */}
-        <div className="flex flex-col gap-3 border-l border-white/5 p-4">
+        <div className="flex flex-col gap-3 bg-surface p-4">
           <div className="h-5 w-24 animate-pulse rounded bg-muted" />
           <div className="flex-1 min-h-[400px] animate-pulse rounded bg-muted" />
         </div>
