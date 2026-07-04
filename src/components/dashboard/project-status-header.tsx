@@ -36,22 +36,22 @@ export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
     return (
       <div className="grid grid-cols-2 gap-1.5">
         <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
-          <Shield className="h-3 w-3 text-amber-500" />
-          <span className="text-[10px] text-muted-foreground">Risk</span>
-          <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-500 text-[10px] font-mono px-1.5 py-0">{riskLabel}</Badge>
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[11px] text-muted-foreground">Risk</span>
+          <Badge variant="outline" className="border-border bg-surface text-foreground text-[11px] font-data px-1.5 py-0">{riskLabel}</Badge>
         </div>
         <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
           <User className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground">QSP</span>
-          <span className="text-[10px] text-foreground truncate">{qspDisplay}</span>
+          <span className="text-[11px] text-muted-foreground">QSP</span>
+          <span className="text-[11px] text-foreground truncate">{qspDisplay}</span>
         </div>
         <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
           <FileText className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] font-mono text-foreground">{permitNumber}</span>
+          <span className="font-data text-[11px] text-foreground">{permitNumber}</span>
         </div>
         <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1.5">
           <Cloud className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] text-foreground">72°F</span>
+          <span className="font-data text-[11px] text-foreground">72°F</span>
         </div>
       </div>
     );
@@ -60,9 +60,9 @@ export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-6 rounded-lg border border-border bg-surface-elevated px-5 py-3">
       <div className="flex items-center gap-2">
-        <Shield className="h-4 w-4 text-amber-500" />
-        <span className="text-xs text-muted-foreground">Risk Level</span>
-        <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-500 text-xs font-mono">
+        <Shield className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">Risk level</span>
+        <Badge variant="outline" className="border-border bg-surface text-foreground text-xs font-data">
           {riskLabel}
         </Badge>
       </div>
@@ -75,9 +75,9 @@ export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
       <div className="h-6 w-px bg-border" />
       <div className="flex items-center gap-2">
         <FileText className="h-4 w-4 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">CGP Permit</span>
-        <span className="text-xs font-mono text-foreground">{permitNumber}</span>
-        <Badge variant="outline" className={isActive ? 'border-green-500/30 bg-green-500/10 text-green-500 text-xs' : 'border-muted-foreground/30 bg-muted-foreground/10 text-muted-foreground text-xs'}>
+        <span className="text-xs text-muted-foreground">CGP permit</span>
+        <span className="font-data text-xs text-foreground">{permitNumber}</span>
+        <Badge variant="outline" className={isActive ? 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant text-xs font-medium' : 'border-border bg-muted text-muted-foreground text-xs font-medium'}>
           {isActive ? 'Active' : 'Inactive'}
         </Badge>
       </div>
@@ -85,16 +85,16 @@ export function ProjectStatusHeader({ compact }: { compact?: boolean }) {
       <div className="flex items-center gap-2">
         <Cloud className="h-4 w-4 text-muted-foreground" />
         <span className="text-xs text-muted-foreground">Weather</span>
-        <span className="text-xs text-foreground">Partly Cloudy, 72°F</span>
+        <span className="text-xs text-foreground">Partly cloudy, <span className="font-data">72°F</span></span>
       </div>
       {expiringPermits.length > 0 && (
         <>
           <div className="h-6 w-px bg-border" />
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-400" />
+            <AlertTriangle className="h-4 w-4 text-status-warning" />
             <Badge
               variant="outline"
-              className="border-amber-500/40 bg-amber-500/15 text-amber-300 text-xs"
+              className="border-status-warning/20 bg-status-warning-bg text-status-warning text-xs font-medium"
             >
               {expiringPermits.length} permit{expiringPermits.length !== 1 ? 's' : ''} expiring
             </Badge>

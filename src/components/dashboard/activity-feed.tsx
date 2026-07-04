@@ -47,7 +47,7 @@ const severityLabels: Record<string, string> = {
 };
 
 const typeLabels: Record<ActivityType, string> = {
-  drone: 'Drone Mission',
+  drone: 'Drone mission',
   inspection: 'Inspection',
   alert: 'Alert',
   weather: 'Weather',
@@ -65,18 +65,18 @@ const typeIcons: Record<ActivityType, React.ElementType> = {
 };
 
 const typeColors: Record<ActivityType, string> = {
-  drone: 'text-blue-400 bg-blue-400/10',
-  inspection: 'text-green-400 bg-green-400/10',
-  alert: 'text-amber-400 bg-amber-400/10',
-  weather: 'text-cyan-400 bg-cyan-400/10',
-  document: 'text-purple-400 bg-purple-400/10',
-  deficiency: 'text-red-400 bg-red-400/10',
+  drone: 'text-muted-foreground bg-muted',
+  inspection: 'text-status-compliant bg-status-compliant-bg',
+  alert: 'text-status-warning bg-status-warning-bg',
+  weather: 'text-muted-foreground bg-muted',
+  document: 'text-muted-foreground bg-muted',
+  deficiency: 'text-status-deficient bg-status-deficient-bg',
 };
 
 const severityDot: Record<string, string> = {
-  info: 'bg-blue-400',
-  warning: 'bg-amber-400',
-  critical: 'bg-red-400',
+  info: 'bg-muted-foreground',
+  warning: 'bg-status-warning',
+  critical: 'bg-status-deficient',
 };
 
 export function ActivityFeed() {
@@ -124,12 +124,12 @@ export function ActivityFeed() {
   return (
     <div className="rounded-lg border border-border bg-surface">
       <div className="border-b border-border px-4 py-3">
-        <h3 className="font-heading text-sm font-semibold tracking-wide">Activity Feed</h3>
+        <h3 className="text-sm font-semibold tracking-tight">Activity</h3>
       </div>
       {loading ? (
         <div className="p-4 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 animate-pulse rounded bg-muted" />
+            <div key={i} className="h-14 rounded bg-muted" />
           ))}
         </div>
       ) : (
@@ -161,10 +161,10 @@ export function ActivityFeed() {
                     {!isExpanded && (
                       <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{event.description}</p>
                     )}
-                    <p className="mt-1 text-[10px] text-muted-foreground/60">{formatRelativeTime(event.timestamp)}</p>
+                    <p className="mt-1 font-data text-[11px] text-muted-foreground">{formatRelativeTime(event.timestamp)}</p>
                   </div>
                   <ChevronRight className={cn(
-                    'mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform',
+                    'mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform',
                     isExpanded && 'rotate-90'
                   )} />
                 </button>
@@ -174,17 +174,17 @@ export function ActivityFeed() {
                     <p className="text-xs text-muted-foreground">{event.description}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span className={cn(
-                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium',
                         colorClass
                       )}>
                         {typeLabels[event.type]}
                       </span>
                       {event.severity && (
                         <span className={cn(
-                          'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
-                          event.severity === 'critical' ? 'bg-red-400/10 text-red-400' :
-                          event.severity === 'warning' ? 'bg-amber-400/10 text-amber-400' :
-                          'bg-blue-400/10 text-blue-400'
+                          'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                          event.severity === 'critical' ? 'bg-status-deficient-bg text-status-deficient' :
+                          event.severity === 'warning' ? 'bg-status-warning-bg text-status-warning' :
+                          'bg-muted text-muted-foreground'
                         )}>
                           <span className={cn('h-1 w-1 rounded-full', severityDot[event.severity])} />
                           {severityLabels[event.severity]}
@@ -194,9 +194,9 @@ export function ActivityFeed() {
                     {detailHref && (
                       <Link
                         href={detailHref}
-                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 hover:text-amber-400 transition-colors"
+                        className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
                       >
-                        View Details
+                        View details
                         <ExternalLink className="h-2.5 w-2.5" />
                       </Link>
                     )}

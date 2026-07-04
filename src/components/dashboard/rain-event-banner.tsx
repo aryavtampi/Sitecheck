@@ -7,10 +7,10 @@
  * has been detected for the active project. Color tier escalates as the
  * 48-hour CGP inspection window narrows:
  *
- *   > 24h remaining → emerald  (you have time)
- *   12-24h          → amber    (plan today)
- *   < 12h           → red      (do it now)
- *   overdue         → maroon + AlertOctagon
+ *   > 24h remaining → status-compliant  (you have time)
+ *   12-24h          → status-warning    (plan today)
+ *   < 12h           → status-deficient  (do it now)
+ *   overdue         → status-deficient, solid pill + AlertOctagon
  *
  * Calls `useRainEventStore.checkRainEvents(projectId)` once per project
  * change. The check is idempotent server-side so re-mount is harmless.
@@ -73,29 +73,29 @@ function computeCountdown(dueByIso: string): CountdownState {
 function tierStyles(countdown: CountdownState) {
   if (countdown.overdue) {
     return {
-      bg: 'bg-red-950/80 border-red-700',
-      text: 'text-red-100',
-      pill: 'bg-red-800/60 text-red-100',
+      bg: 'bg-status-deficient-bg border-status-deficient/40',
+      text: 'text-status-deficient',
+      pill: 'bg-status-deficient text-white',
     };
   }
   if (countdown.hoursRemaining < 12) {
     return {
-      bg: 'bg-red-900/60 border-red-600',
-      text: 'text-red-100',
-      pill: 'bg-red-800/60 text-red-100',
+      bg: 'bg-status-deficient-bg border-status-deficient/30',
+      text: 'text-status-deficient',
+      pill: 'border border-status-deficient/30 bg-surface text-status-deficient',
     };
   }
   if (countdown.hoursRemaining < 24) {
     return {
-      bg: 'bg-amber-900/60 border-amber-600',
-      text: 'text-amber-100',
-      pill: 'bg-amber-800/60 text-amber-100',
+      bg: 'bg-status-warning-bg border-status-warning/30',
+      text: 'text-status-warning',
+      pill: 'border border-status-warning/30 bg-surface text-status-warning',
     };
   }
   return {
-    bg: 'bg-emerald-900/60 border-emerald-600',
-    text: 'text-emerald-100',
-    pill: 'bg-emerald-800/60 text-emerald-100',
+    bg: 'bg-status-compliant-bg border-status-compliant/30',
+    text: 'text-status-compliant',
+    pill: 'border border-status-compliant/30 bg-surface text-status-compliant',
   };
 }
 
@@ -142,14 +142,15 @@ export function RainEventBanner() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
             <span>
-              Rain event detected — {rainEvent.totalPrecipitationInches.toFixed(2)}&quot; on{' '}
+              Rain event detected —{' '}
+              <span className="font-data">{rainEvent.totalPrecipitationInches.toFixed(2)}&quot;</span> on{' '}
               {new Date(rainEvent.startedAt).toLocaleDateString(undefined, {
                 month: 'short',
                 day: 'numeric',
               })}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles.pill}`}
+              className={`font-data rounded-full px-2 py-0.5 text-xs font-medium ${styles.pill}`}
             >
               {countdown.formatted}
             </span>
@@ -163,16 +164,16 @@ export function RainEventBanner() {
       <div className="flex shrink-0 items-center gap-2">
         <Link
           href={`/inspections/${draftInspection.id}`}
-          className={`inline-flex items-center gap-1.5 rounded-md border border-current/30 px-3 py-1.5 text-xs font-medium hover:bg-white/10`}
+          className={`inline-flex items-center gap-1.5 rounded-md border border-current/30 bg-surface px-3 py-1.5 text-xs font-medium hover:bg-foreground/5`}
         >
-          Open Draft Inspection
+          Open draft inspection
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
         <button
           type="button"
           onClick={() => dismissForSession(projectId)}
           aria-label="Dismiss for session"
-          className="rounded-md p-1.5 hover:bg-white/10"
+          className="rounded-md p-1.5 hover:bg-foreground/5"
         >
           <X className="h-4 w-4" />
         </button>

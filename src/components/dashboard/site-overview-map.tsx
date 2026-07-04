@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { MAPBOX_TOKEN, DEFAULT_MAP_STYLE } from '@/lib/mapbox-config';
 import { useAppMode } from '@/hooks/use-app-mode';
 import { cn } from '@/lib/utils';
-import { STATUS_COLORS, STATUS_LABELS, BMP_CATEGORY_LABELS } from '@/lib/constants';
+import { STATUS_COLORS, BMP_CATEGORY_LABELS } from '@/lib/constants';
 import { useCheckpointStore } from '@/stores/checkpoint-store';
 import { useProjectStore } from '@/stores/project-store';
 import { useCrossingsStore } from '@/stores/crossings-store';
@@ -23,6 +23,26 @@ import type { Checkpoint, CheckpointStatus } from '@/types/checkpoint';
 import type { Crossing } from '@/types/crossing';
 
 const EMPTY_CROSSINGS: Crossing[] = [];
+
+// Sentence-case labels + token classes for DOM chrome (legend, popup).
+// Marker fills on satellite imagery keep the high-visibility STATUS_COLORS hexes.
+const STATUS_SENTENCE_LABELS: Record<CheckpointStatus, string> = {
+  compliant: 'Compliant',
+  deficient: 'Deficient',
+  'needs-review': 'Needs review',
+};
+
+const STATUS_BADGE_CLASSES: Record<CheckpointStatus, string> = {
+  compliant: 'border-status-compliant/20 bg-status-compliant-bg text-status-compliant',
+  deficient: 'border-status-deficient/20 bg-status-deficient-bg text-status-deficient',
+  'needs-review': 'border-status-review/20 bg-status-review-bg text-status-review',
+};
+
+const STATUS_DOT_CLASSES: Record<CheckpointStatus, string> = {
+  compliant: 'bg-status-compliant',
+  deficient: 'bg-status-deficient',
+  'needs-review': 'bg-status-review',
+};
 
 export function SiteOverviewMap() {
   const { isApp } = useAppMode();
@@ -94,8 +114,8 @@ export function SiteOverviewMap() {
   return (
     <div className="relative rounded-lg border border-border bg-surface overflow-hidden">
       <div className="border-b border-border px-4 py-3">
-        <h3 className="font-heading text-sm font-semibold tracking-wide">
-          {project?.projectType === 'linear' ? 'Corridor Overview' : 'Site Overview'}
+        <h3 className="text-sm font-semibold tracking-tight">
+          {project?.projectType === 'linear' ? 'Corridor overview' : 'Site overview'}
         </h3>
       </div>
 
@@ -151,12 +171,6 @@ export function SiteOverviewMap() {
                   className="relative cursor-pointer"
                   style={{ width: size, height: size }}
                 >
-                  {isDeficient && (
-                    <span
-                      className="absolute inset-0 animate-ping rounded-full opacity-50"
-                      style={{ backgroundColor: color }}
-                    />
-                  )}
                   <span
                     className="absolute inset-0 rounded-full border border-white/40"
                     style={{ backgroundColor: color }}
@@ -176,8 +190,8 @@ export function SiteOverviewMap() {
               offset={12}
               maxWidth="260px"
             >
-              <div className="bg-[#1C1C1C] text-foreground border border-border rounded-md p-3 -m-[10px] min-w-[220px]">
-                <p className="font-mono text-xs text-muted-foreground">
+              <div className="min-w-[220px] text-foreground">
+                <p className="font-data text-xs text-muted-foreground">
                   {selectedCheckpoint.id}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold leading-tight">
@@ -186,14 +200,18 @@ export function SiteOverviewMap() {
 
                 <div className="mt-2 flex items-center gap-2">
                   <span
-                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none"
-                    style={{
-                      backgroundColor: `${STATUS_COLORS[selectedCheckpoint.status]}20`,
-                      color: STATUS_COLORS[selectedCheckpoint.status],
-                      border: `1px solid ${STATUS_COLORS[selectedCheckpoint.status]}40`,
-                    }}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-none',
+                      STATUS_BADGE_CLASSES[selectedCheckpoint.status]
+                    )}
                   >
-                    {STATUS_LABELS[selectedCheckpoint.status]}
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 shrink-0 rounded-full',
+                        STATUS_DOT_CLASSES[selectedCheckpoint.status]
+                      )}
+                    />
+                    {STATUS_SENTENCE_LABELS[selectedCheckpoint.status]}
                   </span>
                 </div>
 
@@ -203,9 +221,9 @@ export function SiteOverviewMap() {
 
                 <Link
                   href={`/checkpoints/${selectedCheckpoint.id}`}
-                  className="mt-2 inline-block text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                  className="mt-2 inline-block text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                 >
-                  View Details &rarr;
+                  View details &rarr;
                 </Link>
               </div>
             </Popup>
@@ -213,16 +231,15 @@ export function SiteOverviewMap() {
         </Map>
 
         {/* Legend */}
-        <div className="absolute bottom-3 left-3 z-10 rounded-md border border-border bg-[#1C1C1C]/90 backdrop-blur-sm px-3 py-2">
+        <div className="absolute bottom-3 left-3 z-10 rounded-md border border-border bg-surface px-3 py-2 shadow-sm">
           <div className="flex items-center gap-4 text-xs">
             {(Object.keys(STATUS_COLORS) as CheckpointStatus[]).map((status) => (
               <div key={status} className="flex items-center gap-1.5">
                 <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: STATUS_COLORS[status] }}
+                  className={cn('h-2.5 w-2.5 rounded-full', STATUS_DOT_CLASSES[status])}
                 />
                 <span className="text-muted-foreground">
-                  {statusCounts[status]} {STATUS_LABELS[status]}
+                  <span className="font-data">{statusCounts[status]}</span> {STATUS_SENTENCE_LABELS[status]}
                 </span>
               </div>
             ))}
